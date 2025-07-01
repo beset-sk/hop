@@ -138,3 +138,76 @@ software:
 * Apache Kafka Transforms
 * Apache POI Transforms
 * MQTT Transforms
+
+
+## DMT Kastomizácia:
+
+### Názov v main window:
+
+
+`org.apache.hop.ui.hopgui.HopGui`
+
+``` java
+  public static final String APP_NAME = "Data Migration Tool";
+```
+
+pre Mac os
+
+`org.apache.hop.ui.core.widget.OsHelper`
+
+```java
+ public static boolean setAppName() {
+
+    if (isMac()) {
+      // Sets the app name in main menu (so it works even when launching
+      // from shell script)
+      String appName = "Data Migration Tool";
+      Display.setAppName(appName);
+    }
+    return true;
+  }
+```
+
+### Welcome Dialog
+
+`package org.apache.hop.ui.hopgui.welcome`
+
+Názov okna, Titulok vo Welcome a ikona:
+
+`org.apache.hop.ui.hopgui.welcome.WelcomeDialog`
+
+``` diff
+@@ -75,7 +75,7 @@ public class WelcomeDialog {
+     try {
+       shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.CLOSE | SWT.RESIZE | SWT.MAX);
+       shell.setLayout(new FormLayout());
+-      shell.setText("Apache Hop");
++      shell.setText("Data Migration Tool ower Apache Hop");
+       PropsUi.setLook(shell);
+ 
+       PropsUi props = PropsUi.getInstance();
+@@ -100,7 +100,7 @@ public class WelcomeDialog {
+       //
+       Label welcome = new Label(shell, SWT.CENTER);
+       PropsUi.setLook(welcome);
+-      welcome.setText("Apache Hop");
++      welcome.setText("Data Migration Tool ower Apache Hop");
+       titleFont =
+           new Font(shell.getDisplay(), "Open Sans", (int) (18 * props.getZoomFactor()), SWT.NONE);
+       welcome.setFont(titleFont);
+@@ -217,7 +217,7 @@ public class WelcomeDialog {
+       type = GuiMenuElementType.MENU_ITEM,
+       id = "help.welcome",
+       label = "Welcome",
+-      image = "ui/images/logo_hop.svg")
++      image = "ui/images/logo_bw.svg")
+   public void menuHelpWelcome() {
+     open();
+   }
+```
+
+
+
+
+
+

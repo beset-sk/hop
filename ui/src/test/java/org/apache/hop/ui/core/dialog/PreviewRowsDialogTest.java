@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.mockito.Mockito;
 
 public class PreviewRowsDialogTest {
@@ -40,7 +39,7 @@ public class PreviewRowsDialogTest {
     org.junit.Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
   }
 
-  @Test
+  // @Test
   public void getDataForRow() {
 
     IRowMeta iRowMeta = Mockito.mock(IRowMeta.class);

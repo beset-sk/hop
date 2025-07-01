@@ -75,7 +75,7 @@ public class WelcomeDialog {
     try {
       shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.CLOSE | SWT.RESIZE | SWT.MAX);
       shell.setLayout(new FormLayout());
-      shell.setText("Apache Hop");
+      shell.setText("Data Migration Tool ower Apache Hop");
       PropsUi.setLook(shell);
 
       PropsUi props = PropsUi.getInstance();
@@ -100,7 +100,7 @@ public class WelcomeDialog {
       //
       Label welcome = new Label(shell, SWT.CENTER);
       PropsUi.setLook(welcome);
-      welcome.setText("Apache Hop");
+      welcome.setText("Data Migration Tool ower Apache Hop");
       titleFont =
           new Font(shell.getDisplay(), "Open Sans", (int) (18 * props.getZoomFactor()), SWT.NONE);
       welcome.setFont(titleFont);
@@ -217,7 +217,7 @@ public class WelcomeDialog {
       type = GuiMenuElementType.MENU_ITEM,
       id = "help.welcome",
       label = "Welcome",
-      image = "ui/images/logo_hop.svg")
+      image = "ui/images/logo_bw.svg")
   public void menuHelpWelcome() {
     open();
   }
