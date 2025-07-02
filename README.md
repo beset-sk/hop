@@ -144,6 +144,7 @@ software:
 
 ### Názov v main window:
 
+Teda mne to pre MacOS zmenilo ten titulok. Pre Windows som neskúšal
 
 `org.apache.hop.ui.hopgui.HopGui`
 
