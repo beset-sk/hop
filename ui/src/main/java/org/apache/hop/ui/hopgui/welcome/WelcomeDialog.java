@@ -75,7 +75,7 @@ public class WelcomeDialog {
     try {
       shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.CLOSE | SWT.RESIZE | SWT.MAX);
       shell.setLayout(new FormLayout());
-      shell.setText("Data Migration Tool ower Apache Hop");
+      shell.setText("Data Migration Tool (based on the Apache Hop project)");
       PropsUi.setLook(shell);
 
       PropsUi props = PropsUi.getInstance();
@@ -100,7 +100,7 @@ public class WelcomeDialog {
       //
       Label welcome = new Label(shell, SWT.CENTER);
       PropsUi.setLook(welcome);
-      welcome.setText("Data Migration Tool ower Apache Hop");
+      welcome.setText("Data Migration Tool (based on the Apache Hop project)");
       titleFont =
           new Font(shell.getDisplay(), "Open Sans", (int) (18 * props.getZoomFactor()), SWT.NONE);
       welcome.setFont(titleFont);
