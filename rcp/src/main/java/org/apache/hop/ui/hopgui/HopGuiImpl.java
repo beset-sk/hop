@@ -27,4 +27,8 @@ public class HopGuiImpl implements ISingletonProvider {
     }
     return instance;
   }
+
+  public static void main(String[] args) {
+    HopGui.main(args);
+  }
 }
