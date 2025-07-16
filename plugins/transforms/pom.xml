@@ -89,6 +89,7 @@
         <module>html2text</module>
         <module>http</module>
         <module>httppost</module>
+        <module>identity</module>
         <module>ifnull</module>
         <module>insertupdate</module>
         <module>janino</module>

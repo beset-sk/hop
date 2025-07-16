@@ -1,0 +1,16 @@
+{
+  "name" : "Table Customers",
+  "filename" : null,
+  "id" : "0ca06943-8900-4ea3-bc8c-3ea8a5f592ff",
+  "parentId" : "e23bf329-6f04-476e-af3c-791d164ccf01",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1752581668331,
+  "executionStartDate" : 1752581667830,
+  "copyNr" : "0"
+}

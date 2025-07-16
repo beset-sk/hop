@@ -1,0 +1,73 @@
+{
+  "executionType" : "Pipeline",
+  "parentId" : null,
+  "id" : "e57ef1f1-f743-4edb-b0e4-6e79fe03c38c",
+  "name" : "first",
+  "copyNr" : null,
+  "loggingText" : "2025/07/15 11:42:19 - first - Executing this pipeline using the Local Pipeline Engine with run configuration 'local'\n2025/07/15 11:42:19 - first - Execution started for pipeline [first]\n2025/07/15 11:42:19 - XML output.0 - Opening output stream in encoding: UTF-8\n2025/07/15 11:42:19 - Table Customers.0 - Finished reading query, closing connection.\n2025/07/15 11:42:19 - Table Customers.0 - Finished processing (I=107, O=0, R=0, W=214, U=0, E=0)\n2025/07/15 11:42:19 - Select values.0 - Finished processing (I=0, O=0, R=107, W=107, U=0, E=0)\n2025/07/15 11:42:19 - Customer sorted bz code_state.0 - Finished processing (I=0, O=0, R=107, W=107, U=0, E=0)\n2025/07/15 11:42:19 - XML output.0 - ERROR: Unexpected error\n2025/07/15 11:42:19 - XML output.0 - ERROR: org.apache.hop.core.exception.HopException: \n2025/07/15 11:42:19 - XML output.0 - Error writing XML row :org.apache.hop.core.exception.HopException: \n2025/07/15 11:42:19 - XML output.0 - Field [state_id] couldn't be found in the input stream!\n2025/07/15 11:42:19 - XML output.0 - \n2025/07/15 11:42:19 - XML output.0 - Row: [null], [null], [null], [null], [null], [null]\n2025/07/15 11:42:19 - XML output.0 - \n2025/07/15 11:42:19 - XML output.0 - Field [state_id] couldn't be found in the input stream!\n2025/07/15 11:42:19 - XML output.0 - \n2025/07/15 11:42:19 - XML output.0 - \n2025/07/15 11:42:19 - XML output.0 - \tat org.apache.hop.pipeline.transforms.xml.xmloutput.XmlOutput.writeRowToFile(XmlOutput.java:215)\n2025/07/15 11:42:19 - XML output.0 - \tat org.apache.hop.pipeline.transforms.xml.xmloutput.XmlOutput.processRow(XmlOutput.java:109)\n2025/07/15 11:42:19 - XML output.0 - \tat org.apache.hop.pipeline.transform.RunThread.run(RunThread.java:54)\n2025/07/15 11:42:19 - XML output.0 - \tat java.base/java.lang.Thread.run(Thread.java:840)\n2025/07/15 11:42:19 - XML output.0 - Caused by: org.apache.hop.core.exception.HopException: \n2025/07/15 11:42:19 - XML output.0 - Field [state_id] couldn't be found in the input stream!\n2025/07/15 11:42",
+  "lastLogLineNr" : 32,
+  "metrics" : [ {
+    "componentName" : "Table Customers",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 0,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 107,
+      "Written" : 214,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Customer sorted bz code_state",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 107,
+      "Buffers Output" : 106,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 107,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Select values",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 107,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 107,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "XML output",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 1,
+      "Buffers Output" : 0,
+      "Errors" : 1,
+      "Input" : 0,
+      "Written" : 0,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 106
+    }
+  } ],
+  "statusDescription" : "Finished (with errors)",
+  "updateTime" : 1752572539317,
+  "childIds" : [ "092ae14a-181d-4b62-9540-446425b1b49d", "5f24c997-af33-4629-96d9-25bb2e0551a7", "d365f4c8-13f8-4e24-9a75-5d2d5faf7885", "ce1c7772-0f95-46ef-ba2b-b6d6a498b82a" ],
+  "details" : { },
+  "failed" : true,
+  "executionEndDate" : 1752572539317,
+  "containerId" : "570cb4d9-4ecd-4c90-b30a-912a17926f81"
+}

@@ -1,0 +1,17 @@
+{
+  "executionType" : "Transform",
+  "parentId" : "b7761930-01aa-4ff0-bdaf-47d249010efd",
+  "id" : "3fbd628d-114f-461d-be2b-2aa022af8754",
+  "name" : "Table Customers",
+  "copyNr" : "0",
+  "loggingText" : null,
+  "lastLogLineNr" : null,
+  "metrics" : [ ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1752579792923,
+  "childIds" : [ ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1752579792909,
+  "containerId" : "3d5a9cf0-2499-4d0d-bfda-1805e9373d0e"
+}

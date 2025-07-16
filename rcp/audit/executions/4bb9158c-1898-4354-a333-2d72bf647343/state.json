@@ -1,0 +1,17 @@
+{
+  "executionType" : "Transform",
+  "parentId" : "886dd6d2-4841-4455-90c8-a347aee2e2ca",
+  "id" : "4bb9158c-1898-4354-a333-2d72bf647343",
+  "name" : "Customer sorted bz code_state",
+  "copyNr" : "0",
+  "loggingText" : null,
+  "lastLogLineNr" : null,
+  "metrics" : [ ],
+  "statusDescription" : "Stopped",
+  "updateTime" : 1752572360298,
+  "childIds" : [ ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1752572360292,
+  "containerId" : "fb26ef05-a2b8-4b72-b85d-79b1602c47f2"
+}

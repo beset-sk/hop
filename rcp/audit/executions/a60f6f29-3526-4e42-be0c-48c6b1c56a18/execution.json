@@ -1,0 +1,16 @@
+{
+  "name" : "XML output",
+  "filename" : null,
+  "id" : "a60f6f29-3526-4e42-be0c-48c6b1c56a18",
+  "parentId" : "b7761930-01aa-4ff0-bdaf-47d249010efd",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1752579792891,
+  "executionStartDate" : 1752579792845,
+  "copyNr" : "0"
+}

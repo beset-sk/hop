@@ -1,0 +1,16 @@
+{
+  "name" : "Filter rows",
+  "filename" : null,
+  "id" : "67bdd939-8ef7-461e-96bc-ccbf32d0f95d",
+  "parentId" : "b7761930-01aa-4ff0-bdaf-47d249010efd",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1752579792891,
+  "executionStartDate" : 1752579792845,
+  "copyNr" : "0"
+}

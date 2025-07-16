@@ -1,0 +1,87 @@
+{
+  "executionType" : "Pipeline",
+  "parentId" : null,
+  "id" : "68aa52ab-e93b-4f2b-bafe-68a52b7c6817",
+  "name" : "first",
+  "copyNr" : null,
+  "loggingText" : "2025/07/15 14:10:54 - first - Executing this pipeline using the Local Pipeline Engine with run configuration 'local'\n2025/07/15 14:10:54 - first - Execution started for pipeline [first]\n2025/07/15 14:10:54 - XML output.0 - Opening output stream in encoding: UTF-8\n2025/07/15 14:10:54 - Table Customers.0 - Finished reading query, closing connection.\n2025/07/15 14:10:54 - Table Customers.0 - Finished processing (I=107, O=0, R=0, W=214, U=0, E=0)\n2025/07/15 14:10:54 - Filter rows.0 - Finished processing (I=0, O=0, R=107, W=105, U=0, E=0)\n2025/07/15 14:10:54 - Select values.0 - Finished processing (I=0, O=0, R=107, W=107, U=0, E=0)\n2025/07/15 14:10:54 - Customer sorted bz code_state.0 - Finished processing (I=0, O=0, R=105, W=105, U=0, E=0)\n2025/07/15 14:10:54 - XML output.0 - Finished processing (I=0, O=105, R=105, W=105, U=0, E=0)\n",
+  "lastLogLineNr" : 14,
+  "metrics" : [ {
+    "componentName" : "Table Customers",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 0,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 107,
+      "Written" : 214,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Select values",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 107,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 107,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Customer sorted bz code_state",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 105,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 105,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "XML output",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 105,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 105,
+      "Updated" : 0,
+      "Output" : 105,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Filter rows",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 107,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 105,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  } ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1752581454880,
+  "childIds" : [ "2ee4d5ad-8218-4687-8683-bb621172f39b", "5413e8a1-091a-427d-b392-bd463c634c35", "f5b90560-5d35-4762-8b75-58b2f97218ff", "f7ecd72b-d0c2-4811-93aa-27ddc3998fe3", "08f56318-2c60-46ce-b31a-d486004ffa38" ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1752581454879,
+  "containerId" : "af3bd1d7-7b32-4777-b44e-1bb2fa64e89c"
+}

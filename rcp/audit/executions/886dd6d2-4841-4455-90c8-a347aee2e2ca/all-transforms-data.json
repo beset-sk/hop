@@ -1,0 +1,101 @@
+{
+  "executionType" : "Transform",
+  "dataSetMeta" : null,
+  "finished" : true,
+  "collectionDate" : 1752572360301,
+  "parentId" : "886dd6d2-4841-4455-90c8-a347aee2e2ca",
+  "ownerId" : "all-transforms",
+  "setMetaData" : {
+    "LastOutput/XML output.0" : {
+      "setKey" : "LastOutput/XML output.0",
+      "logChannelId" : "0c352e8e-c390-41c4-b993-456a13eed6ab",
+      "name" : "XML output",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of XML output.0"
+    },
+    "LastOutput/Select values.0" : {
+      "setKey" : "LastOutput/Select values.0",
+      "logChannelId" : "e6b3896f-16cf-499a-a966-c5f0e2e01a00",
+      "name" : "Select values",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Select values.0"
+    },
+    "FirstOutput/If Null.0" : {
+      "setKey" : "FirstOutput/If Null.0",
+      "logChannelId" : "90f96577-b434-4b89-ac6b-7ccee2781e8e",
+      "name" : "If Null",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of If Null.0"
+    },
+    "LastOutput/If Null.0" : {
+      "setKey" : "LastOutput/If Null.0",
+      "logChannelId" : "90f96577-b434-4b89-ac6b-7ccee2781e8e",
+      "name" : "If Null",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of If Null.0"
+    },
+    "LastOutput/Table Customers.0" : {
+      "setKey" : "LastOutput/Table Customers.0",
+      "logChannelId" : "8104c912-0246-4f45-8a57-074c6cf5b1b6",
+      "name" : "Table Customers",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Table Customers.0"
+    },
+    "FirstOutput/Table Customers.0" : {
+      "setKey" : "FirstOutput/Table Customers.0",
+      "logChannelId" : "8104c912-0246-4f45-8a57-074c6cf5b1b6",
+      "name" : "Table Customers",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Table Customers.0"
+    },
+    "LastOutput/Customer sorted bz code_state.0" : {
+      "setKey" : "LastOutput/Customer sorted bz code_state.0",
+      "logChannelId" : "4bb9158c-1898-4354-a333-2d72bf647343",
+      "name" : "Customer sorted bz code_state",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Customer sorted bz code_state.0"
+    },
+    "FirstOutput/Select values.0" : {
+      "setKey" : "FirstOutput/Select values.0",
+      "logChannelId" : "e6b3896f-16cf-499a-a966-c5f0e2e01a00",
+      "name" : "Select values",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Select values.0"
+    },
+    "FirstOutput/XML output.0" : {
+      "setKey" : "FirstOutput/XML output.0",
+      "logChannelId" : "0c352e8e-c390-41c4-b993-456a13eed6ab",
+      "name" : "XML output",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of XML output.0"
+    },
+    "FirstOutput/Customer sorted bz code_state.0" : {
+      "setKey" : "FirstOutput/Customer sorted bz code_state.0",
+      "logChannelId" : "4bb9158c-1898-4354-a333-2d72bf647343",
+      "name" : "Customer sorted bz code_state",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Customer sorted bz code_state.0"
+    }
+  },
+  "rowsBinaryGzipBase64Encoded" : "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"
+}

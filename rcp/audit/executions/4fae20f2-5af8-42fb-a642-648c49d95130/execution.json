@@ -1,0 +1,16 @@
+{
+  "name" : "Customer sorted bz code_state",
+  "filename" : null,
+  "id" : "4fae20f2-5af8-42fb-a642-648c49d95130",
+  "parentId" : "e23bf329-6f04-476e-af3c-791d164ccf01",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1752581668333,
+  "executionStartDate" : 1752581667830,
+  "copyNr" : "0"
+}
