@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-public class XmlOutputCustomCustomMetaInjectionTest
+public class XmlOutputCustomMetaInjectionTest
     extends BaseMetadataInjectionTest<XmlOutputCustomMeta> {
   @ClassRule public static RestoreHopEngineEnvironment env = new RestoreHopEngineEnvironment();
 
