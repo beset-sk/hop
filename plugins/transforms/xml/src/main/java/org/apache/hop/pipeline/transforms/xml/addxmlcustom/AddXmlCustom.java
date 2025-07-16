@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.hop.pipeline.transforms.xml.addxml;
+package org.apache.hop.pipeline.transforms.xml.addxmlcustom;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -44,18 +45,22 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /** Converts input rows to one or more XML files. */
-public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
-  private static final Class<?> PKG = AddXml.class;
+public class AddXmlCustom extends BaseTransform<AddXmlCustomMeta, AddXmlCustomData> {
+  private static final Class<?> PKG = AddXmlCustom.class;
+
+  private static final DocumentBuilderFactory documentBuilderFactory =
+      DocumentBuilderFactory.newInstance();
 
   private DOMImplementation domImplentation;
   private Transformer serializer;
 
-  public AddXml(
+  public AddXmlCustom(
       TransformMeta transformMeta,
-      AddXmlMeta meta,
-      AddXmlData sdi,
+      AddXmlCustomMeta meta,
+      AddXmlCustomData sdi,
       int copyNr,
       PipelineMeta tm,
       Pipeline trans) {
@@ -86,7 +91,7 @@ public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
         data.fieldIndexes[i] = getInputRowMeta().indexOfValue(fieldsName);
         if (data.fieldIndexes[i] < 0) {
           throw new HopException(
-              BaseMessages.getString(PKG, "AddXML.Exception.FieldNotFound", fieldsName));
+              BaseMessages.getString(PKG, "AddXMLCustom.Exception.FieldNotFound", fieldsName));
         }
       }
     }
@@ -94,7 +99,7 @@ public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
     Document xmldoc = getDomImplentation().createDocument(null, meta.getRootNode(), null);
     Element root = xmldoc.getDocumentElement();
     for (int i = 0; i < meta.getOutputFields().length; i++) {
-      XmlField outputField = meta.getOutputFields()[i];
+      XmlFieldCustom outputField = meta.getOutputFields()[i];
       String fieldname = outputField.getFieldName();
 
       IValueMeta v = getInputRowMeta().getValueMeta(data.fieldIndexes[i]);
@@ -133,12 +138,30 @@ public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
           /* encode as subnode */
           if (!element.equals(meta.getRootNode())) {
             Element e = xmldoc.createElement(element);
-            Node n = xmldoc.createTextNode(value);
-            e.appendChild(n);
+            try {
+              DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+              InputSource is = new InputSource(new StringReader(value));
+              Document doc = documentBuilder.parse(is);
+              Node n = doc.getDocumentElement();
+              Node importedNode = xmldoc.importNode(n, true);
+              e.appendChild(importedNode);
+            } catch (Exception ex) {
+              Node n = xmldoc.createTextNode(value);
+              e.appendChild(n);
+            }
             root.appendChild(e);
           } else {
-            Node n = xmldoc.createTextNode(value);
-            root.appendChild(n);
+            try {
+              DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+              InputSource is = new InputSource(new StringReader(value));
+              Document doc = documentBuilder.parse(is);
+              Node n = doc.getDocumentElement();
+              Node importedNode = xmldoc.importNode(n, true);
+              root.appendChild(importedNode);
+            } catch (Exception ex) {
+              Node n = xmldoc.createTextNode(value);
+              root.appendChild(n);
+            }
           }
         }
       }
@@ -162,7 +185,7 @@ public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
     return true;
   }
 
-  private String formatField(IValueMeta valueMeta, Object valueData, XmlField field)
+  private String formatField(IValueMeta valueMeta, Object valueData, XmlFieldCustom field)
       throws HopValueException {
     String retval = "";
     if (field == null) {
@@ -271,10 +294,12 @@ public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
       if (meta.isOmitXMLheader()) {
         getSerializer().setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
       }
-    } catch (TransformerConfigurationException e) {
+    } catch (Exception e) {
       return false;
-    } catch (ParserConfigurationException e) {
-      return false;
+      // } catch (TransformerConfigurationException e) {
+      // return false;
+      // } catch (ParserConfigurationException e) {
+      // return false;
     }
 
     return true;
