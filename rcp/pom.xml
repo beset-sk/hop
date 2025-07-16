@@ -72,7 +72,12 @@
                 </dependencies>
             </dependencyManagement>
             <dependencies>
-
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-databases-mysql</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-databases-postgresql</artifactId>
