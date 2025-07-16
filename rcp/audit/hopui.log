@@ -1,7 +1,0 @@
-SLF4J: Class path contains multiple SLF4J providers.
-SLF4J: Found provider [org.slf4j.nop.NOPServiceProvider@5b58ed3c]
-SLF4J: Found provider [org.tinylog.slf4j.TinylogSlf4jServiceProvider@24faea88]
-SLF4J: See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual provider is of type [org.slf4j.nop.NOPServiceProvider@5b58ed3c]
-2025/07/16 10:13:19 - Data Migration Tool - Projects enabled
-2025/07/16 10:13:19 - Data Migration Tool - Enabling project : 'Project001'
