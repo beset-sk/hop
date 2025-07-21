@@ -74,6 +74,19 @@
             <dependencies>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-sample</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-sample</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-databases-mysql</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -100,6 +113,13 @@
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-misc-projects</artifactId>
                     <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-plugins-actions</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
