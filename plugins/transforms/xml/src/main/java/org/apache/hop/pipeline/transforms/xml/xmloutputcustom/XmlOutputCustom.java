@@ -165,7 +165,7 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
       }
 
       isSingleXmlElement = false;
-
+      boolean writeAttribute = false;
       int j = 0;
 
       if (meta.getOutputFields() == null || meta.getOutputFields().length == 0) {
@@ -187,7 +187,7 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
           IValueMeta valueMeta = data.formatRowMeta.getValueMeta(i);
           Object valueData = r[i];
 
-          writeField(valueMeta, valueData, valueMeta.getName(), j++);
+          writeField(valueMeta, valueData, valueMeta.getName(), j++, writeAttribute);
         }
       } else {
         /*
@@ -198,7 +198,7 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
           data.writer.writeStartElement(meta.getRepeatElement());
 
         // First do the attributes and write them...
-        writeRowAttributes(r);
+        writeAttribute = writeRowAttributes(r);
 
         // Now write the elements
         //
@@ -219,7 +219,7 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
             }
 
             if (!(valueMeta.isNull(valueData) && meta.isOmitNullValues())) {
-              writeField(valueMeta, valueData, elementName, j++);
+              writeField(valueMeta, valueData, elementName, j++, writeAttribute);
             }
           }
         }
@@ -245,7 +245,8 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
     incrementLinesOutput();
   }
 
-  void writeRowAttributes(Object[] r) throws HopValueException, XMLStreamException {
+  boolean writeRowAttributes(Object[] r) throws HopValueException, XMLStreamException {
+    boolean writeAttribute = false;
     for (int i = 0; i < meta.getOutputFields().length; i++) {
       XmlFieldCustom xmlField = meta.getOutputFields()[i];
       if (xmlField.getContentType() == ContentType.Attribute) {
@@ -259,12 +260,15 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
 
         if (valueData != null) {
           data.writer.writeAttribute(elementName, valueMeta.getString(valueData));
+          writeAttribute = true;
         }
       }
     }
+    return writeAttribute;
   }
 
-  private void writeField(IValueMeta valueMeta, Object valueData, String element, int j)
+  private void writeField(
+      IValueMeta valueMeta, Object valueData, String element, int j, boolean writeAttribute)
       throws HopTransformException {
     try {
       String value = valueMeta.getString(valueData);
@@ -278,7 +282,7 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
             data.writer.flush();
             value = "<" + element + ">" + value + "</" + element;
 
-            if (j == 0) {
+            if ((j == 0) && !writeAttribute) {
               value = ">" + value;
               isSingleXmlElement = true;
             } else {
