@@ -131,38 +131,40 @@ public class AddXmlCustom extends BaseTransform<AddXmlCustomMeta, AddXmlCustomDa
               node = root;
             }
           }
-
           node.setAttribute(element, value);
 
-        } else {
-          /* encode as subnode */
-          if (!element.equals(meta.getRootNode())) {
-            Element e = xmldoc.createElement(element);
-            try {
-              DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-              InputSource is = new InputSource(new StringReader(value));
-              Document doc = documentBuilder.parse(is);
-              Node n = doc.getDocumentElement();
-              Node importedNode = xmldoc.importNode(n, true);
-              e.appendChild(importedNode);
-            } catch (Exception ex) {
-              Node n = xmldoc.createTextNode(value);
-              e.appendChild(n);
-            }
-            root.appendChild(e);
-          } else {
-            try {
-              DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-              InputSource is = new InputSource(new StringReader(value));
-              Document doc = documentBuilder.parse(is);
-              Node n = doc.getDocumentElement();
-              Node importedNode = xmldoc.importNode(n, true);
-              root.appendChild(importedNode);
-            } catch (Exception ex) {
-              Node n = xmldoc.createTextNode(value);
-              root.appendChild(n);
-            }
-          }
+        } else if (value != null) {
+          String[] values = value.split(":");
+          for (String val : values)
+            if (val.length() > 0)
+              /* encode as subnode */
+              if (!element.equals(meta.getRootNode())) {
+                Element e = xmldoc.createElement(element);
+                try {
+                  DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                  InputSource is = new InputSource(new StringReader(val));
+                  Document doc = documentBuilder.parse(is);
+                  Node n = doc.getDocumentElement();
+                  Node importedNode = xmldoc.importNode(n, true);
+                  e.appendChild(importedNode);
+                } catch (Exception ex) {
+                  Node n = xmldoc.createTextNode(val);
+                  e.appendChild(n);
+                }
+                root.appendChild(e);
+              } else {
+                try {
+                  DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                  InputSource is = new InputSource(new StringReader(val));
+                  Document doc = documentBuilder.parse(is);
+                  Node n = doc.getDocumentElement();
+                  Node importedNode = xmldoc.importNode(n, true);
+                  root.appendChild(importedNode);
+                } catch (Exception ex) {
+                  Node n = xmldoc.createTextNode(val);
+                  root.appendChild(n);
+                }
+              }
         }
       }
     }

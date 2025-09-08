@@ -19,10 +19,8 @@ package org.apache.hop.pipeline.transforms.xml.xmloutputcustom;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -41,8 +39,6 @@ import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.BaseTransform;
 import org.apache.hop.pipeline.transform.TransformMeta;
 import org.apache.hop.pipeline.transforms.xml.xmloutputcustom.XmlFieldCustom.ContentType;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
 /** Converts input rows to one or more XML files. */
 public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutputCustomData> {
@@ -275,10 +271,8 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
       if (value != null) {
 
         try {
-          DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-          InputSource is = new InputSource(new StringReader(value));
-          Document doc = documentBuilder.parse(is);
-          if (doc != null) {
+          boolean valueIsXml = value.startsWith("<") && value.endsWith(">");
+          if (valueIsXml) {
             data.writer.flush();
             value = "<" + element + ">" + value + "</" + element;
 
