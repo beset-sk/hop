@@ -488,7 +488,7 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
 
     if (zipped) {
       if (ziparchive) {
-        retval += ".zip";
+        retval += ".gz";
       } else {
         if (realextension != null && realextension.length() != 0) {
           retval += "." + realextension;

@@ -19,11 +19,13 @@ package org.apache.hop.pipeline.transforms.xml.xmloutputcustom;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.ResultFile;
@@ -49,10 +51,11 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
       DocumentBuilderFactory.newInstance();
 
   private static XMLOutputFactory XML_OUT_FACTORY;
+  private static XMLEventFactory XML_EVENT_FACTORY;
 
   static {
     XML_OUT_FACTORY = XMLOutputFactory.newInstance();
-    // XML_OUT_FACTORY.setProperty("escapeCharacters", false);
+    XML_EVENT_FACTORY = XMLEventFactory.newInstance();
   }
 
   boolean isSingleXmlElement;
@@ -171,13 +174,15 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
 
         // OK, write a new row to the XML file:
         if ((meta.getRepeatElement() != null) && (!"".equals(meta.getRepeatElement().trim())))
-          data.writer.writeStartElement(meta.getRepeatElement());
+          data.writer.add(XML_EVENT_FACTORY.createStartElement("", null, meta.getRepeatElement()));
+        //					data.writer.writeStartElement(meta.getRepeatElement());
 
         for (int i = 0; i < data.formatRowMeta.size(); i++) {
           // Put a variables between the XML elements of the row
           //
           if (i > 0) {
-            data.writer.writeCharacters(" ");
+            data.writer.add(XML_EVENT_FACTORY.createCharacters(" "));
+            //						data.writer.writeCharacters(" ");
           }
 
           IValueMeta valueMeta = data.formatRowMeta.getValueMeta(i);
@@ -191,7 +196,8 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
          */
         // Write a new row to the XML file:
         if ((meta.getRepeatElement() != null) && (!"".equals(meta.getRepeatElement().trim())))
-          data.writer.writeStartElement(meta.getRepeatElement());
+          data.writer.add(XML_EVENT_FACTORY.createStartElement("", null, meta.getRepeatElement()));
+        //					data.writer.writeStartElement(meta.getRepeatElement());
 
         // First do the attributes and write them...
         writeAttribute = writeRowAttributes(r);
@@ -202,7 +208,8 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
           XmlFieldCustom outputField = meta.getOutputFields()[i];
           if (outputField.getContentType() == ContentType.Element) {
             if (i > 0) {
-              data.writer.writeCharacters(" "); // a variables between
+              data.writer.add(XML_EVENT_FACTORY.createCharacters(" "));
+              //							data.writer.writeCharacters(" "); // a variables between
               // elements
             }
 
@@ -223,11 +230,14 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
 
       if ((meta.getRepeatElement() != null) && (!"".equals(meta.getRepeatElement().trim()))) {
         if (isSingleXmlElement) {
-          data.writer.writeCharacters("");
+          data.writer.add(XML_EVENT_FACTORY.createCharacters(""));
+          //					data.writer.writeCharacters("");
         }
-        data.writer.writeEndElement();
+        data.writer.add(XML_EVENT_FACTORY.createEndElement("", null, meta.getRepeatElement()));
+        //				data.writer.writeEndElement();
       }
-      data.writer.writeCharacters(EOL);
+      data.writer.add(XML_EVENT_FACTORY.createCharacters(EOL));
+      //			data.writer.writeCharacters(EOL);
     } catch (Exception e) {
       throw new HopException(
           "Error writing XML row :"
@@ -255,7 +265,9 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
         }
 
         if (valueData != null) {
-          data.writer.writeAttribute(elementName, valueMeta.getString(valueData));
+          data.writer.add(
+              XML_EVENT_FACTORY.createAttribute(elementName, valueMeta.getString(valueData)));
+          //					data.writer.writeAttribute(elementName, valueMeta.getString(valueData));
           writeAttribute = true;
         }
       }
@@ -288,20 +300,28 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
             outputStream.flush();
           } else {
             isSingleXmlElement = false;
-            data.writer.writeStartElement(element);
-            data.writer.writeCharacters(value);
-            data.writer.writeEndElement();
+            data.writer.add(XML_EVENT_FACTORY.createStartElement("", null, element));
+            data.writer.add(XML_EVENT_FACTORY.createCharacters(value));
+            data.writer.add(XML_EVENT_FACTORY.createEndElement("", null, element));
+            //						data.writer.writeStartElement(element);
+            //						data.writer.writeCharacters(value);
+            //						data.writer.writeEndElement();
           }
         } catch (Exception ex) {
           isSingleXmlElement = false;
-          data.writer.writeStartElement(element);
-          data.writer.writeCharacters(value);
-          data.writer.writeEndElement();
+          data.writer.add(XML_EVENT_FACTORY.createStartElement("", null, element));
+          data.writer.add(XML_EVENT_FACTORY.createCharacters(value));
+          data.writer.add(XML_EVENT_FACTORY.createEndElement("", null, element));
+          //					data.writer.writeStartElement(element);
+          //					data.writer.writeCharacters(value);
+          //					data.writer.writeEndElement();
         }
 
       } else {
         isSingleXmlElement = false;
-        data.writer.writeEmptyElement(element);
+        data.writer.add(XML_EVENT_FACTORY.createStartElement("", null, element));
+        data.writer.add(XML_EVENT_FACTORY.createEndElement("", null, element));
+        //				data.writer.writeEmptyElement(element);
       }
     } catch (Exception e) {
       throw new HopTransformException("Error writing line :", e);
@@ -334,34 +354,49 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
 
       if (meta.isZipped()) {
         OutputStream fos = HopVfs.getOutputStream(file, false);
-        data.zip = new ZipOutputStream(fos);
+        data.zip = new GZIPOutputStream(fos);
         File entry = new File(buildFilename(false));
         ZipEntry zipentry = new ZipEntry(entry.getName());
         zipentry.setComment("Compressed by Apache Hop");
-        data.zip.putNextEntry(zipentry);
+        //        data.zip.putNextEntry(zipentry);
         outputStream = data.zip;
       } else {
         outputStream = HopVfs.getOutputStream(file, false);
       }
       if (meta.getEncoding() != null && meta.getEncoding().length() > 0) {
         logBasic("Opening output stream in encoding: " + meta.getEncoding());
-        data.writer = XML_OUT_FACTORY.createXMLStreamWriter(outputStream, meta.getEncoding());
-        data.writer.writeStartDocument(meta.getEncoding(), "1.0");
+        XMLEvent event = XML_EVENT_FACTORY.createStartDocument(meta.getEncoding(), "1.0", true);
+        data.writer = XML_OUT_FACTORY.createXMLEventWriter(outputStream);
+        data.writer.add(event);
+        //        data.writer = XML_OUT_FACTORY.createXMLStreamWriter(outputStream,
+        // meta.getEncoding());
+        // data.writer.writeStartDocument(meta.getEncoding(), "1.0");
       } else {
         logBasic("Opening output stream in default encoding : " + Const.XML_ENCODING);
-        data.writer = XML_OUT_FACTORY.createXMLStreamWriter(outputStream);
-        data.writer.writeStartDocument(Const.XML_ENCODING, "1.0");
+        XMLEvent event = XML_EVENT_FACTORY.createStartDocument(Const.XML_ENCODING, "1.0", true);
+        data.writer = XML_OUT_FACTORY.createXMLEventWriter(outputStream);
+        data.writer.add(event);
+        // data.writer = XML_OUT_FACTORY.createXMLStreamWriter(outputStream);
+        // data.writer.writeStartDocument(Const.XML_ENCODING, "1.0");
       }
-      data.writer.writeCharacters(EOL);
+      data.writer.add(XML_EVENT_FACTORY.createCharacters(EOL));
+      //			data.writer.writeCharacters(EOL);
 
       // OK, write the header & the parent element:
       if ((meta.getMainElement() != null) && (!"".equals(meta.getMainElement().trim()))) {
-        data.writer.writeStartElement(meta.getMainElement());
+
+        //				data.writer.writeStartElement(meta.getMainElement());
         // Add the name variables if defined
         if ((meta.getNameSpace() != null) && (!"".equals(meta.getNameSpace().trim()))) {
-          data.writer.writeDefaultNamespace(meta.getNameSpace());
+          data.writer.add(
+              XML_EVENT_FACTORY.createStartElement("", meta.getNameSpace(), meta.getMainElement()));
+          //					data.writer.writeDefaultNamespace(meta.getNameSpace());
+        } else {
+          data.writer.add(
+              XML_EVENT_FACTORY.createStartElement("", meta.getNameSpace(), meta.getMainElement()));
         }
-        data.writer.writeCharacters(EOL);
+        data.writer.add(XML_EVENT_FACTORY.createCharacters(EOL));
+        //				data.writer.writeCharacters(EOL);
       }
       retval = true;
     } catch (Exception e) {
@@ -389,14 +424,20 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
       try {
         // Close the parent element
         if ((meta.getMainElement() != null) && (!"".equals(meta.getMainElement().trim())))
-          data.writer.writeEndElement();
-        data.writer.writeCharacters(EOL);
+          if ((meta.getNameSpace() != null) && (!"".equals(meta.getNameSpace().trim())))
+            data.writer.add(
+                XML_EVENT_FACTORY.createEndElement("", meta.getNameSpace(), meta.getMainElement()));
+          else data.writer.add(XML_EVENT_FACTORY.createEndElement("", null, meta.getMainElement()));
+        //				data.writer.writeEndElement();
+        data.writer.add(XML_EVENT_FACTORY.createCharacters(EOL));
+        //				data.writer.writeCharacters(EOL);
 
-        data.writer.writeEndDocument();
+        data.writer.add(XML_EVENT_FACTORY.createEndDocument());
+        //				data.writer.writeEndDocument();
         data.writer.close();
 
         if (meta.isZipped()) {
-          data.zip.closeEntry();
+          //         data.zip.closeEntry();
           data.zip.finish();
           data.zip.close();
         }
