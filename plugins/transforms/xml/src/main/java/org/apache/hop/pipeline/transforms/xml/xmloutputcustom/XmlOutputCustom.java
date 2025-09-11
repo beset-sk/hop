@@ -365,7 +365,8 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
       }
       if (meta.getEncoding() != null && meta.getEncoding().length() > 0) {
         logBasic("Opening output stream in encoding: " + meta.getEncoding());
-        XMLEvent event = XML_EVENT_FACTORY.createStartDocument(meta.getEncoding(), "1.0", true);
+        XMLEvent event =
+            XML_EVENT_FACTORY.createStartDocument(meta.getEncoding(), "1.0", meta.isStandalone());
         data.writer = XML_OUT_FACTORY.createXMLEventWriter(outputStream);
         data.writer.add(event);
         //        data.writer = XML_OUT_FACTORY.createXMLStreamWriter(outputStream,
@@ -373,7 +374,8 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
         // data.writer.writeStartDocument(meta.getEncoding(), "1.0");
       } else {
         logBasic("Opening output stream in default encoding : " + Const.XML_ENCODING);
-        XMLEvent event = XML_EVENT_FACTORY.createStartDocument(Const.XML_ENCODING, "1.0", true);
+        XMLEvent event =
+            XML_EVENT_FACTORY.createStartDocument(Const.XML_ENCODING, "1.0", meta.isStandalone());
         data.writer = XML_OUT_FACTORY.createXMLEventWriter(outputStream);
         data.writer.add(event);
         // data.writer = XML_OUT_FACTORY.createXMLStreamWriter(outputStream);

@@ -31,6 +31,7 @@ import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.row.RowMeta;
 import org.apache.hop.core.row.value.ValueMetaString;
+import org.apache.hop.core.util.EnvUtil;
 import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.vfs.HopVfs;
 import org.apache.hop.i18n.BaseMessages;
@@ -41,6 +42,7 @@ import org.apache.hop.pipeline.transform.TransformMeta;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
@@ -85,6 +87,52 @@ public class ExcelWriterTransform
       Pipeline pipeline) {
     super(transformMeta, meta, data, copyNr, pipelineMeta, pipeline);
     IOUtils.setByteArrayMaxOverride(BYTE_ARRAY_MAX_OVERRIDE);
+    setZipBombConfiguration();
+  }
+
+  /**
+   * This method is responsible for setting the configuration values that control how the
+   * ZipSecureFile class behaves when trying to detect zipbombs
+   */
+  protected void setZipBombConfiguration() {
+
+    // The minimum allowed ratio between de- and inflated bytes to detect a zipbomb.
+    String minInflateRatioVariable =
+        EnvUtil.getSystemProperty(
+            Const.HOP_ZIP_MIN_INFLATE_RATIO, Const.HOP_ZIP_MIN_INFLATE_RATIO_DEFAULT_STRING);
+    double minInflateRatio;
+    try {
+      minInflateRatio = Double.parseDouble(minInflateRatioVariable);
+    } catch (NullPointerException | NumberFormatException e) {
+      minInflateRatio = Const.HOP_ZIP_MIN_INFLATE_RATIO_DEFAULT;
+    }
+    ZipSecureFile.setMinInflateRatio(minInflateRatio);
+
+    // The maximum file size of a single zip entry.
+    String maxEntrySizeVariable =
+        EnvUtil.getSystemProperty(
+            Const.HOP_ZIP_MAX_ENTRY_SIZE, Const.HOP_ZIP_MAX_ENTRY_SIZE_DEFAULT_STRING);
+    long maxEntrySize;
+    try {
+      maxEntrySize = Long.parseLong(maxEntrySizeVariable);
+    } catch (NullPointerException | NumberFormatException e) {
+      maxEntrySize = Const.HOP_ZIP_MAX_ENTRY_SIZE_DEFAULT;
+    }
+    ZipSecureFile.setMaxEntrySize(maxEntrySize);
+
+    // The maximum number of characters of text that are extracted before an exception is thrown
+    // during extracting
+    // text from documents.
+    String maxTextSizeVariable =
+        EnvUtil.getSystemProperty(
+            Const.HOP_ZIP_MAX_TEXT_SIZE, Const.HOP_ZIP_MAX_TEXT_SIZE_DEFAULT_STRING);
+    long maxTextSize;
+    try {
+      maxTextSize = Long.parseLong(maxTextSizeVariable);
+    } catch (NullPointerException | NumberFormatException e) {
+      maxTextSize = Const.HOP_ZIP_MAX_TEXT_SIZE_DEFAULT;
+    }
+    ZipSecureFile.setMaxTextSize(maxTextSize);
   }
 
   @Override

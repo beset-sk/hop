@@ -81,6 +81,8 @@ public class XmlOutputCustomDialog extends BaseTransformDialog {
 
   private Button wZipped;
 
+  private Button wStandalone;
+
   private Button wOmitNullValues;
 
   private CCombo wEncoding;
@@ -502,12 +504,35 @@ public class XmlOutputCustomDialog extends BaseTransformDialog {
           }
         });
 
+    Label wlStandalone = new Label(wContentComp, SWT.RIGHT);
+    wlStandalone.setText(BaseMessages.getString(PKG, "XMLOutputCustomDialog.Standalone.Label"));
+    PropsUi.setLook(wlStandalone);
+    FormData fdlStandalone = new FormData();
+    fdlStandalone.left = new FormAttachment(0, 0);
+    fdlStandalone.top = new FormAttachment(wZipped, margin);
+    fdlStandalone.right = new FormAttachment(middle, -margin);
+    wlStandalone.setLayoutData(fdlStandalone);
+    wStandalone = new Button(wContentComp, SWT.CHECK);
+    PropsUi.setLook(wStandalone);
+    FormData fdStandalone = new FormData();
+    fdStandalone.left = new FormAttachment(middle, 0);
+    fdStandalone.top = new FormAttachment(wZipped, margin);
+    fdStandalone.right = new FormAttachment(100, 0);
+    wStandalone.setLayoutData(fdStandalone);
+    wStandalone.addSelectionListener(
+        new SelectionAdapter() {
+          @Override
+          public void widgetSelected(SelectionEvent e) {
+            input.setChanged();
+          }
+        });
+
     Label wlEncoding = new Label(wContentComp, SWT.RIGHT);
     wlEncoding.setText(BaseMessages.getString(PKG, "XMLOutputCustomDialog.Encoding.Label"));
     PropsUi.setLook(wlEncoding);
     FormData fdlEncoding = new FormData();
     fdlEncoding.left = new FormAttachment(0, 0);
-    fdlEncoding.top = new FormAttachment(wZipped, margin);
+    fdlEncoding.top = new FormAttachment(wStandalone, margin);
     fdlEncoding.right = new FormAttachment(middle, -margin);
     wlEncoding.setLayoutData(fdlEncoding);
     wEncoding = new CCombo(wContentComp, SWT.BORDER | SWT.READ_ONLY);
@@ -516,7 +541,7 @@ public class XmlOutputCustomDialog extends BaseTransformDialog {
     wEncoding.addModifyListener(lsMod);
     FormData fdEncoding = new FormData();
     fdEncoding.left = new FormAttachment(middle, 0);
-    fdEncoding.top = new FormAttachment(wZipped, margin);
+    fdEncoding.top = new FormAttachment(wStandalone, margin);
     fdEncoding.right = new FormAttachment(100, 0);
     wEncoding.setLayoutData(fdEncoding);
     wEncoding.addFocusListener(
@@ -882,6 +907,7 @@ public class XmlOutputCustomDialog extends BaseTransformDialog {
     wSplitEvery.setText("" + input.getSplitEvery());
 
     wZipped.setSelection(input.isZipped());
+    wStandalone.setSelection(input.isStandalone());
     wOmitNullValues.setSelection(input.isOmitNullValues());
     wAddDate.setSelection(input.isDateInFilename());
     wAddTime.setSelection(input.isTimeInFilename());
@@ -989,6 +1015,7 @@ public class XmlOutputCustomDialog extends BaseTransformDialog {
     xmlOutputMeta.setTimeInFilename(wAddTime.getSelection());
     xmlOutputMeta.setAddToResultFiles(wAddToResult.getSelection());
     xmlOutputMeta.setZipped(wZipped.getSelection());
+    xmlOutputMeta.setStandalone(wStandalone.getSelection());
     xmlOutputMeta.setOmitNullValues(wOmitNullValues.getSelection());
 
     int nrFields = wFields.nrNonEmpty();
