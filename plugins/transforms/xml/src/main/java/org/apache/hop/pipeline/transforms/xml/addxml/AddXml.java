@@ -17,13 +17,12 @@
 
 package org.apache.hop.pipeline.transforms.xml.addxml;
 
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -45,14 +44,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 /** Converts input rows to one or more XML files. */
 public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
   private static final Class<?> PKG = AddXml.class;
-
-  private static final DocumentBuilderFactory documentBuilderFactory =
-      DocumentBuilderFactory.newInstance();
 
   private DOMImplementation domImplentation;
   private Transformer serializer;
@@ -138,30 +133,12 @@ public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
           /* encode as subnode */
           if (!element.equals(meta.getRootNode())) {
             Element e = xmldoc.createElement(element);
-            try {
-              DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-              InputSource is = new InputSource(new StringReader(value));
-              Document doc = documentBuilder.parse(is);
-              Node n = doc.getDocumentElement();
-              Node importedNode = xmldoc.importNode(n, true);
-              e.appendChild(importedNode);
-            } catch (Exception ex) {
-              Node n = xmldoc.createTextNode(value);
-              e.appendChild(n);
-            }
+            Node n = xmldoc.createTextNode(value);
+            e.appendChild(n);
             root.appendChild(e);
           } else {
-            try {
-              DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-              InputSource is = new InputSource(new StringReader(value));
-              Document doc = documentBuilder.parse(is);
-              Node n = doc.getDocumentElement();
-              Node importedNode = xmldoc.importNode(n, true);
-              root.appendChild(importedNode);
-            } catch (Exception ex) {
-              Node n = xmldoc.createTextNode(value);
-              root.appendChild(n);
-            }
+            Node n = xmldoc.createTextNode(value);
+            root.appendChild(n);
           }
         }
       }
@@ -294,12 +271,10 @@ public class AddXml extends BaseTransform<AddXmlMeta, AddXmlData> {
       if (meta.isOmitXMLheader()) {
         getSerializer().setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
       }
-    } catch (Exception e) {
+    } catch (TransformerConfigurationException e) {
       return false;
-      // } catch (TransformerConfigurationException e) {
-      // return false;
-      // } catch (ParserConfigurationException e) {
-      // return false;
+    } catch (ParserConfigurationException e) {
+      return false;
     }
 
     return true;

@@ -89,6 +89,7 @@
         <module>html2text</module>
         <module>http</module>
         <module>httppost</module>
+        <module>identity</module>
         <module>ifnull</module>
         <module>insertupdate</module>
         <module>janino</module>
@@ -130,6 +131,7 @@
         <module>rowsfromresult</module>
         <module>rowstoresult</module>
         <module>salesforce</module>
+        <module>sample</module>
         <module>samplerows</module>
         <module>sasinput</module>
         <module>schemamapping</module>

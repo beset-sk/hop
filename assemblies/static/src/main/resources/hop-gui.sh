@@ -34,7 +34,7 @@ fi
 # Settings for all OSses
 #
 if [ -z "${HOP_OPTIONS}" ]; then
-  HOP_OPTIONS="-Xmx2048m"
+  HOP_OPTIONS="-Xmx4096m"
 fi
 
 # optional line for attaching a debugger

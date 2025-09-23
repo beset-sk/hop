@@ -612,6 +612,7 @@
             <activation>
                 <os>
                     <family>mac</family>
+                    <arch>aarch64</arch>
                 </os>
             </activation>
             <properties>
@@ -634,6 +635,36 @@
                 </dependencies>
             </dependencyManagement>
         </profile>
+
+        <profile>
+            <id>swt-mac-x86</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <env>mac</env>
+                <swt.artifactId>org.eclipse.swt.cocoa.macosx.aarch64</swt.artifactId>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>${swt.artifactId}</artifactId>
+                        <version>${org.eclipse.platform.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
         <profile>
             <id>apache-release</id>
             <build>

@@ -32,6 +32,17 @@
     <properties>
         <stanford-corenlp.version>4.5.7</stanford-corenlp.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.hop</groupId>
+                <artifactId>hop-libs</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -44,6 +55,10 @@
             <artifactId>stanford-corenlp</artifactId>
             <version>${stanford-corenlp.version}</version>
             <classifier>models</classifier>
+        </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
         </dependency>
     </dependencies>
 </project>
