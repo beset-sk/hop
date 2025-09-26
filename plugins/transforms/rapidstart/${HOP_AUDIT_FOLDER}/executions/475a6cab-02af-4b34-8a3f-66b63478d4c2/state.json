@@ -1,0 +1,17 @@
+{
+  "executionType" : "Transform",
+  "parentId" : "2196be4d-86b4-4067-b305-5f29e08ea4da",
+  "id" : "475a6cab-02af-4b34-8a3f-66b63478d4c2",
+  "name" : "PackageCode",
+  "copyNr" : "0",
+  "loggingText" : null,
+  "lastLogLineNr" : null,
+  "metrics" : [ ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1756990402479,
+  "childIds" : [ ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1756990402470,
+  "containerId" : null
+}

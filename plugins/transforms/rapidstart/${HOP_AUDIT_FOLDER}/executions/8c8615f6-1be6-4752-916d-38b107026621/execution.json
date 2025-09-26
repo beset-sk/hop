@@ -1,0 +1,16 @@
+{
+  "name" : "PackageCode",
+  "filename" : null,
+  "id" : "8c8615f6-1be6-4752-916d-38b107026621",
+  "parentId" : "1eca48f1-6321-4691-abe8-380497f85869",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1756986438249,
+  "executionStartDate" : 1756986438174,
+  "copyNr" : "0"
+}

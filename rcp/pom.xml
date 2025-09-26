@@ -72,6 +72,52 @@
                 </dependencies>
             </dependencyManagement>
             <dependencies>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-join</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-pipeline</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-repeat</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-success</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-workflow</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-databases-h2</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-databases-mysql</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
 
                 <dependency>
                     <groupId>org.apache.hop</groupId>
@@ -79,6 +125,7 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
+
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-engine-beam</artifactId>
@@ -93,15 +140,30 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-misc-git</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-misc-projects</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
+
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-plugins-transforms</artifactId>
                     <version>${project.version}</version>
                     <type>pom</type>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-tech-dropbox</artifactId>
+                    <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
@@ -146,6 +208,7 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
+
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-changefileencoding</artifactId>
@@ -320,6 +383,12 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
+                <!--dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-transform-excel</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency -->
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-execinfo</artifactId>
@@ -696,6 +765,12 @@
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-randomvalue</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-transform-rapidstart</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>

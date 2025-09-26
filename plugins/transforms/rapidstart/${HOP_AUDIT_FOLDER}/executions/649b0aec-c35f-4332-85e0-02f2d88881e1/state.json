@@ -1,0 +1,73 @@
+{
+  "executionType" : "Pipeline",
+  "parentId" : null,
+  "id" : "649b0aec-c35f-4332-85e0-02f2d88881e1",
+  "name" : "ForUT",
+  "copyNr" : null,
+  "loggingText" : "2025/09/04 15:18:22 - ForUT - Executing this pipeline using the Local Pipeline Engine with run configuration 'local'\n2025/09/04 15:18:22 - ForUT - Execution started for pipeline [ForUT]\n2025/09/04 15:18:22 - Generate B.0 - Finished processing (I=0, O=0, R=0, W=10, U=0, E=0)\n2025/09/04 15:18:22 - Generate A.0 - Finished processing (I=0, O=0, R=0, W=10, U=0, E=0)\n2025/09/04 15:18:22 - PackageCode.0 - Finished processing (I=0, O=0, R=20, W=20, U=0, E=0)\n2025/09/04 15:18:22 - Out.0 - Finished processing (I=0, O=0, R=20, W=20, U=0, E=0)\n",
+  "lastLogLineNr" : 6,
+  "metrics" : [ {
+    "componentName" : "Generate A",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 0,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 10,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "PackageCode",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 20,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 20,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Generate B",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 0,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 10,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Out",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 20,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 20,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  } ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1756991902792,
+  "childIds" : [ "f7840148-6020-4c0a-9a0c-9eb421c26fff", "9436c826-3f19-464b-bb01-bec17fcd718a", "3963bae0-cb60-450b-9fed-bd32a66d3295", "5ae82ae8-5e54-4fc6-b274-d1e8a7b8f8b4" ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1756991902792,
+  "containerId" : null
+}

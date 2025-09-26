@@ -64,7 +64,7 @@
         <module>drools</module>
         <module>dynamicsqlrow</module>
         <module>edi2xml</module>
-        <module>excel</module>
+        <!-- module>excel<module-->
         <module>execinfo</module>
         <module>execprocess</module>
         <module>execsqlrow</module>
@@ -123,6 +123,7 @@
         <module>propertyinput</module>
         <module>propertyoutput</module>
         <module>randomvalue</module>
+        <module>rapidstart</module>
         <module>regexeval</module>
         <module>replacestring</module>
         <module>reservoirsampling</module>
@@ -178,6 +179,7 @@
         <module>xml</module>
         <module>yamlinput</module>
         <module>zipfile</module>
+        <module>rapidstarttable</module>
     </modules>
 
 </project>

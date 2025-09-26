@@ -1,0 +1,73 @@
+{
+  "executionType" : "Pipeline",
+  "parentId" : null,
+  "id" : "13fc53b1-6cac-4f24-a6fd-a6a9f095eec4",
+  "name" : "ForUT",
+  "copyNr" : null,
+  "loggingText" : "2025/09/04 15:02:28 - ForUT - Executing this pipeline using the Local Pipeline Engine with run configuration 'local'\n2025/09/04 15:02:28 - ForUT - Execution started for pipeline [ForUT]\n2025/09/04 15:02:28 - Generate B.0 - Finished processing (I=0, O=0, R=0, W=1, U=0, E=0)\n2025/09/04 15:02:28 - Generate A.0 - Finished processing (I=0, O=0, R=0, W=1, U=0, E=0)\n2025/09/04 15:02:28 - PackageCode.0 - Finished processing (I=0, O=0, R=2, W=2, U=0, E=0)\n2025/09/04 15:02:28 - Out.0 - Finished processing (I=0, O=0, R=2, W=2, U=0, E=0)\n",
+  "lastLogLineNr" : 6,
+  "metrics" : [ {
+    "componentName" : "Generate A",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 0,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 1,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "PackageCode",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 2,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 2,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Generate B",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 0,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 1,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Out",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 2,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 2,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  } ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1756990948441,
+  "childIds" : [ "00b79c21-98ea-47a3-afbe-0f1d5f2a19d0", "a5c6265a-7c74-48b3-abc3-d6e47424795e", "8d4f7961-52e0-4b46-a8c9-f207bedbb089", "c19ae2ce-98dc-466b-a3d8-4630965687e8" ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1756990948440,
+  "containerId" : null
+}

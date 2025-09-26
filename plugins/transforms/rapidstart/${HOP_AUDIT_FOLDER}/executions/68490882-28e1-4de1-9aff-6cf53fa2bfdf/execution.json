@@ -1,0 +1,16 @@
+{
+  "name" : "Generate A",
+  "filename" : null,
+  "id" : "68490882-28e1-4de1-9aff-6cf53fa2bfdf",
+  "parentId" : "d18e3773-8539-4c8e-a93c-31e015f50942",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1756992050504,
+  "executionStartDate" : 1756992050429,
+  "copyNr" : "0"
+}

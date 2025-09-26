@@ -1,7 +1,135 @@
 SLF4J: Class path contains multiple SLF4J providers.
-SLF4J: Found provider [org.slf4j.nop.NOPServiceProvider@5b58ed3c]
-SLF4J: Found provider [org.tinylog.slf4j.TinylogSlf4jServiceProvider@24faea88]
+SLF4J: Found provider [org.slf4j.nop.NOPServiceProvider@7c351808]
+SLF4J: Found provider [org.tinylog.slf4j.TinylogSlf4jServiceProvider@180e6ac4]
 SLF4J: See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual provider is of type [org.slf4j.nop.NOPServiceProvider@5b58ed3c]
-2025/07/16 10:13:19 - Data Migration Tool - Projects enabled
-2025/07/16 10:13:19 - Data Migration Tool - Enabling project : 'Project001'
+SLF4J: Actual provider is of type [org.slf4j.nop.NOPServiceProvider@7c351808]
+GUI-H2DatabaseMeta/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+GUI-MySQLDatabaseMeta/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+GUI-PostgreSQLDatabaseMeta/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.beam.engines.dataflow.BeamDataFlowPipelineEngine/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.beam.engines.dataflow.BeamDataFlowPipelineRunConfiguration/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.beam.engines.direct.BeamDirectPipelineRunConfiguration/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.beam.engines.flink.BeamFlinkPipelineRunConfiguration/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.beam.engines.spark.BeamSparkPipelineRunConfiguration/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.beam.gui.HopBeamGuiPlugin/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.beam.gui.WelcomeBeam/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.execution.sampler.plugins.dataprof.BasicDataProfilingDataSampler/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.execution.sampler.plugins.first.FirstRowsExecutionDataSampler/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.execution.sampler.plugins.last.LastRowsExecutionDataSampler/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.execution.sampler.plugins.random.RandomRowsExecutionDataSampler/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.git.GitGuiPlugin/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.mongo.metadata.MongoDbConnection/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.pipeline.engines.localsingle.LocalSinglePipelineRunConfiguration/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.projects.gui.ProjectsGuiPlugin/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.database.MetaSelectionLineClearDbCacheToolbarItem/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.database.dialog.DatabaseExplorerDialog/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.widget.MetaSelectionLine/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.widget.TableView/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.configuration.tabs.ConfigGeneralOptionsTab/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.configuration.tabs.ConfigGuiOptionsTab/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.configuration.tabs.ConfigPluginOptionsTab/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.configuration.tabs.ConfigVariablesTab/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.execution.ExecutionPerspective/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.execution.PipelineExecutionViewer/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.execution.WorkflowExecutionViewer/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.welcome.WelcomeDialog/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.welcome.WelcomeNavigation/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.welcome.WelcomeWelcome/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.www.service.WebServiceGuiPlugin/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.workflow.actions.pipeline.ActionPipelineGuiPlugin/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.workflow.actions.workflow.ActionWorkflowGuiPlugin/{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.explorer.ExplorerPerspective/A file explorer for your current project{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.configuration.ConfigurationPerspective/A perspective to configure all aspects of Apache Hop{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.vfs.HopVfsFileDialog/Allows you to browse to local or VFS locations{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.execution.caching.CachingFileExecutionInfoLocation/Caching File execution information location GUI elements{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.vfs.dropbox.config.DropboxConfigPlugin/Dropbox{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.execution.profiling.ExecutionDataProfileEditor/Editor for execution data profile metadata{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.execution.ExecutionInfoLocationEditor/Editor for execution information location metadata{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.explorer.config.ExplorerPerspectiveConfigPlugin/Explorer Perspective{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.execution.local.FileExecutionInfoLocation/File execution information location GUI elements{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.execution.remote.RemoteExecutionInfoLocation/File execution information location GUI elements{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.dataorch.HopDataOrchestrationPerspective/Hop Data Orchestration Perspective GUI{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.pluginexplorer.HopPluginExplorePerspective/Hop Plugin Explorer Perspective GUI{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.search.HopSearchPerspective/Hop Search Perspective GUI{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.pipeline.engines.local.LocalPipelineRunConfiguration/Local pipeline run configuration widgets{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.workflow.engines.local.LocalWorkflowRunConfiguration/Local workflow run configuration widgets{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.pipeline.delegates.HopGuiPipelineCheckDelegate/Pipeline Graph Check Delegate{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.pipeline.delegates.HopGuiPipelineGridDelegate/Pipeline Graph Grid Delegate{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.pipeline.delegates.HopGuiPipelineLogDelegate/Pipeline Graph Log Delegate{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.projects.config.ProjectsConfigOptionPlugin/Projects{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.pipeline.engines.remote.RemotePipelineRunConfiguration/Remote pipeline run configuration widgets{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.workflow.engines.remote.RemoteWorkflowRunConfiguration/Remote workflow run configuration widgets{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.HopGui/The main hop graphical user interface{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.pipeline.HopGuiPipelineGraph/The pipeline graph GUI plugin{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.pipeline.config.PipelineRunConfigurationEditor/This dialog allows you to configure the various pipeline run configurations{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.workflow.config.WorkflowRunConfigurationEditor/This dialog allows you to configure the various workflow run configurations{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.dialog.ContextDialog/This dialog presents you all the actions you can take in a given context{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.database.DatabaseMetaEditor/This is the editor for database connection metadata{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.core.variables.resolver.VariableResolverEditor/This is the editor for variable resolver metadata{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.perspective.metadata.MetadataPerspective/This perspective allows you to see and edit all available metadata{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.welcome.WelcomeDialogOptions/Welcome Dialog{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.workflow.delegates.HopGuiWorkflowCheckDelegate/Workflow Graph Check Delegate{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.workflow.delegates.HopGuiWorkflowGridDelegate/Workflow Graph Grid Delegate{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.workflow.delegates.HopGuiWorkflowLogDelegate/Workflow Graph Log Delegate{class org.apache.hop.core.gui.plugin.GuiPluginType}
+org.apache.hop.ui.hopgui.file.workflow.HopGuiWorkflowGraph/Workflow Graph tab{class org.apache.hop.core.gui.plugin.GuiPluginType}
+2025/09/04 11:21:57 - Data Migration Tool - Projects enabled
+2025/09/04 11:21:57 - Data Migration Tool - Enabling project : 'Project001'
+2025/09/04 11:21:57 - General - ERROR: Error loading state map from file './audit/Project001/explorer-perspective-state.json'
+2025/09/04 11:21:57 - General - ERROR: com.fasterxml.jackson.databind.exc.MismatchedInputException: No content to map due to end-of-input
+2025/09/04 11:21:57 - General -  at [Source: (File); line: 1, column: 0]
+2025/09/04 11:21:57 - General - 	at com.fasterxml.jackson.databind.exc.MismatchedInputException.from(MismatchedInputException.java:59)
+2025/09/04 11:21:57 - General - 	at com.fasterxml.jackson.databind.ObjectMapper._initForReading(ObjectMapper.java:4916)
+2025/09/04 11:21:57 - General - 	at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:4818)
+2025/09/04 11:21:57 - General - 	at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:3637)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.history.local.LocalAuditManager.loadAuditStateMap(LocalAuditManager.java:245)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.hopgui.delegates.HopGuiAuditDelegate.openLastFiles(HopGuiAuditDelegate.java:85)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.projects.gui.ProjectsGuiPlugin.enableHopGuiProject(ProjectsGuiPlugin.java:188)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.projects.xp.HopGuiStartProjectLoad.callExtensionPoint(HopGuiStartProjectLoad.java:122)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.core.extension.ExtensionPointMap.callExtensionPoint(ExtensionPointMap.java:149)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.core.extension.ExtensionPointHandler.callExtensionPoint(ExtensionPointHandler.java:41)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.hopgui.HopGui.lambda$1(HopGui.java:444)
+2025/09/04 11:21:57 - General - 	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:40)
+2025/09/04 11:21:57 - General - 	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:132)
+2025/09/04 11:21:57 - General - 	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:4382)
+2025/09/04 11:21:57 - General - 	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:4005)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.core.dialog.BaseDialog.defaultShellHandling(BaseDialog.java:665)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.core.dialog.BaseDialog.defaultShellHandling(BaseDialog.java:629)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.hopgui.welcome.WelcomeDialog.open(WelcomeDialog.java:167)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.hopgui.HopGui.open(HopGui.java:473)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.hopgui.HopGui.main(HopGui.java:364)
+2025/09/04 11:21:57 - General - 	at org.apache.hop.ui.hopgui.Starter.main(Starter.java:10)
+Error in the Hop GUI : Widget is disposed
+org.eclipse.swt.SWTException: Widget is disposed
+	at org.eclipse.swt.SWT.error(SWT.java:4932)
+	at org.eclipse.swt.SWT.error(SWT.java:4847)
+	at org.eclipse.swt.SWT.error(SWT.java:4818)
+	at org.eclipse.swt.widgets.Widget.error(Widget.java:854)
+	at org.eclipse.swt.widgets.Widget.checkWidget(Widget.java:633)
+	at org.eclipse.swt.widgets.Widget.getData(Widget.java:920)
+	at org.apache.hop.ui.hopgui.perspective.metadata.MetadataPerspective.getItems(MetadataPerspective.java:952)
+	at org.apache.hop.ui.hopgui.delegates.HopGuiFileDelegate.saveGuardAllFiles(HopGuiFileDelegate.java:214)
+	at org.apache.hop.ui.hopgui.delegates.HopGuiFileDelegate.fileExit(HopGuiFileDelegate.java:245)
+	at org.apache.hop.ui.hopgui.HopGui.closeEvent(HopGui.java:503)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:91)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4660)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1657)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1680)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1665)
+	at org.eclipse.swt.widgets.Shell.closeWidget(Shell.java:616)
+	at org.eclipse.swt.widgets.Shell.windowShouldClose(Shell.java:2533)
+	at org.eclipse.swt.widgets.Display.windowProc(Display.java:6283)
+	at org.eclipse.swt.internal.cocoa.OS.objc_msgSendSuper(Native Method)
+	at org.eclipse.swt.widgets.Widget.callSuper(Widget.java:239)
+	at org.eclipse.swt.widgets.Widget.windowSendEvent(Widget.java:2407)
+	at org.eclipse.swt.widgets.Shell.windowSendEvent(Shell.java:2502)
+	at org.eclipse.swt.widgets.Display.windowProc(Display.java:6401)
+	at org.eclipse.swt.internal.cocoa.OS.objc_msgSendSuper(Native Method)
+	at org.eclipse.swt.widgets.Display.applicationSendEvent(Display.java:5705)
+	at org.eclipse.swt.widgets.Display.applicationProc(Display.java:5845)
+	at org.eclipse.swt.internal.cocoa.OS.objc_msgSend(Native Method)
+	at org.eclipse.swt.internal.cocoa.NSApplication.sendEvent(NSApplication.java:117)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:4000)
+	at org.apache.hop.ui.hopgui.HopGui.open(HopGui.java:486)
+	at org.apache.hop.ui.hopgui.HopGui.main(HopGui.java:364)
+	at org.apache.hop.ui.hopgui.Starter.main(Starter.java:10)
+

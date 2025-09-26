@@ -1,0 +1,59 @@
+{
+  "executionType" : "Pipeline",
+  "parentId" : null,
+  "id" : "b4e8ff5e-c207-430d-8886-fc2e9cafdd1d",
+  "name" : "ForUT",
+  "copyNr" : null,
+  "loggingText" : "2025/09/04 11:12:45 - ForUT - Executing this pipeline using the Local Pipeline Engine with run configuration 'local'\n2025/09/04 11:12:45 - ForUT - Execution started for pipeline [ForUT]\n2025/09/04 11:12:45 - Injector.0 - Finished processing (I=0, O=0, R=2, W=2, U=0, E=0)\n2025/09/04 11:12:45 - PackageCode.0 - Finished processing (I=0, O=0, R=2, W=2, U=0, E=0)\n2025/09/04 11:12:45 - Out.0 - Finished processing (I=0, O=0, R=2, W=2, U=0, E=0)\n",
+  "lastLogLineNr" : 5,
+  "metrics" : [ {
+    "componentName" : "Injector",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 2,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 2,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "PackageCode",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 2,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 2,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Out",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 2,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 2,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  } ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1756977165445,
+  "childIds" : [ "2e4ceeb2-8123-414c-a124-59377fc2fc03", "adef6062-fd8a-4741-ad38-52a6fa4119e9", "1ff0bcb2-a3ae-4e43-b4bc-f38afcbe05fe" ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1756977165444,
+  "containerId" : null
+}
