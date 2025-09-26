@@ -55,6 +55,7 @@
             <version>${org.eclipse.platform.version}</version>
             <scope>provided</scope>
         </dependency>
+
     </dependencies>
 
     <profiles>
@@ -120,6 +121,31 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>com.github.albfernandez</groupId>
+                    <artifactId>juniversalchardet</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-sample</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-sample</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-databases-mysql</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-databases-postgresql</artifactId>
                     <version>${project.version}</version>
@@ -152,6 +178,13 @@
                     <scope>provided</scope>
                 </dependency>
 
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-plugins-actions</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                    <scope>provided</scope>
+                </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-plugins-transforms</artifactId>
@@ -825,6 +858,12 @@
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-salesforce</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-transform-sample</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>

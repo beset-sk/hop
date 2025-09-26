@@ -132,6 +132,7 @@
         <module>rowsfromresult</module>
         <module>rowstoresult</module>
         <module>salesforce</module>
+        <module>sample</module>
         <module>samplerows</module>
         <module>sasinput</module>
         <module>schemamapping</module>

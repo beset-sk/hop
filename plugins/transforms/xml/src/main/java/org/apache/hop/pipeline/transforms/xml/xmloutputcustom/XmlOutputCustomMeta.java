@@ -94,6 +94,10 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
   @Injection(name = "ZIPPED")
   private boolean zipped;
 
+  /** The standalone to use for reading */
+  @Injection(name = "STANDALONE")
+  private boolean standalone;
+
   /** The encoding to use for reading: null or empty string means system default encoding */
   @Injection(name = "ENCODING")
   private String encoding;
@@ -280,6 +284,20 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
   }
 
   /**
+   * @return Returns the standalone.
+   */
+  public boolean isStandalone() {
+    return standalone;
+  }
+
+  /**
+   * @param standalone The standalone to set.
+   */
+  public void setStandalone(boolean standalone) {
+    this.standalone = standalone;
+  }
+
+  /**
    * @return Returns the outputFields.
    */
   public XmlFieldCustom[] getOutputFields() {
@@ -315,6 +333,7 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
   public void loadXml(Node transformNode, IHopMetadataProvider metadataProvider)
       throws HopXmlException {
     try {
+      setStandalone("Y".equalsIgnoreCase(XmlHandler.getTagValue(transformNode, "standalone")));
       setEncoding(XmlHandler.getTagValue(transformNode, "encoding"));
       setNameSpace(XmlHandler.getTagValue(transformNode, "name_space"));
       setMainElement(XmlHandler.getTagValue(transformNode, "xml_main_element"));
@@ -405,6 +424,7 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
     addToResultFilenames = false;
     zipped = false;
     splitEvery = 0;
+    standalone = false;
     encoding = Const.XML_ENCODING;
     nameSpace = "";
     dateTimeFormat = null;
@@ -488,7 +508,7 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
 
     if (zipped) {
       if (ziparchive) {
-        retval += ".zip";
+        retval += ".gz";
       } else {
         if (realextension != null && realextension.length() != 0) {
           retval += "." + realextension;
@@ -541,6 +561,7 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
     StringBuffer retval = new StringBuffer(600);
 
     retval.append("    ").append(XmlHandler.addTagValue("encoding", encoding));
+    retval.append("    ").append(XmlHandler.addTagValue("standalone", standalone));
     retval.append("    ").append(XmlHandler.addTagValue("name_space", nameSpace));
     retval.append("    ").append(XmlHandler.addTagValue("xml_main_element", mainElement));
     retval.append("    ").append(XmlHandler.addTagValue("xml_repeat_element", repeatElement));
@@ -766,7 +787,8 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
       throws HopException {
     try {
       // The object that we're modifying here is a copy of the original!
-      // So let's change the filename from relative to absolute by grabbing the file object...
+      // So let's change the filename from relative to absolute by grabbing the file
+      // object...
       //
       if (!Utils.isEmpty(fileName)) {
         FileObject fileObject = HopVfs.getFileObject(variables.resolve(fileName), variables);

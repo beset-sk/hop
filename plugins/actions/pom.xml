@@ -31,6 +31,7 @@
 
     <modules>
         <module>abort</module>
+        <module>action-sample</module>
         <module>addresultfilenames</module>
         <module>as400command</module>
         <module>checkdbconnection</module>
@@ -86,5 +87,6 @@
         <module>writetolog</module>
         <module>xml</module>
         <module>zipfile</module>
+
     </modules>
 </project>
