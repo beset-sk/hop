@@ -1,26 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 17.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-     width="42px" height="42px" viewBox="0 0 42 42" enable-background="new 0 0 42 42">
-    <g>
-        <rect x="7.553" y="31.055" fill="#FFFFFF" width="3.666" height="3.667"/>
-        <polygon fill="#0E3A5A" points="7.553,9.903 5.729,9.903 5.729,11.803 12.119,11.802 12.119,5.475 10.218,5.475 10.218,7.313
-		10.218,8.559 8.973,7.313 4.993,3.334 3.649,4.677 7.553,8.581 8.875,9.903 	"/>
-        <rect x="32.797" y="17.784" fill="#0E3A5A" width="1.699" height="2.396"/>
-        <rect x="25.712" y="8.251" fill="#0E3A5A" width="2.524" height="1.699"/>
-        <rect x="29.236" y="8.251" fill="#0E3A5A" width="2.525" height="1.699"/>
-        <rect x="32.797" y="24.575" fill="#0E3A5A" width="1.699" height="2.395"/>
-        <rect x="32.797" y="14.389" fill="#0E3A5A" width="1.699" height="2.395"/>
-        <polygon fill="#0E3A5A"
-                 points="32.797,9.994 34.496,9.994 34.496,8.251 32.761,8.251 32.761,9.95 32.797,9.95 	"/>
-        <rect x="32.797" y="10.994" fill="#0E3A5A" width="1.699" height="2.396"/>
-        <rect x="32.797" y="21.179" fill="#0E3A5A" width="1.699" height="2.396"/>
-        <polygon fill="#0E3A5A" points="21.187,8.251 19.671,8.251 18.663,9.259 18.663,9.95 21.187,9.95 	"/>
-        <rect x="22.187" y="8.251" fill="#0E3A5A" width="2.524" height="1.699"/>
-        <rect x="31.553" y="31.055" fill="#FFFFFF" width="3.666" height="3.667"/>
-        <path fill="#0E3A5A" d="M34.496,29.356v-1.387h-1.699v1.387h-2.942v3.172H12.919v-3.172h-2.7V17.703l-1.699,1.699v9.954H5.854
-		v7.065h7.064v-2.194h16.936v2.194h7.064v-7.065H34.496z M11.219,34.722H7.553v-3.667h3.666V34.722z M35.219,34.722h-3.666v-3.667
-		h3.666V34.722z"/>
+<svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <rect width="42" height="42" fill="#7BAE79" fill-rule="evenodd" />
+    <g transform="translate(3.649 3.334)">
+      <rect width="3.666" height="3.667" fill="#FFFFFF" fill-rule="evenodd" transform="translate(3.904 27.721)" />
+      <path d="M3.904 6.569L2.08 6.569L2.08 8.469L8.47 8.468L8.47 2.141L6.569 2.141L6.569 3.979L6.569 5.225L5.324 3.979L1.344 0L0 1.343L3.904 5.247L5.226 6.569L3.904 6.569Z" fill="#0E3A5A" fill-rule="evenodd" />
+      <rect width="1.699" height="2.396" fill="#0E3A5A" fill-rule="evenodd" transform="translate(29.148 14.45)" />
+      <rect width="2.524" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(22.063 4.917)" />
+      <rect width="2.525" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(25.587 4.917)" />
+      <rect width="1.699" height="2.395" fill="#0E3A5A" fill-rule="evenodd" transform="translate(29.148 21.241)" />
+      <rect width="1.699" height="2.395" fill="#0E3A5A" fill-rule="evenodd" transform="translate(29.148 11.055)" />
+      <path d="M0.0359993 1.743L1.735 1.743L1.735 0L0 0L0 1.699L0.0359993 1.699L0.0359993 1.743Z" fill="#0E3A5A" fill-rule="evenodd" transform="translate(29.112 4.917)" />
+      <rect width="1.699" height="2.396" fill="#0E3A5A" fill-rule="evenodd" transform="translate(29.148 7.66)" />
+      <rect width="1.699" height="2.396" fill="#0E3A5A" fill-rule="evenodd" transform="translate(29.148 17.845)" />
+      <path d="M2.524 0L1.008 0L0 1.008L0 1.699L2.524 1.699L2.524 0Z" fill="#0E3A5A" fill-rule="evenodd" transform="translate(15.014 4.917)" />
+      <rect width="2.524" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(18.538 4.917)" />
+      <rect width="3.666" height="3.667" fill="#FFFFFF" fill-rule="evenodd" transform="translate(27.904 27.721)" />
+      <path d="M28.642 11.653L28.642 10.266L26.943 10.266L26.943 11.653L24.001 11.653L24.001 14.825L7.065 14.825L7.065 11.653L4.365 11.653L4.365 0L2.666 1.699L2.666 11.653L0 11.653L0 18.718L7.064 18.718L7.064 16.524L24 16.524L24 18.718L31.064 18.718L31.064 11.653L28.642 11.653L28.642 11.653ZM5.365 17.019L1.699 17.019L1.699 13.352L5.365 13.352L5.365 17.019L5.365 17.019ZM29.365 17.019L25.699 17.019L25.699 13.352L29.365 13.352L29.365 17.019L29.365 17.019Z" fill="#0E3A5A" transform="translate(2.205 14.369)" />
     </g>
+  </g>
 </svg>

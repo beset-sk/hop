@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 17.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-     width="42px" height="42px" viewBox="0 0 42 42" enable-background="new 0 0 42 42">
-    <g>
-        <polygon fill="#0E3A5A" points="37.007,33.143 37.007,36.226 31.781,31.001 30.438,32.345 35.663,37.57 32.518,37.57
-		32.518,39.471 38.907,39.47 38.907,33.143 	"/>
-        <rect x="28.741" y="8.741" fill="#0E3A5A" width="2.525" height="1.699"/>
-        <polygon fill="#0E3A5A" points="32.302,24.066 32.854,24.066 34.001,22.918 34.001,21.67 32.302,21.67 	"/>
-        <polygon fill="#0E3A5A"
-                 points="32.302,10.485 34.001,10.485 34.001,8.741 32.267,8.741 32.267,10.441 32.302,10.441 	"/>
-        <rect x="18.168" y="8.741" fill="#0E3A5A" width="2.524" height="1.699"/>
-        <rect x="25.217" y="8.741" fill="#0E3A5A" width="2.524" height="1.699"/>
-        <rect x="21.693" y="8.741" fill="#0E3A5A" width="2.524" height="1.699"/>
-        <rect x="14.645" y="8.741" fill="#0E3A5A" width="2.523" height="1.699"/>
-        <rect x="32.302" y="18.275" fill="#0E3A5A" width="1.699" height="2.396"/>
-        <rect x="32.302" y="14.88" fill="#0E3A5A" width="1.699" height="2.395"/>
-        <rect x="32.302" y="11.485" fill="#0E3A5A" width="1.699" height="2.396"/>
-        <rect x="7.059" y="7.804" fill="#FFFFFF" width="3.666" height="3.667"/>
-        <rect x="7.059" y="31.546" fill="#FFFFFF" width="3.666" height="3.667"/>
-        <path fill="#0E3A5A" d="M12.424,29.847h-2.7V13.17h2.7v-2.729h1.221V8.741h-1.221V6.105H5.36v7.065h2.665v16.677H5.36v7.065h7.064
-		v-2.194h9.777l1.699-1.699H12.424V29.847z M7.059,11.471V7.804h3.666v3.667H7.059z M10.725,35.213H7.059v-3.667h3.666V35.213z"/>
+<svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <rect width="42" height="42" fill="#06FF00" fill-rule="evenodd" />
+    <g transform="translate(5.36 6.105)">
+      <path d="M6.569 2.142L6.569 5.225L1.343 0L0 1.344L5.225 6.569L2.08 6.569L2.08 8.47L8.469 8.469L8.469 2.142L6.569 2.142Z" fill="#0E3A5A" fill-rule="evenodd" transform="translate(25.078 24.896)" />
+      <rect width="2.525" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(23.381 2.636)" />
+      <path d="M0 2.396L0.552002 2.396L1.699 1.248L1.699 0L0 0L0 2.396Z" fill="#0E3A5A" fill-rule="evenodd" transform="translate(26.942 15.565)" />
+      <path d="M0.0349998 1.744L1.734 1.744L1.734 0L0 0L0 1.7L0.0349998 1.7L0.0349998 1.744Z" fill="#0E3A5A" fill-rule="evenodd" transform="translate(26.907 2.636)" />
+      <rect width="2.524" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(12.808 2.636)" />
+      <rect width="2.524" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(19.857 2.636)" />
+      <rect width="2.524" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(16.333 2.636)" />
+      <rect width="2.523" height="1.699" fill="#0E3A5A" fill-rule="evenodd" transform="translate(9.285 2.636)" />
+      <rect width="1.699" height="2.396" fill="#0E3A5A" fill-rule="evenodd" transform="translate(26.942 12.17)" />
+      <rect width="1.699" height="2.395" fill="#0E3A5A" fill-rule="evenodd" transform="translate(26.942 8.775)" />
+      <rect width="1.699" height="2.396" fill="#0E3A5A" fill-rule="evenodd" transform="translate(26.942 5.38)" />
+      <rect width="3.666" height="3.667" fill="#FFFFFF" fill-rule="evenodd" transform="translate(1.699 1.699)" />
+      <rect width="3.666" height="3.667" fill="#FFFFFF" fill-rule="evenodd" transform="translate(1.699 25.441)" />
+      <path d="M7.064 23.742L4.364 23.742L4.364 7.065L7.064 7.065L7.064 4.336L8.285 4.336L8.285 2.636L7.064 2.636L7.064 0L0 0L0 7.065L2.665 7.065L2.665 23.742L0 23.742L0 30.807L7.064 30.807L7.064 28.613L16.841 28.613L18.54 26.914L7.064 26.914L7.064 23.742L7.064 23.742ZM1.699 5.366L1.699 1.699L5.365 1.699L5.365 5.366L1.699 5.366L1.699 5.366ZM5.365 29.108L1.699 29.108L1.699 25.441L5.365 25.441L5.365 29.108L5.365 29.108Z" fill="#0E3A5A" />
     </g>
+  </g>
 </svg>

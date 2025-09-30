@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 17.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-     width="42px" height="42px" viewBox="0 0 42 42" enable-background="new 0 0 42 42">
-    <rect x="14.365" y="17.552" fill="#0E3A5A" width="11.902" height="0.801"/>
-    <polygon fill="#0E3A5A" points="9.148,5.794 9.148,8.877 3.923,3.652 2.579,4.996 7.805,10.221 4.659,10.221 4.659,12.122
-	11.049,12.121 11.049,5.794 "/>
-    <g>
-        <rect x="14.365" y="17.552" fill="none" width="11.902" height="0.801"/>
-        <path fill="#C9E8FB" d="M11.468,33.541h17.694l-0.058-20.152h-4.257V9.131h-6.251l-7.128,7.128V33.541z M14.365,17.552h11.902
-		v0.801H14.365V17.552z M14.365,20.935h11.902v0.801H14.365V20.935z M17.566,24.318v0.801h-3.201v-0.801H17.566z"/>
-        <polygon fill="#0E3A5A" points="30.867,35.24 30.805,13.398 29.095,11.689 26.547,11.689 26.547,9.141 24.837,7.431 20.295,7.431
-		18.596,9.131 24.847,9.131 24.847,13.388 29.104,13.388 29.162,33.541 11.468,33.541 11.468,16.258 9.768,17.959 9.768,35.24 	"/>
-        <rect x="14.365" y="20.935" fill="#0E3A5A" width="11.902" height="0.801"/>
-        <rect x="14.365" y="24.318" fill="#0E3A5A" width="3.201" height="0.801"/>
+<svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <rect width="42" height="42" fill="#7BAE79" fill-rule="evenodd" />
+    <rect width="11.902" height="0.801" fill="#0E3A5A" fill-rule="evenodd" transform="translate(14.365 17.552)" />
+    <path d="M6.569 2.142L6.569 5.225L1.344 0L0 1.344L5.226 6.569L2.08 6.569L2.08 8.47L8.47 8.469L8.47 2.142L6.569 2.142Z" fill="#0E3A5A" fill-rule="evenodd" transform="translate(2.579 3.652)" />
+    <g transform="translate(9.768 7.431)">
+      <rect width="11.902" height="0.801" transform="translate(4.597 10.121)" />
+      <path d="M0 24.41L17.694 24.41L17.636 4.258L13.379 4.258L13.379 0L7.128 0L0 7.128L0 24.41L0 24.41ZM2.897 8.421L14.799 8.421L14.799 9.222L2.897 9.222L2.897 8.421L2.897 8.421ZM2.897 11.804L14.799 11.804L14.799 12.605L2.897 12.605L2.897 11.804L2.897 11.804ZM6.098 15.187L6.098 15.988L2.897 15.988L2.897 15.187L6.098 15.187L6.098 15.187Z" fill="#C9E8FB" transform="translate(1.7 1.7)" />
+      <path d="M21.099 27.809L21.037 5.967L19.327 4.258L16.779 4.258L16.779 1.71L15.069 0L10.527 0L8.828 1.7L15.079 1.7L15.079 5.957L19.336 5.957L19.394 26.11L1.7 26.11L1.7 8.827L0 10.528L0 27.809L21.099 27.809Z" fill="#0E3A5A" fill-rule="evenodd" />
+      <rect width="11.902" height="0.801" fill="#0E3A5A" fill-rule="evenodd" transform="translate(4.597 13.504)" />
+      <rect width="3.201" height="0.801" fill="#0E3A5A" fill-rule="evenodd" transform="translate(4.597 16.887)" />
     </g>
+  </g>
 </svg>
