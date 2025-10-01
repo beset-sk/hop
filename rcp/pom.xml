@@ -73,6 +73,12 @@
                 </dependencies>
             </dependencyManagement>
             <dependencies>
+
+                <dependency>
+                    <groupId>com.github.albfernandez</groupId>
+                    <artifactId>juniversalchardet</artifactId>
+                    <scope>provided</scope>
+                </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-action-join</artifactId>
@@ -91,6 +97,20 @@
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-action-repeat</artifactId>
                     <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-sample</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-action-sample</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
@@ -117,26 +137,6 @@
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-databases-mysql</artifactId>
                     <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-
-                <dependency>
-                    <groupId>com.github.albfernandez</groupId>
-                    <artifactId>juniversalchardet</artifactId>
-                    <scope>provided</scope>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-action-sample</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-action-sample</artifactId>
-                    <version>${project.version}</version>
-                    <type>pom</type>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>

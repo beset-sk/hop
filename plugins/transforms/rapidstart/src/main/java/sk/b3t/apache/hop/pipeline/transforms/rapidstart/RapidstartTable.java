@@ -65,9 +65,6 @@ public class RapidstartTable extends BaseTransform<RapidstartTableMeta, Rapidsta
     Object[] out = r;
 
     // ak potrebuješ pracovať s Package/Code:
-    String pkg = resolve(getMeta().getPackageName());
-    String code = resolve(getMeta().getCode());
-    // ... vlastná logika ...
 
     putRow(data.outputRowMeta, out);
     return true;

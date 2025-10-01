@@ -180,7 +180,7 @@
         <module>xml</module>
         <module>yamlinput</module>
         <module>zipfile</module>
-        <module>rapidstarttable</module>
+
     </modules>
 
 </project>
