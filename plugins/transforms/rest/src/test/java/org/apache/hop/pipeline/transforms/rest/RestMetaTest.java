@@ -17,15 +17,14 @@
 
 package org.apache.hop.pipeline.transforms.rest;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.ICheckResult;
 import org.apache.hop.core.encryption.Encr;
@@ -38,7 +37,7 @@ import org.apache.hop.core.row.value.ValueMetaString;
 import org.apache.hop.core.util.EnvUtil;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.core.variables.Variables;
-import org.apache.hop.junit.rules.RestoreHopEngineEnvironment;
+import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
 import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.ITransformMeta;
@@ -52,19 +51,20 @@ import org.apache.hop.pipeline.transforms.rest.fields.HeaderField;
 import org.apache.hop.pipeline.transforms.rest.fields.MatrixParameterField;
 import org.apache.hop.pipeline.transforms.rest.fields.ParameterField;
 import org.apache.hop.pipeline.transforms.rest.fields.ResultField;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class RestMetaTest implements IInitializer<ITransformMeta> {
+class RestMetaTest implements IInitializer<ITransformMeta> {
 
   LoadSaveTester loadSaveTester;
   Class<RestMeta> testMetaClass = RestMeta.class;
 
-  @ClassRule public static RestoreHopEngineEnvironment env = new RestoreHopEngineEnvironment();
+  @RegisterExtension
+  static RestoreHopEngineEnvironmentExtension env = new RestoreHopEngineEnvironmentExtension();
 
-  @BeforeClass
-  public static void beforeClass() throws HopException {
+  @BeforeAll
+  static void beforeClass() throws HopException {
     PluginRegistry.addPluginType(TwoWayPasswordEncoderPluginType.getInstance());
     PluginRegistry.init();
     String passwordEncoderPluginID =
@@ -73,7 +73,7 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
   }
 
   @Test
-  public void testLoadSaveRoundTrip() throws HopException {
+  void testLoadSaveRoundTrip() throws HopException {
     List<String> attributes =
         Arrays.asList(
             "applicationType",
@@ -97,18 +97,7 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
             "headerFields",
             "parameterFields",
             "matrixParameterFields",
-            "resultField"
-            //            "headerField",
-            //            "headerName",
-            //            "parameterField",
-            //            "parameterName",
-            //            "matrixParameterField",
-            //            "matrixParameterName",
-            //            "fieldName",
-            //            "resultCodeFieldName",
-            //            "responseTimeFieldName",
-            //            "responseHeaderFieldName"
-            );
+            "resultField");
 
     Map<String, String> getterMap = new HashMap<>();
     getterMap.put("applicationType", "getApplicationType");
@@ -180,7 +169,7 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
             validatorFactory,
             ResultField.class,
             Arrays.asList("fieldName", "code", "responseTime", "responseHeader"),
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("fieldname", "getFieldName");
                 put("code", "getCode");
@@ -188,7 +177,7 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
                 put("responseHeader", "getResponseHeader");
               }
             },
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("fieldname", "setFieldName");
                 put("code", "setCode");
@@ -203,13 +192,13 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
             validatorFactory,
             HeaderField.class,
             Arrays.asList("name", "headerField"),
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("name", "getName");
                 put("headerField", "getHeaderField");
               }
             },
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("bame", "setName");
                 put("headerField", "setHeaderField");
@@ -222,13 +211,13 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
             validatorFactory,
             ParameterField.class,
             Arrays.asList("name", "headerField"),
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("name", "getName");
                 put("headerField", "getHeaderField");
               }
             },
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("bame", "setName");
                 put("headerField", "setHeaderField");
@@ -241,48 +230,22 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
             validatorFactory,
             MatrixParameterField.class,
             Arrays.asList("name", "headerField"),
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("name", "getName");
                 put("headerField", "getHeaderField");
               }
             },
-            new HashMap<String, String>() {
+            new HashMap<>() {
               {
                 put("bame", "setName");
                 put("headerField", "setHeaderField");
               }
             }));
-
-    //    Map<String, IFieldLoadSaveValidator<?>> fieldLoadSaveValidatorAttributeMap = new
-    // HashMap<>();
-    //
-    //    // Arrays need to be consistent length
-    //    IFieldLoadSaveValidator<String[]> stringArrayLoadSaveValidator =
-    //        new ArrayLoadSaveValidator<>(new StringLoadSaveValidator(), 25);
-    //    fieldLoadSaveValidatorAttributeMap.put("headerField", stringArrayLoadSaveValidator);
-    //    fieldLoadSaveValidatorAttributeMap.put("headerName", stringArrayLoadSaveValidator);
-    //    fieldLoadSaveValidatorAttributeMap.put("parameterField", stringArrayLoadSaveValidator);
-    //    fieldLoadSaveValidatorAttributeMap.put("parameterName", stringArrayLoadSaveValidator);
-    //    fieldLoadSaveValidatorAttributeMap.put("matrixParameterField",
-    // stringArrayLoadSaveValidator);
-    //    fieldLoadSaveValidatorAttributeMap.put("matrixParameterName",
-    // stringArrayLoadSaveValidator);
-    //
-    //    LoadSaveTester<RestMeta> loadSaveTester =
-    //        new LoadSaveTester<>(
-    //            RestMeta.class,
-    //            attributes,
-    //            new HashMap<>(),
-    //            new HashMap<>(),
-    //            fieldLoadSaveValidatorAttributeMap,
-    //            new HashMap<>());
-
-    //    loadSaveTester.testSerialization();
   }
 
   @Test
-  public void testTransformChecks() {
+  void testTransformChecks() {
     RestMeta meta = new RestMeta();
     List<ICheckResult> remarks = new ArrayList<>();
     PipelineMeta pipelineMeta = new PipelineMeta();
@@ -315,20 +278,18 @@ public class RestMetaTest implements IInitializer<ITransformMeta> {
   }
 
   private static int getCheckResultErrorCount(List<ICheckResult> remarks) {
-    return remarks.stream()
-        .filter(p -> p.getType() == ICheckResult.TYPE_RESULT_ERROR)
-        .collect(Collectors.toList())
-        .size();
+    return (int)
+        remarks.stream().filter(p -> p.getType() == ICheckResult.TYPE_RESULT_ERROR).count();
   }
 
   @Test
-  public void testEntityEnclosingMethods() {
+  void testEntityEnclosingMethods() {
     assertTrue(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_POST));
     assertTrue(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_PUT));
     assertTrue(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_PATCH));
+    assertTrue(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_DELETE));
 
     assertFalse(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_GET));
-    assertFalse(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_DELETE));
     assertFalse(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_HEAD));
     assertFalse(RestMeta.isActiveBody(RestMeta.HTTP_METHOD_OPTIONS));
   }

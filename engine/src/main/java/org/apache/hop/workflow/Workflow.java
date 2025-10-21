@@ -149,8 +149,6 @@ public abstract class Workflow extends Variables
   /** The result of the workflow, after execution. */
   protected Result result;
 
-  protected boolean interactive;
-
   protected List<IExecutionFinishedListener<IWorkflowEngine<WorkflowMeta>>>
       executionFinishedListeners;
   protected List<IExecutionStartedListener<IWorkflowEngine<WorkflowMeta>>>
@@ -681,6 +679,24 @@ public abstract class Workflow extends Variables
       return res;
     }
 
+    // If previous is not null then that action has finished
+    if (previous != null) {
+      if (log.isBasic()) {
+        log.logBasic(
+            BaseMessages.getString(
+                PKG,
+                "Workflow.Log.FinishedAction",
+                previous.getName(),
+                previousResult.getResult() + ""));
+      }
+    }
+
+    // Start this action!
+    if (log.isBasic()) {
+      log.logBasic(
+          BaseMessages.getString(PKG, "Workflow.Log.StartingAction", actionMeta.getName()));
+    }
+
     // if we didn't have a previous result, create one, otherwise, copy the content...
     //
     final Result newResult;
@@ -746,10 +762,8 @@ public abstract class Workflow extends Variables
         actionListener.beforeExecution(this, actionMeta, cloneAction);
       }
 
-      // TODO: Remove interactive mode, the JOIN action use active actions to work.
-      if (interactive) {
-        getActiveActions().add(actionMeta.clone());
-      }
+      activeActions.add(actionMeta.clone());
+
       log.snap(Metrics.METRIC_ACTION_START, cloneAction.toString());
       newResult = cloneAction.execute(prevResult, nr);
       log.snap(Metrics.METRIC_ACTION_STOP, cloneAction.toString());
@@ -757,9 +771,7 @@ public abstract class Workflow extends Variables
       // Action execution duration
       newResult.setElapsedTimeMillis(System.currentTimeMillis() - start);
 
-      if (interactive) {
-        getActiveActions().remove(actionMeta);
-      }
+      activeActions.remove(actionMeta);
 
       for (IActionListener actionListener : actionListeners) {
         actionListener.afterExecution(this, actionMeta, cloneAction, newResult);
@@ -853,12 +865,6 @@ public abstract class Workflow extends Variables
           }
         }
 
-        // Start this next action!
-        if (log.isBasic()) {
-          log.logBasic(
-              BaseMessages.getString(PKG, "Workflow.Log.StartingAction", nextAction.getName()));
-        }
-
         // Pass along the previous result, perhaps the next workflow can use it...
         // However, set the number of errors back to 0 (if it should be reset)
         // When an evaluation is executed the errors e.g. should not be reset.
@@ -909,14 +915,6 @@ public abstract class Workflow extends Variables
             throw new HopException(
                 BaseMessages.getString(PKG, "Workflow.Log.UnexpectedError", nextAction.toString()),
                 e);
-          }
-          if (log.isBasic()) {
-            log.logBasic(
-                BaseMessages.getString(
-                    PKG,
-                    "Workflow.Log.FinishedAction",
-                    nextAction.getName(),
-                    res.getResult() + ""));
           }
         }
       }
@@ -981,6 +979,14 @@ public abstract class Workflow extends Variables
     //
     if (res.getNrErrors() > 0) {
       res.setResult(false);
+    }
+    // Log the final action that has finished
+    if (res.getEntryNr() == nr) {
+      if (log.isBasic()) {
+        log.logBasic(
+            BaseMessages.getString(
+                PKG, "Workflow.Log.FinishedAction", actionMeta.getName(), res.getResult() + ""));
+      }
     }
 
     return res;
@@ -1487,7 +1493,7 @@ public abstract class Workflow extends Variables
    */
   @Override
   public boolean isInteractive() {
-    return interactive;
+    return true;
   }
 
   /**
@@ -1496,9 +1502,7 @@ public abstract class Workflow extends Variables
    * @param interactive the interactive to set
    */
   @Override
-  public void setInteractive(boolean interactive) {
-    this.interactive = interactive;
-  }
+  public void setInteractive(boolean interactive) {}
 
   /**
    * Gets the active actions.

@@ -415,7 +415,7 @@ public abstract class BaseDialog extends Dialog {
 
     String filename = null;
     if (!doIt.get() || dialog.open() != null) {
-      filename = FilenameUtils.concat(dialog.getFilterPath(), dialog.getFileName());
+      filename = buildFilename(dialog.getFilterPath(), dialog.getFileName());
       try {
         HopGuiFileOpenedExtension openedExtension =
             new HopGuiFileOpenedExtension(dialog, variables, filename);
@@ -438,6 +438,23 @@ public abstract class BaseDialog extends Dialog {
     return filename;
   }
 
+  private static String buildFilename(String filterPath, String fileName) {
+    if (StringUtils.isEmpty(filterPath)) {
+      return fileName;
+    }
+    // Is this reading from a VFS URL?
+    //
+    if (filterPath.contains("://") || filterPath.contains(":///")) {
+      if (filterPath.endsWith("/")) {
+        return filterPath + fileName;
+      } else {
+        return filterPath + "/" + fileName;
+      }
+    } else {
+      return FilenameUtils.concat(filterPath, fileName);
+    }
+  }
+
   public static String presentDirectoryDialog(Shell shell) {
     return presentDirectoryDialog(shell, null, null);
   }
@@ -448,6 +465,23 @@ public abstract class BaseDialog extends Dialog {
 
   public static String presentDirectoryDialog(
       Shell shell, TextVar textVar, String message, IVariables variables) {
+    String path = null;
+    if (textVar != null && textVar.getText() != null) {
+      path = textVar.getText();
+    }
+
+    String directory = presentDirectoryDialog(shell, path, message, variables);
+
+    // Set the text box to the new selection
+    if (textVar != null && directory != null) {
+      textVar.setText(directory);
+    }
+
+    return directory;
+  }
+
+  public static String presentDirectoryDialog(
+      Shell shell, String path, String message, IVariables variables) {
 
     boolean useNativeFileDialog =
         "Y"
@@ -465,8 +499,8 @@ public abstract class BaseDialog extends Dialog {
       directoryDialog.setMessage(message);
     }
     directoryDialog.setText(BaseMessages.getString(PKG, "BaseDialog.OpenDirectory"));
-    if (textVar != null && variables != null && textVar.getText() != null) {
-      directoryDialog.setFilterPath(variables.resolve(textVar.getText()));
+    if (variables != null && path != null) {
+      directoryDialog.setFilterPath(variables.resolve(path));
     }
     String directoryName = null;
 
@@ -493,11 +527,6 @@ public abstract class BaseDialog extends Dialog {
         }
       } catch (Exception xe) {
         LogChannel.UI.logError("Error handling extension point 'HopGuiDirectorySelected'", xe);
-      }
-
-      // Set the text box to the new selection
-      if (textVar != null && directoryName != null) {
-        textVar.setText(directoryName);
       }
     }
 
