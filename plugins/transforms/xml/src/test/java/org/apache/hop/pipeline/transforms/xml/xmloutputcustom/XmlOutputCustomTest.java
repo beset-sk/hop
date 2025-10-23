@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.hop.core.exception.HopException;
@@ -103,10 +104,11 @@ public class XmlOutputCustomTest {
       throws HopException, XMLStreamException {
     xmlOutput.init();
 
-    xmlOutputData.writer = mock(XMLStreamWriter.class);
+    xmlOutputData.writer = (XMLEventWriter) mock(XMLStreamWriter.class);
     xmlOutput.writeRowAttributes(rowWithData);
     xmlOutput.dispose();
-    verify(xmlOutputData.writer, times(rowWithData.length)).writeAttribute(any(), any());
+    ((XMLStreamWriter) verify(xmlOutputData.writer, times(rowWithData.length)))
+        .writeAttribute(any(), any());
     verify(xmlOutput, atLeastOnce()).closeOutputStream(any());
   }
 
@@ -135,10 +137,11 @@ public class XmlOutputCustomTest {
 
     xmlOutput.init();
 
-    xmlOutputData.writer = mock(XMLStreamWriter.class);
+    xmlOutputData.writer = (XMLEventWriter) mock(XMLStreamWriter.class);
     xmlOutput.writeRowAttributes(rowWithNullData);
     xmlOutput.dispose();
-    verify(xmlOutputData.writer, times(writeNullInvocationExpected)).writeAttribute(any(), any());
+    ((XMLStreamWriter) verify(xmlOutputData.writer, times(writeNullInvocationExpected)))
+        .writeAttribute(any(), any());
     verify(xmlOutput, atLeastOnce()).closeOutputStream(any());
   }
 

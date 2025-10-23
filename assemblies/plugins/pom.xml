@@ -739,12 +739,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.apache.hop</groupId>
             <artifactId>hop-tech-cassandra</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.apache.hop</groupId>
             <artifactId>hop-tech-databricks</artifactId>
