@@ -146,12 +146,6 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-databases-mysql</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-databases-postgresql</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -303,12 +297,6 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-constant</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-cratedbbulkloader</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -421,12 +409,12 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
-                <!--dependency>
+                <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-excel</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
-                </dependency -->
+                </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-execinfo</artifactId>
@@ -465,12 +453,6 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-fieldsplitter</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-fileexists</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -496,12 +478,6 @@
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-filestoresult</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-filterrows</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
@@ -556,12 +532,6 @@
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-getvariable</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-groupby</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
@@ -673,18 +643,7 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-memgroupby</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-mergejoin</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
+
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-mergejoin</artifactId>
@@ -844,12 +803,6 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-rowgenerator</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-rowsfromresult</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -940,12 +893,6 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-sort</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-sortedmerge</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -1000,12 +947,6 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-streamlookup</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-streamschemamerge</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -1019,12 +960,6 @@
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-stringoperations</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-switchcase</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
@@ -1066,12 +1001,6 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-tableinput</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-tableoutput</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -1097,12 +1026,6 @@
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-tokenreplacement</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hop</groupId>
-                    <artifactId>hop-transform-uniquerows</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
@@ -1184,8 +1107,18 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
+                <dependency>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi</artifactId>
+                    <scope>provided</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.apache.logging.log4j</groupId>
+                            <artifactId>log4j-api</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
             </dependencies>
-
         </profile>
     </profiles>
 
