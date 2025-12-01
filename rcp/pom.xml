@@ -421,12 +421,12 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
-                <!--dependency>
+                <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-excel</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
-                </dependency -->
+                </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-transform-execinfo</artifactId>
@@ -1184,8 +1184,18 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
+                <dependency>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi</artifactId>
+                    <scope>provided</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.apache.logging.log4j</groupId>
+                            <artifactId>log4j-api</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
             </dependencies>
-
         </profile>
     </profiles>
 
