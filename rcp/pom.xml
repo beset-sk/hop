@@ -1186,7 +1186,7 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.poi</groupId>
-                    <artifactId>poi</artifactId>
+                    <artifactId>poi-ooxml</artifactId>
                     <scope>provided</scope>
                     <exclusions>
                         <exclusion>
