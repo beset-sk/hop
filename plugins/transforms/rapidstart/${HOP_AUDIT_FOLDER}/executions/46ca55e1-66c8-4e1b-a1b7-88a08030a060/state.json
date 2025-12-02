@@ -1,0 +1,17 @@
+{
+  "executionType" : "Transform",
+  "parentId" : "7f0c1257-1864-44eb-96b4-2b6a499449f0",
+  "id" : "46ca55e1-66c8-4e1b-a1b7-88a08030a060",
+  "name" : "Injector",
+  "copyNr" : "0",
+  "loggingText" : null,
+  "lastLogLineNr" : null,
+  "metrics" : [ ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1756973250513,
+  "childIds" : [ ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1756973250497,
+  "containerId" : null
+}

@@ -1,0 +1,65 @@
+{
+  "executionType" : "Transform",
+  "dataSetMeta" : null,
+  "finished" : true,
+  "collectionDate" : 1756977165460,
+  "parentId" : "b4e8ff5e-c207-430d-8886-fc2e9cafdd1d",
+  "ownerId" : "all-transforms",
+  "setMetaData" : {
+    "FirstOutput/Injector.0" : {
+      "setKey" : "FirstOutput/Injector.0",
+      "logChannelId" : "2e4ceeb2-8123-414c-a124-59377fc2fc03",
+      "name" : "Injector",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Injector.0"
+    },
+    "LastOutput/Out.0" : {
+      "setKey" : "LastOutput/Out.0",
+      "logChannelId" : "1ff0bcb2-a3ae-4e43-b4bc-f38afcbe05fe",
+      "name" : "Out",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Out.0"
+    },
+    "FirstOutput/PackageCode.0" : {
+      "setKey" : "FirstOutput/PackageCode.0",
+      "logChannelId" : "adef6062-fd8a-4741-ad38-52a6fa4119e9",
+      "name" : "PackageCode",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of PackageCode.0"
+    },
+    "LastOutput/PackageCode.0" : {
+      "setKey" : "LastOutput/PackageCode.0",
+      "logChannelId" : "adef6062-fd8a-4741-ad38-52a6fa4119e9",
+      "name" : "PackageCode",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of PackageCode.0"
+    },
+    "LastOutput/Injector.0" : {
+      "setKey" : "LastOutput/Injector.0",
+      "logChannelId" : "2e4ceeb2-8123-414c-a124-59377fc2fc03",
+      "name" : "Injector",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Injector.0"
+    },
+    "FirstOutput/Out.0" : {
+      "setKey" : "FirstOutput/Out.0",
+      "logChannelId" : "1ff0bcb2-a3ae-4e43-b4bc-f38afcbe05fe",
+      "name" : "Out",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Out.0"
+    }
+  },
+  "rowsBinaryGzipBase64Encoded" : "H4sIAAAAAAAA/2NgYGBjEHPLLCou8S8tKSgt0ffMy0pNLskv0jNgYGBgBGImBghgysz7jwWAVOmApA8tAJLMj5rWQNUzsBZn6wZ7MzIwIAnEB3sDGYKupUX5Ban6TkWJJZnFOYlliQwwixjBTMYkBgGfRLibgBSGc1hyMvNS6eGgJKizJJFDKSAxOTsxPdU5PyV14FwGCyoJpKAaFA6DBZkoksMGOl3B3CSIHI0DmrCg0QcAocsE04MDAAA="
+}

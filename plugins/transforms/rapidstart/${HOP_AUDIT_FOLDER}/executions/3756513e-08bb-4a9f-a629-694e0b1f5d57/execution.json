@@ -1,0 +1,16 @@
+{
+  "name" : "Generate B",
+  "filename" : null,
+  "id" : "3756513e-08bb-4a9f-a629-694e0b1f5d57",
+  "parentId" : "53e4ef7c-a8e7-433d-bd5e-85a2b2545121",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1756990660172,
+  "executionStartDate" : 1756990660097,
+  "copyNr" : "0"
+}

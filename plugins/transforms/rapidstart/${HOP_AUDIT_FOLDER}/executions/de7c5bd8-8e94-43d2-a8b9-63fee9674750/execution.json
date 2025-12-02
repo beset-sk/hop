@@ -1,0 +1,16 @@
+{
+  "name" : "Injector",
+  "filename" : null,
+  "id" : "de7c5bd8-8e94-43d2-a8b9-63fee9674750",
+  "parentId" : "52403685-62bd-4336-b8b9-9bd7603e7e13",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1756986437167,
+  "executionStartDate" : 1756986436163,
+  "copyNr" : "0"
+}

@@ -104,6 +104,7 @@ public class HopGuiEnvironment extends HopClientEnvironment {
 
       List<IPlugin> guiPlugins = pluginRegistry.getPlugins(GuiPluginType.class);
       for (IPlugin guiPlugin : guiPlugins) {
+        System.out.println(guiPlugin);
         ClassLoader classLoader = pluginRegistry.getClassLoader(guiPlugin);
         Class<?>[] typeClasses = guiPlugin.getClassMap().keySet().toArray(new Class<?>[0]);
         String guiPluginClassName = guiPlugin.getClassMap().get(typeClasses[0]);

@@ -17,7 +17,7 @@
 
 package org.apache.hop.pipeline.transforms.textfileoutput;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,19 +30,20 @@ import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.row.value.ValueMetaFactory;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.core.variables.Variables;
-import org.apache.hop.junit.rules.RestoreHopEngineEnvironment;
+import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
 import org.apache.hop.pipeline.transforms.loadsave.LoadSaveTester;
 import org.apache.hop.pipeline.transforms.loadsave.validator.ArrayLoadSaveValidator;
 import org.apache.hop.pipeline.transforms.loadsave.validator.IFieldLoadSaveValidator;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class TextFileOutputMetaTest {
-  @ClassRule public static RestoreHopEngineEnvironment env = new RestoreHopEngineEnvironment();
+class TextFileOutputMetaTest {
+  @RegisterExtension
+  static RestoreHopEngineEnvironmentExtension env = new RestoreHopEngineEnvironmentExtension();
 
-  @BeforeClass
-  public static void setUpBeforeClass() throws HopException {
+  @BeforeAll
+  static void setUpBeforeClass() throws HopException {
     HopEnvironment.init();
   }
 
@@ -160,7 +161,7 @@ public class TextFileOutputMetaTest {
   }
 
   @Test
-  public void testRoundTrip() throws HopException {
+  void testRoundTrip() throws HopException {
     LoadSaveTester<TextFileOutputMeta> loadSaveTester =
         new LoadSaveTester<>(
             TextFileOutputMeta.class,
@@ -174,7 +175,7 @@ public class TextFileOutputMetaTest {
   }
 
   @Test
-  public void testVarReplaceSplit() {
+  void testVarReplaceSplit() {
     TextFileOutputMeta meta = new TextFileOutputMeta();
     meta.setDefault();
     meta.setSplitEveryRows("${splitVar}");

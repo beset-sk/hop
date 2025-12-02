@@ -1,0 +1,26 @@
+{
+  "name" : "ForUT",
+  "filename" : null,
+  "id" : "fc61a6de-c8d7-413f-a83f-29da6b9ae414",
+  "parentId" : null,
+  "executionType" : "Pipeline",
+  "executorXml" : "<pipeline>\n  <info>\n    <name>ForUT</name>\n    <name_sync_with_filename>Y</name_sync_with_filename>\n    <description/>\n    <extended_description/>\n    <pipeline_version/>\n    <pipeline_type>Normal</pipeline_type>\n    <parameters>\n    </parameters>\n    <capture_transform_performance>N</capture_transform_performance>\n    <transform_performance_capturing_delay>1000</transform_performance_capturing_delay>\n    <transform_performance_capturing_size_limit>100</transform_performance_capturing_size_limit>\n    <created_user>-</created_user>\n    <created_date>2025/09/04 09:50:32.357</created_date>\n    <modified_user>-</modified_user>\n    <modified_date>2025/09/04 09:50:32.357</modified_date>\n  </info>\n  <notepads>\n  </notepads>\n  <order>\n    <hop>\n      <from>Injector</from>\n      <to>PackageCode</to>\n      <enabled>Y</enabled>\n    </hop>\n    <hop>\n      <from>PackageCode</from>\n      <to>Out</to>\n      <enabled>Y</enabled>\n    </hop>\n  </order>\n  <transform>\n    <name>Injector</name>\n    <type>Injector</type>\n    <description/>\n    <distribute>Y</distribute>\n    <custom_distribution/>\n    <copies>1</copies>\n    <partitioning>\n      <method>none</method>\n      <schema_name/>\n    </partitioning>\n    <fields>\n</fields>\n    <attributes/>\n    <GUI>\n      <xloc>0</xloc>\n      <yloc>0</yloc>\n    </GUI>\n  </transform>\n  <transform>\n    <name>PackageCode</name>\n    <type>Rapidstart</type>\n    <description/>\n    <distribute>Y</distribute>\n    <custom_distribution/>\n    <copies>1</copies>\n    <partitioning>\n      <method>none</method>\n      <schema_name/>\n    </partitioning>\n    <code>X1</code>\n    <package>demo.pkg</package>\n    <attributes/>\n    <GUI>\n      <xloc>0</xloc>\n      <yloc>0</yloc>\n    </GUI>\n  </transform>\n  <transform>\n    <name>Out</name>\n    <type>Dummy</type>\n    <description/>\n    <distribute>Y</distribute>\n    <custom_distribution/>\n    <copies>1</copies>\n    <partitioning>\n      <method>none</method>\n      <schema_name/>\n    </partitioning>\n    <attributes/>\n    <GUI>\n      <xloc>0</xloc>\n      <yloc>0</yloc>\n    </GUI>\n  </transform>\n  <transform_error_handling>\n  </transform_error_handling>\n  <attributes/>\n</pipeline>\n",
+  "metadataJson" : "{\"pipeline-run-configuration\":[{\"engineRunConfiguration\":{\"Local\":{\"feedback_size\":\"50000\",\"sample_size\":\"100\",\"sample_type_in_gui\":\"Last\",\"wait_time\":\"20\",\"rowset_size\":\"10000\",\"safe_mode\":false,\"show_feedback\":false,\"topo_sort\":false,\"gather_metrics\":false,\"transactional\":false}},\"virtualPath\":null,\"defaultSelection\":true,\"configurationVariables\":[],\"name\":\"local\",\"description\":\"\",\"dataProfile\":\"first-last\",\"executionInfoLocationName\":\"local-audit\"}],\"server\":[],\"execution-data-profile\":[{\"virtualPath\":null,\"name\":\"first-last\",\"description\":\"capture the first and last 100 rows of every Hop transform\",\"sampler\":[{\"FirstRowsExecutionDataSampler\":{\"sampleSize\":\"100\"}},{\"LastRowsExecutionDataSampler\":{\"sampleSize\":\"100\"}}]}],\"partition\":[],\"rdbms\":[],\"execution-info-location\":[{\"virtualPath\":null,\"executionInfoLocation\":{\"local-folder\":{\"pluginName\":\"File location\",\"pluginId\":\"local-folder\",\"rootFolder\":\"${HOP_AUDIT_FOLDER}\\/executions\\/\"}},\"dataLoggingDelay\":\"2000\",\"name\":\"local-audit\",\"description\":\"\",\"dataLoggingInterval\":\"5000\"}],\"workflow-run-configuration\":[{\"engineRunConfiguration\":{\"Local\":{\"safe_mode\":false,\"transactional\":false}},\"virtualPath\":null,\"defaultSelection\":true,\"name\":\"local\",\"description\":\"\",\"executionInfoLocationName\":\"local-audit\"}],\"variable-resolver\":[],\"web-service\":[]}",
+  "runConfigurationName" : "local",
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : {
+    "JavaUser" : "peterpulmann",
+    "ContainerId" : null,
+    "AvailableProcessors" : "12",
+    "TotalMemory" : "100663296",
+    "JavaVersion" : "17.0.15",
+    "HostAddress" : "127.0.0.1",
+    "HostName" : "gpMac.local",
+    "MaxMemory" : "8589934592",
+    "FreeMemory" : "80860672"
+  },
+  "registrationDate" : 1756972232405,
+  "executionStartDate" : 1756972232372,
+  "copyNr" : null
+}

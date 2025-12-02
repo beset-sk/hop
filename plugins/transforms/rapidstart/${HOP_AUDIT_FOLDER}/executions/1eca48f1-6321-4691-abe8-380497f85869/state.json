@@ -1,0 +1,73 @@
+{
+  "executionType" : "Pipeline",
+  "parentId" : null,
+  "id" : "1eca48f1-6321-4691-abe8-380497f85869",
+  "name" : "ForUT",
+  "copyNr" : null,
+  "loggingText" : "2025/09/04 13:47:18 - ForUT - Executing this pipeline using the Local Pipeline Engine with run configuration 'local'\n2025/09/04 13:47:18 - ForUT - Execution started for pipeline [ForUT]\n2025/09/04 13:47:18 - Generate A.0 - Finished processing (I=0, O=0, R=0, W=1, U=0, E=0)\n2025/09/04 13:47:18 - Injector.0 - Finished processing (I=0, O=0, R=2, W=2, U=0, E=0)\n2025/09/04 13:47:18 - PackageCode.0 - Finished processing (I=0, O=0, R=1, W=1, U=0, E=0)\n2025/09/04 13:47:18 - Out.0 - Finished processing (I=0, O=0, R=1, W=1, U=0, E=0)\n",
+  "lastLogLineNr" : 6,
+  "metrics" : [ {
+    "componentName" : "Generate A",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 0,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 1,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "PackageCode",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 1,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 1,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Out",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 1,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 1,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  }, {
+    "componentName" : "Injector",
+    "componentCopy" : "0",
+    "metrics" : {
+      "Read" : 2,
+      "Buffers Output" : 0,
+      "Errors" : 0,
+      "Input" : 0,
+      "Written" : 2,
+      "Updated" : 0,
+      "Output" : 0,
+      "Rejected" : 0,
+      "Buffers Input" : 0
+    }
+  } ],
+  "statusDescription" : "Finished",
+  "updateTime" : 1756986438267,
+  "childIds" : [ "ee3c76ca-598d-4380-8af8-ee458be5a130", "8c8615f6-1be6-4752-916d-38b107026621", "eff9f4cf-ca9e-4150-9b88-93900537bf46", "85ca39c2-6544-4223-9d62-296163c0aa36" ],
+  "details" : { },
+  "failed" : false,
+  "executionEndDate" : 1756986438266,
+  "containerId" : null
+}

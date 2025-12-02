@@ -1,0 +1,81 @@
+{
+  "executionType" : "Transform",
+  "dataSetMeta" : null,
+  "finished" : true,
+  "collectionDate" : 1756990983991,
+  "parentId" : "8bedc7e7-eeac-4828-bde9-ab5a3af09583",
+  "ownerId" : "all-transforms",
+  "setMetaData" : {
+    "LastOutput/Generate B.0" : {
+      "setKey" : "LastOutput/Generate B.0",
+      "logChannelId" : "2a3c6bf3-f207-4042-af29-86d890ddf14d",
+      "name" : "Generate B",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Generate B.0"
+    },
+    "LastOutput/Generate A.0" : {
+      "setKey" : "LastOutput/Generate A.0",
+      "logChannelId" : "8a1ab8f0-81ee-4184-ad4f-23036f7049ed",
+      "name" : "Generate A",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Generate A.0"
+    },
+    "LastOutput/PackageCode.0" : {
+      "setKey" : "LastOutput/PackageCode.0",
+      "logChannelId" : "fb3df93c-5253-483d-9148-9b2b60bae6ae",
+      "name" : "PackageCode",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of PackageCode.0"
+    },
+    "LastOutput/Out.0" : {
+      "setKey" : "LastOutput/Out.0",
+      "logChannelId" : "0b5b2d48-51cf-449f-a379-da26d0838b0c",
+      "name" : "Out",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "Last rows of Out.0"
+    },
+    "FirstOutput/Generate B.0" : {
+      "setKey" : "FirstOutput/Generate B.0",
+      "logChannelId" : "2a3c6bf3-f207-4042-af29-86d890ddf14d",
+      "name" : "Generate B",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Generate B.0"
+    },
+    "FirstOutput/Generate A.0" : {
+      "setKey" : "FirstOutput/Generate A.0",
+      "logChannelId" : "8a1ab8f0-81ee-4184-ad4f-23036f7049ed",
+      "name" : "Generate A",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Generate A.0"
+    },
+    "FirstOutput/PackageCode.0" : {
+      "setKey" : "FirstOutput/PackageCode.0",
+      "logChannelId" : "fb3df93c-5253-483d-9148-9b2b60bae6ae",
+      "name" : "PackageCode",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of PackageCode.0"
+    },
+    "FirstOutput/Out.0" : {
+      "setKey" : "FirstOutput/Out.0",
+      "logChannelId" : "0b5b2d48-51cf-449f-a379-da26d0838b0c",
+      "name" : "Out",
+      "fieldName" : null,
+      "sampleDescription" : null,
+      "copyNr" : "0",
+      "description" : "First rows of Out.0"
+    }
+  }

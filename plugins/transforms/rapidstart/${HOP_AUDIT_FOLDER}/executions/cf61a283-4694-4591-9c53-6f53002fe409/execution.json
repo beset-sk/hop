@@ -1,0 +1,16 @@
+{
+  "name" : "Out",
+  "filename" : null,
+  "id" : "cf61a283-4694-4591-9c53-6f53002fe409",
+  "parentId" : "5f56f837-56c2-4dd0-9c03-58caa3525ae1",
+  "executionType" : "Transform",
+  "executorXml" : null,
+  "metadataJson" : null,
+  "runConfigurationName" : null,
+  "logLevel" : "BASIC",
+  "parameterValues" : { },
+  "environmentDetails" : { },
+  "registrationDate" : 1756990699060,
+  "executionStartDate" : 1756990698962,
+  "copyNr" : "0"
+}
