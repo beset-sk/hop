@@ -1059,7 +1059,8 @@ public class ExcelInputDialog extends BaseTransformDialog {
     // Show the files that are selected at this time...
     wbShowFiles.addListener(SWT.Selection, e -> showFiles());
 
-    // Whenever something changes, set the tooltip to the expanded version of the filename:
+    // Whenever something changes, set the tooltip to the expanded version of the
+    // filename:
     wFilename.addModifyListener(
         e -> wFilename.setToolTipText(variables.resolve(wFilename.getText())));
 
@@ -1068,7 +1069,8 @@ public class ExcelInputDialog extends BaseTransformDialog {
         SWT.Selection,
         e -> {
           if (!Utils.isEmpty(wFileMask.getText())
-              || !Utils.isEmpty(wExcludeFileMask.getText())) { // A mask: a directory!
+              || !Utils.isEmpty(wExcludeFileMask.getText())) { // A mask: a
+            // directory!
             BaseDialog.presentDirectoryDialog(shell, wFilename, variables);
           } else {
             String[] extensions;
@@ -1200,7 +1202,8 @@ public class ExcelInputDialog extends BaseTransformDialog {
     wFileMask.setEnabled(!accept);
     wbShowFiles.setEnabled(!accept);
 
-    // wPreview.setEnabled(!accept); // Keep this one: you can do preview on defined files in the
+    // wPreview.setEnabled(!accept); // Keep this one: you can do preview on defined
+    // files in the
     // files section.
 
     // Error handling tab...
@@ -1586,7 +1589,8 @@ public class ExcelInputDialog extends BaseTransformDialog {
     wbvWarningDestDir.addSelectionListener(
         VariableButtonListenerFactory.getSelectionAdapter(shell, wWarningDestDir, variables));
 
-    // Whenever something changes, set the tooltip to the expanded version of the directory:
+    // Whenever something changes, set the tooltip to the expanded version of the
+    // directory:
     wWarningDestDir.addModifyListener(getModifyListenerTooltipText(variables, wWarningDestDir));
 
     // Error lines files directory + extention
@@ -1652,7 +1656,8 @@ public class ExcelInputDialog extends BaseTransformDialog {
     wbvErrorDestDir.addSelectionListener(
         VariableButtonListenerFactory.getSelectionAdapter(shell, wErrorDestDir, variables));
 
-    // Whenever something changes, set the tooltip to the expanded version of the directory:
+    // Whenever something changes, set the tooltip to the expanded version of the
+    // directory:
     wErrorDestDir.addModifyListener(getModifyListenerTooltipText(variables, wErrorDestDir));
 
     // Line numbers files directory + extention
@@ -1718,7 +1723,8 @@ public class ExcelInputDialog extends BaseTransformDialog {
     wbvLineNrDestDir.addSelectionListener(
         VariableButtonListenerFactory.getSelectionAdapter(shell, wLineNrDestDir, variables));
 
-    // Whenever something changes, set the tooltip to the expanded version of the directory:
+    // Whenever something changes, set the tooltip to the expanded version of the
+    // directory:
     wLineNrDestDir.addModifyListener(getModifyListenerTooltipText(variables, wLineNrDestDir));
 
     wErrorComp.layout();
@@ -1973,9 +1979,11 @@ public class ExcelInputDialog extends BaseTransformDialog {
                 // We found a field.
                 fieldName = cell.getContents();
               }
-
-              IKCell below = sheet.getCell(colnr, rowNr + 1);
-
+              IKCell below = null;
+              try {
+                below = sheet.getCell(colnr, rowNr + 1);
+              } catch (ArrayIndexOutOfBoundsException aioobe) {
+              }
               if (below != null) {
                 if (below.getType() == KCellType.BOOLEAN) {
                   fieldType = IValueMeta.TYPE_BOOLEAN;
