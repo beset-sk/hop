@@ -1159,6 +1159,13 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.hop</groupId>
+            <artifactId>hop-transform-identity</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.apache.hop</groupId>
             <artifactId>hop-transform-ifnull</artifactId>
