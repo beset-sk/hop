@@ -134,7 +134,7 @@ public class AddXmlCustom extends BaseTransform<AddXmlCustomMeta, AddXmlCustomDa
           node.setAttribute(element, value);
 
         } else if (value != null) {
-          String[] values = value.split(":");
+          String[] values = value.split("::");
           for (String val : values)
             if (val.length() > 0)
               /* encode as subnode */
