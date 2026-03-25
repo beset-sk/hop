@@ -86,7 +86,8 @@ public class GoogleSheetsOutput
       // Check if file exists
       try {
         httpTransport =
-            GoogleSheetsConnectionFactory.newTransport(meta.getProxyHost(), meta.getProxyPort());
+            GoogleSheetsConnectionFactory.newTransport(
+                resolve(meta.getProxyHost()), resolve(meta.getProxyPort()));
         jsonFactory = JacksonFactory.getDefaultInstance();
         scope = "https://www.googleapis.com/auth/drive";
 
@@ -95,7 +96,8 @@ public class GoogleSheetsOutput
                 scope,
                 resolve(meta.getJsonCredentialPath()),
                 resolve(meta.getImpersonation()),
-                variables);
+                variables,
+                httpTransport);
         Drive service =
             new Drive.Builder(
                     httpTransport,
@@ -122,7 +124,9 @@ public class GoogleSheetsOutput
         for (File spreadsheet : spreadsheets) {
           if (spreadsheetID.equals(spreadsheet.getId())) {
             exists = true; // file exists
-            logBasic("Spreadsheet:" + spreadsheetID + " exists");
+            if (isBasic()) {
+              logBasic("Spreadsheet:" + spreadsheetID + " exists");
+            }
           }
         }
 
@@ -213,7 +217,9 @@ public class GoogleSheetsOutput
                   new UpdateSheetPropertiesRequest().setProperties(title);
               // set fields you want to update
               rename.setFields("title");
-              logBasic("Changing worksheet title to:" + resolve(meta.getWorksheetId()));
+              if (isBasic()) {
+                logBasic("Changing worksheet title to:" + resolve(meta.getWorksheetId()));
+              }
               List<Request> requests = new ArrayList<>();
               Request request1 = new Request().setUpdateSheetProperties(rename);
               requests.add(request1);
@@ -234,7 +240,7 @@ public class GoogleSheetsOutput
 
             String fileId = spreadsheetID;
             JsonBatchCallback<Permission> callback =
-                new JsonBatchCallback<Permission>() {
+                new JsonBatchCallback<>() {
                   @Override
                   public void onFailure(GoogleJsonError e, HttpHeaders responseHeaders)
                       throws IOException {
@@ -245,12 +251,16 @@ public class GoogleSheetsOutput
                   @Override
                   public void onSuccess(Permission permission, HttpHeaders responseHeaders)
                       throws IOException {
-                    logBasic("Shared successfully : Permission ID: " + permission.getId());
+                    if (isBasic()) {
+                      logBasic("Shared successfully : Permission ID: " + permission.getId());
+                    }
                   }
                 };
             BatchRequest batch = service.batch();
             if (!Utils.isEmpty(resolve(meta.getShareEmail()))) {
-              logBasic("Sharing sheet with:" + resolve(meta.getShareEmail()));
+              if (isBasic()) {
+                logBasic("Sharing sheet with:" + resolve(meta.getShareEmail()));
+              }
               Permission userPermission =
                   new Permission()
                       .setType("user")
@@ -265,7 +275,9 @@ public class GoogleSheetsOutput
             }
             if (resolve(meta.getShareDomain()) != null
                 && !resolve(meta.getShareDomain()).isEmpty()) {
-              logBasic("Sharing sheet with domain:" + resolve(meta.getShareDomain()));
+              if (isBasic()) {
+                logBasic("Sharing sheet with domain:" + resolve(meta.getShareDomain()));
+              }
               Permission domainPermission =
                   new Permission()
                       .setType("domain")
@@ -315,10 +327,14 @@ public class GoogleSheetsOutput
           data.outputRowMeta, getTransformName(), null, getTransformMeta(), this, metadataProvider);
       data.rows = new ArrayList<>();
       if (meta.isAppend()) { // If append is checked we do not write the header
-        logBasic("Appending lines so skipping the header");
+        if (isBasic()) {
+          logBasic("Appending lines so skipping the header");
+        }
         data.currentRow++;
       } else {
-        logBasic("Writing header");
+        if (isBasic()) {
+          logBasic("Writing header");
+        }
         r = new ArrayList<>();
         for (int i = 0; i < data.outputRowMeta.size(); i++) {
           IValueMeta v = data.outputRowMeta.getValueMeta(i);
@@ -334,9 +350,10 @@ public class GoogleSheetsOutput
         if (data.currentRow > 0) {
           ClearValuesRequest requestBody = new ClearValuesRequest();
           String range = resolve(meta.getWorksheetId());
-
-          logBasic(
-              "Clearing range" + range + " in Spreadsheet :" + resolve(meta.getSpreadsheetKey()));
+          if (isBasic()) {
+            logBasic(
+                "Clearing range" + range + " in Spreadsheet :" + resolve(meta.getSpreadsheetKey()));
+          }
           // Creating service
           httpTransport =
               GoogleSheetsConnectionFactory.newTransport(meta.getProxyHost(), meta.getProxyPort());
@@ -347,7 +364,8 @@ public class GoogleSheetsOutput
                   scope,
                   resolve(meta.getJsonCredentialPath()),
                   resolve(meta.getImpersonation()),
-                  variables);
+                  variables,
+                  httpTransport);
           data.service =
               new Sheets.Builder(
                       httpTransport,
@@ -365,13 +383,24 @@ public class GoogleSheetsOutput
                     .spreadsheets()
                     .values()
                     .clear(resolve(meta.getSpreadsheetKey()), range, requestBody);
-            logBasic(
-                "Clearing Sheet:" + range + "in Spreadsheet :" + resolve(meta.getSpreadsheetKey()));
+            if (isBasic()) {
+              logBasic(
+                  "Clearing Sheet:"
+                      + range
+                      + "in Spreadsheet :"
+                      + resolve(meta.getSpreadsheetKey()));
+            }
             if (request != null) {
               ClearValuesResponse response = request.execute();
-            } else logBasic("Nothing to clear");
+            } else {
+              if (isBasic()) {
+                logBasic("Nothing to clear");
+              }
+            }
             // Writing Sheet
-            logBasic("Writing to Sheet");
+            if (isBasic()) {
+              logBasic("Writing to Sheet");
+            }
             ValueRange body = new ValueRange().setValues(data.rows);
             String valueInputOption = "USER_ENTERED";
             UpdateValuesResponse result =
@@ -392,12 +421,13 @@ public class GoogleSheetsOutput
 
             // TODO: Assign values to desired fields of `requestBody`:
             ValueRange body = new ValueRange().setValues(data.rows);
-            logBasic(
-                "Appending data :"
-                    + range
-                    + "in Spreadsheet :"
-                    + resolve(meta.getSpreadsheetKey()));
-
+            if (isBasic()) {
+              logBasic(
+                  "Appending data :"
+                      + range
+                      + "in Spreadsheet :"
+                      + resolve(meta.getSpreadsheetKey()));
+            }
             Sheets.Spreadsheets.Values.Append request =
                 data.service
                     .spreadsheets()
@@ -408,7 +438,9 @@ public class GoogleSheetsOutput
             AppendValuesResponse response = request.execute();
           }
         } else {
-          logBasic("No data found");
+          if (isBasic()) {
+            logBasic("No data found");
+          }
         }
         setOutputDone();
         return false;

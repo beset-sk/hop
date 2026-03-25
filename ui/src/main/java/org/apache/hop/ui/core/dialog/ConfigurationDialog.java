@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Setter;
 import org.apache.hop.IExecutionConfiguration;
 import org.apache.hop.base.AbstractMeta;
 import org.apache.hop.core.Const;
@@ -56,7 +57,7 @@ import org.eclipse.swt.widgets.TableItem;
 public abstract class ConfigurationDialog extends Dialog {
 
   protected AbstractMeta abstractMeta;
-  protected IExecutionConfiguration configuration;
+  @Setter protected IExecutionConfiguration configuration;
   protected TableView wVariables;
   protected boolean retval;
   protected Shell shell;
@@ -165,8 +166,7 @@ public abstract class ConfigurationDialog extends Dialog {
     ArrayList<String> paramNames = new ArrayList<>(configuration.getParametersMap().keySet());
     Collections.sort(paramNames);
 
-    for (int i = 0; i < paramNames.size(); i++) {
-      String paramName = paramNames.get(i);
+    for (String paramName : paramNames) {
       String paramValue = configuration.getParametersMap().get(paramName);
       String defaultValue;
       try {
@@ -191,13 +191,6 @@ public abstract class ConfigurationDialog extends Dialog {
     wParams.removeEmptyRows();
     wParams.setRowNums();
     wParams.optWidth(true);
-  }
-
-  /**
-   * @param configuration the configuration to set
-   */
-  public void setConfiguration(IExecutionConfiguration configuration) {
-    this.configuration = configuration;
   }
 
   protected void mainLayout(String shellTitle, Image img) {

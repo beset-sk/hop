@@ -26,7 +26,6 @@ import org.apache.hop.ui.hopgui.file.IHopFileTypeHandler;
 import org.apache.hop.ui.hopgui.file.empty.EmptyHopFileTypeHandler;
 import org.apache.hop.ui.hopgui.perspective.explorer.ExplorerFile;
 import org.apache.hop.ui.hopgui.perspective.explorer.ExplorerPerspective;
-import org.apache.hop.ui.hopgui.perspective.explorer.file.IExplorerFileType;
 import org.apache.hop.ui.hopgui.perspective.explorer.file.capabilities.FileTypeCapabilities;
 import org.apache.hop.ui.hopgui.perspective.explorer.file.types.text.BaseTextExplorerFileType;
 
@@ -34,9 +33,9 @@ import org.apache.hop.ui.hopgui.perspective.explorer.file.types.text.BaseTextExp
     id = "MarkDownExplorerFileType",
     name = "MarkDown File Type",
     description = "MarkDown file handling in the explorer perspective",
-    image = "textfile.svg")
-public class MarkDownExplorerFileType extends BaseTextExplorerFileType<TextExplorerFileTypeHandler>
-    implements IExplorerFileType<TextExplorerFileTypeHandler> {
+    image = "markdown.svg")
+public class MarkDownExplorerFileType
+    extends BaseTextExplorerFileType<TextExplorerFileTypeHandler> {
 
   public MarkDownExplorerFileType() {
     super(
@@ -46,6 +45,7 @@ public class MarkDownExplorerFileType extends BaseTextExplorerFileType<TextExplo
         new String[] {"MarkDown files"},
         FileTypeCapabilities.getCapabilities(
             IHopFileType.CAPABILITY_SAVE,
+            IHopFileType.CAPABILITY_SAVE_AS,
             IHopFileType.CAPABILITY_CLOSE,
             IHopFileType.CAPABILITY_FILE_HISTORY,
             IHopFileType.CAPABILITY_COPY,

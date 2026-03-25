@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.mockito.Mockito;
+import org.junit.Test;
 
 public class PreviewRowsDialogTest {
   @ClassRule public static RestoreHopEngineEnvironment env = new RestoreHopEngineEnvironment();
@@ -39,7 +40,7 @@ public class PreviewRowsDialogTest {
     org.junit.Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
   }
 
-  // @Test
+   @Test
   public void getDataForRow() {
 
     IRowMeta iRowMeta = Mockito.mock(IRowMeta.class);

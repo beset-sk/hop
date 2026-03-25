@@ -181,7 +181,6 @@ public class SwtGc implements IGc {
       case LOCK -> GuiResource.getInstance().getSwtImageLocked();
       case FAILURE -> GuiResource.getInstance().getSwtImageFailure();
       case EDIT -> GuiResource.getInstance().getSwtImageEdit();
-      case CONTEXT_MENU -> GuiResource.getInstance().getSwtImageContextMenu();
       case TRUE -> GuiResource.getInstance().getSwtImageTrue();
       case TRUE_DISABLED -> GuiResource.getInstance().getSwtImageTrueDisabled();
       case FALSE -> GuiResource.getInstance().getSwtImageFalse();
@@ -195,7 +194,6 @@ public class SwtGc implements IGc {
       case TARGET_DISABLED -> GuiResource.getInstance().getSwtImageTargetDisabled();
       case INPUT -> GuiResource.getInstance().getSwtImageInput();
       case OUTPUT -> GuiResource.getInstance().getSwtImageOutput();
-      case ARROW -> GuiResource.getInstance().getSwtImageArrow();
       case COPY_ROWS -> GuiResource.getInstance().getSwtImageCopyRows();
       case COPY_ROWS_DISABLED -> GuiResource.getInstance().getSwtImageCopyRowsDisabled();
       case LOAD_BALANCE -> GuiResource.getInstance().getSwtImageBalance();
@@ -298,49 +296,28 @@ public class SwtGc implements IGc {
   }
 
   private Color getColor(EColor color) {
-    switch (color) {
-      case BACKGROUND:
-        return background;
-      case BLACK:
-        return black;
-      case WHITE:
-        return white;
-      case RED:
-        return red;
-      case YELLOW:
-        return yellow;
-      case GREEN:
-        return green;
-      case BLUE:
-        return blue;
-      case MAGENTA:
-        return magenta;
-      case PURPULE:
-        return purpule;
-      case INDIGO:
-        return indigo;
-      case GRAY:
-        return gray;
-      case LIGHTGRAY:
-        return lightGray;
-      case DARKGRAY:
-        return darkGray;
-      case LIGHTBLUE:
-        return lightBlue;
-      case CRYSTAL:
-        return crystal;
-      case HOP_DEFAULT:
-        return hopDefault;
-      case HOP_TRUE:
-        return hopTrue;
-      case HOP_FALSE:
-        return hopFalse;
-      case DEPRECATED:
-        return deprecated;
-      default:
-        break;
-    }
-    return null;
+    return switch (color) {
+      case BACKGROUND -> background;
+      case BLACK -> black;
+      case WHITE -> white;
+      case RED -> red;
+      case YELLOW -> yellow;
+      case GREEN -> green;
+      case BLUE -> blue;
+      case MAGENTA -> magenta;
+      case PURPULE -> purpule;
+      case INDIGO -> indigo;
+      case GRAY -> gray;
+      case LIGHTGRAY -> lightGray;
+      case DARKGRAY -> darkGray;
+      case LIGHTBLUE -> lightBlue;
+      case CRYSTAL -> crystal;
+      case HOP_DEFAULT -> hopDefault;
+      case HOP_TRUE -> hopTrue;
+      case HOP_FALSE -> hopFalse;
+      case DEPRECATED -> deprecated;
+      default -> null;
+    };
   }
 
   @Override
@@ -354,6 +331,9 @@ public class SwtGc implements IGc {
         break;
       case SMALL:
         gc.setFont(GuiResource.getInstance().getFontSmall());
+        break;
+      case TINY:
+        gc.setFont(GuiResource.getInstance().getFontTiny());
         break;
       default:
         break;
@@ -412,7 +392,6 @@ public class SwtGc implements IGc {
       transform.dispose();
     }
     transform = new Transform(gc.getDevice());
-    transform.translate(translationX, translationY);
     transform.scale(magnification, magnification);
     gc.setTransform(transform);
     currentMagnification = magnification;

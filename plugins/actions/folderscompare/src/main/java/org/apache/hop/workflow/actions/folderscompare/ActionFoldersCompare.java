@@ -18,7 +18,6 @@
 package org.apache.hop.workflow.actions.folderscompare;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,6 +35,7 @@ import org.apache.hop.core.Result;
 import org.apache.hop.core.annotations.Action;
 import org.apache.hop.core.exception.HopFileException;
 import org.apache.hop.core.exception.HopXmlException;
+import org.apache.hop.core.io.CountingInputStream;
 import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.core.vfs.HopVfs;
@@ -194,52 +194,40 @@ public class ActionFoldersCompare extends ActionBase implements Cloneable, IActi
    *
    * @param file1 first file to compare
    * @param file2 second file to compare
+   * @param result result to add bytes read to (for data volume tracking)
    * @return true if files are equal, false if they are not
    * @throws org.apache.hop.core.exception.HopFileException upon IO problems
    */
-  protected boolean equalFileContents(FileObject file1, FileObject file2) throws HopFileException {
-    // Really read the contents and do comparisons
-    DataInputStream in1 = null;
-    DataInputStream in2 = null;
-    try {
-      // Really read the contents and do comparisons
+  protected boolean equalFileContents(FileObject file1, FileObject file2, Result result)
+      throws HopFileException {
+    // Really read the contents and do comparisons.
+    try (CountingInputStream in1 =
+            new CountingInputStream(
+                new BufferedInputStream(
+                    HopVfs.getInputStream(HopVfs.getFilename(file1), getVariables())));
+        CountingInputStream in2 =
+            new CountingInputStream(
+                new BufferedInputStream(
+                    HopVfs.getInputStream(HopVfs.getFilename(file2), getVariables())))) {
 
-      in1 =
-          new DataInputStream(
-              new BufferedInputStream(
-                  HopVfs.getInputStream(HopVfs.getFilename(file1), getVariables())));
-      in2 =
-          new DataInputStream(
-              new BufferedInputStream(
-                  HopVfs.getInputStream(HopVfs.getFilename(file2), getVariables())));
-
-      char ch1;
-      char ch2;
-      while (in1.available() != 0 && in2.available() != 0) {
-        ch1 = (char) in1.readByte();
-        ch2 = (char) in2.readByte();
-        if (ch1 != ch2) {
+      int b1;
+      int b2;
+      while (true) {
+        b1 = in1.read();
+        b2 = in2.read();
+        if (b1 == -1 || b2 == -1) {
+          break;
+        }
+        if (b1 != b2) {
           return false;
         }
       }
-      return in1.available() == in2.available();
+      result.setBytesReadThisAction(
+          result.getBytesReadThisAction() + in1.getCount() + in2.getCount());
+      // Both streams must be at EOF for files to be equal
+      return b1 == -1 && b2 == -1;
     } catch (IOException e) {
       throw new HopFileException(e);
-    } finally {
-      if (in1 != null) {
-        try {
-          in1.close();
-        } catch (IOException ignored) {
-          // Nothing to see here...
-        }
-      }
-      if (in2 != null) {
-        try {
-          in2.close();
-        } catch (Exception ignored) {
-          // We can't do anything else here...
-        }
-      }
     }
   }
 
@@ -288,7 +276,7 @@ public class ActionFoldersCompare extends ActionBase implements Cloneable, IActi
           } else {
             if (folder1.getType() == FileType.FILE) {
               // simply compare 2 files ..
-              result.setResult(equalFileContents(folder1, folder2));
+              result.setResult(equalFileContents(folder1, folder2, result));
             } else if (folder1.getType() == FileType.FOLDER) {
               // We compare 2 folders ...
 
@@ -317,14 +305,14 @@ public class ActionFoldersCompare extends ActionBase implements Cloneable, IActi
                 HashMap<String, String> collection1 = new HashMap<>();
                 HashMap<String, String> collection2 = new HashMap<>();
 
-                for (int i = 0; i < list1.length; i++) {
+                for (FileObject object : list1) {
                   // Put files list1 in TreeMap collection1
-                  collection1.put(list1[i].getName().getBaseName(), list1[i].toString());
+                  collection1.put(object.getName().getBaseName(), object.toString());
                 }
 
-                for (int i = 0; i < list2.length; i++) {
+                for (FileObject fileObject : list2) {
                   // Put files list2 in TreeMap collection2
-                  collection2.put(list2[i].getName().getBaseName(), list2[i].toString());
+                  collection2.put(fileObject.getName().getBaseName(), fileObject.toString());
                 }
 
                 // Let's now fetch Folder1
@@ -428,20 +416,18 @@ public class ActionFoldersCompare extends ActionBase implements Cloneable, IActi
                           }
                         }
 
-                        if (ok) {
+                        if (ok
+                            && comparefilecontent
+                            && !equalFileContents(filefolder1, filefolder2, result)) {
                           // Let's compare files content..
-                          if (comparefilecontent) {
-                            if (!equalFileContents(filefolder1, filefolder2)) {
-                              ok = false;
-                              if (isDetailed()) {
-                                logDetailed(
-                                    BaseMessages.getString(
-                                        PKG,
-                                        "ActionFoldersCompare.Log.FilesNotSameContent",
-                                        filefolder1.toString(),
-                                        filefolder2.toString()));
-                              }
-                            }
+                          ok = false;
+                          if (isDetailed()) {
+                            logDetailed(
+                                BaseMessages.getString(
+                                    PKG,
+                                    "ActionFoldersCompare.Log.FilesNotSameContent",
+                                    filefolder1.toString(),
+                                    filefolder2.toString()));
                           }
                         }
                       }
@@ -544,14 +530,15 @@ public class ActionFoldersCompare extends ActionBase implements Cloneable, IActi
             }
           } else {
             // Not in the Base Folder...Only if include sub folders
-            if (includesubfolders) {
-              if ((info.getFile().getType() == FileType.FILE && compareonly.equals("only_files"))
-                  || (info.getFile().getType() == FileType.FOLDER
-                      && compareonly.equals("only_folders"))
-                  || (getFileWildcard(shortFilename) && compareonly.equals("specify"))
-                  || (compareonly.equals("all"))) {
-                returncode = true;
-              }
+
+            if ((includesubfolders
+                    && (info.getFile().getType() == FileType.FILE
+                        && compareonly.equals("only_files"))
+                || (info.getFile().getType() == FileType.FOLDER
+                    && compareonly.equals("only_folders"))
+                || (getFileWildcard(shortFilename) && compareonly.equals("specify"))
+                || (compareonly.equals("all")))) {
+              returncode = true;
             }
           }
         }

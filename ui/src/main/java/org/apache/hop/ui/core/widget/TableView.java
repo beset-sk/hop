@@ -56,16 +56,14 @@ import org.apache.hop.ui.core.dialog.ErrorDialog;
 import org.apache.hop.ui.core.dialog.MessageBox;
 import org.apache.hop.ui.core.gui.GuiResource;
 import org.apache.hop.ui.core.gui.GuiToolbarWidgets;
+import org.apache.hop.ui.core.gui.IToolbarContainer;
 import org.apache.hop.ui.hopgui.TextSizeUtilFacade;
+import org.apache.hop.ui.hopgui.ToolbarFacade;
 import org.apache.hop.ui.util.EnvironmentUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.DragSource;
-import org.eclipse.swt.dnd.DragSourceEvent;
-import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.FocusAdapter;
@@ -102,7 +100,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
 
 /** Widget to display or modify data, displayed in a Table format. */
 @GuiPlugin
@@ -113,6 +110,14 @@ public class TableView extends Composite {
   private static final int EXTRA_COLUMN_WIDTH_MARGIN =
       Const.toInt(HopConfig.readStringVariable(Const.HOP_TABLE_VIEW_EXTRA_COLUMN_MARGIN, ""), 0);
 
+  /** Default minimum height hint in pixels for all TableView instances. */
+  public static final int HEIGHT_HINT_PX = 200;
+
+  /**
+   * Default minimum width hint in pixels for all TableView instances (matches typical shell width).
+   */
+  public static final int WIDTH_HINT_PX = 400;
+
   @Override
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
@@ -120,6 +125,7 @@ public class TableView extends Composite {
     if (toolbar != null) {
       toolbar.setEnabled(enabled);
     }
+
     this.table.setEnabled(enabled);
   }
 
@@ -162,7 +168,7 @@ public class TableView extends Composite {
   private final TableColumn[] tableColumn;
   private final PropsUi props;
   @Getter private final boolean toolbarEnabled;
-  @Getter @Setter private ToolBar toolbar;
+  @Getter @Setter private Control toolbar;
   @Getter @Setter private GuiToolbarWidgets toolbarWidgets;
   private Control text;
   private Combo combo;
@@ -498,6 +504,7 @@ public class TableView extends Composite {
     FormData fdTable = new FormData();
     fdTable.left = new FormAttachment(0, 0);
     fdTable.right = new FormAttachment(100, 0);
+    fdTable.width = WIDTH_HINT_PX;
     if (props.isShowTableViewToolbar()) {
       fdTable.top = new FormAttachment(toolbar, 0);
     } else {
@@ -576,7 +583,7 @@ public class TableView extends Composite {
 
     /*
      * It seems there is an other keyListener active to help control the cursor. There is support for keys like
-     * LEFT/RIGHT/UP/DOWN/HOME/END/etc It presents us with a problem because we only get the position of the row/column
+     * LEFT/RIGHT/UP/DOWN/HOME/END/etc. It presents us with a problem because we only get the position of the row/column
      * AFTER the other listener did its workflow. Therefor we added global variables prevRowNr and prevColNr
      */
     table.addKeyListener(createTableKeyListener());
@@ -619,9 +626,6 @@ public class TableView extends Composite {
           }
         });
 
-    // Drag & drop source!
-    addDragAndDropSupport();
-
     table.layout();
     table.pack();
 
@@ -631,6 +635,15 @@ public class TableView extends Composite {
 
     layout();
     pack();
+  }
+
+  @Override
+  public Point computeSize(int wHint, int hHint, boolean changed) {
+    Point size = super.computeSize(wHint, hHint, changed);
+    if (hHint == SWT.DEFAULT && size.y < HEIGHT_HINT_PX) {
+      size.y = HEIGHT_HINT_PX;
+    }
+    return size;
   }
 
   private void enableToolbarButtons() {
@@ -665,31 +678,6 @@ public class TableView extends Composite {
     toolbarWidgets.enableToolbarItem(ID_TOOLBAR_SELECT_ALL_ROWS, hasRows);
     toolbarWidgets.enableToolbarItem(ID_TOOLBAR_CLEAR_SELECTION, hasRows);
     toolbarWidgets.enableToolbarItem(ID_TOOLBAR_FILTERED_SELECTION, hasRows);
-  }
-
-  private void addDragAndDropSupport() {
-    // Drag & Drop for table-viewer
-    Transfer[] ttypes = new Transfer[] {TextTransfer.getInstance()};
-
-    DragSource ddSource = new DragSource(table, DND.DROP_MOVE | DND.DROP_COPY);
-    ddSource.setTransfer(ttypes);
-    ddSource.addDragListener(
-        new DragSourceListener() {
-          @Override
-          public void dragStart(DragSourceEvent event) {
-            // Disable listener
-          }
-
-          @Override
-          public void dragSetData(DragSourceEvent event) {
-            event.data = "TableView" + Const.CR + getSelectedText();
-          }
-
-          @Override
-          public void dragFinished(DragSourceEvent event) {
-            // Disable listener
-          }
-        });
   }
 
   private MouseListener createTableMouseListener() {
@@ -1471,7 +1459,9 @@ public class TableView extends Composite {
     toolbarWidgets.registerGuiPluginObject(this);
 
     if (toolbarEnabled && props.isShowTableViewToolbar()) {
-      toolbar = new ToolBar(this, SWT.WRAP | SWT.LEFT | SWT.HORIZONTAL);
+      IToolbarContainer toolBarContainer =
+          ToolbarFacade.createToolbarContainer(this, SWT.WRAP | SWT.LEFT | SWT.HORIZONTAL);
+      toolbar = toolBarContainer.getControl();
       FormData fdToolBar = new FormData();
       fdToolBar.left = new FormAttachment(0, 0);
       fdToolBar.top = new FormAttachment(0, 0);
@@ -1479,7 +1469,7 @@ public class TableView extends Composite {
       toolbar.setLayoutData(fdToolBar);
       PropsUi.setLook(toolbar, Props.WIDGET_STYLE_TOOLBAR);
 
-      toolbarWidgets.createToolbarWidgets(toolbar, ID_TOOLBAR, removeToolItems);
+      toolbarWidgets.createToolbarWidgets(toolBarContainer, ID_TOOLBAR, removeToolItems);
       toolbar.pack();
     }
   }
@@ -1551,15 +1541,15 @@ public class TableView extends Composite {
     }
   }
 
-  private void safelyDisposeControl(Control combo) {
-    if (combo == null) {
+  private void safelyDisposeControl(Control control) {
+    if (control == null) {
       return;
     }
-    synchronized (combo) {
-      if (combo.isDisposed()) {
+    synchronized (control) {
+      if (control.isDisposed()) {
         return;
       }
-      combo.dispose();
+      control.dispose();
     }
   }
 
@@ -1692,7 +1682,7 @@ public class TableView extends Composite {
         if (!bg.equals(defaultBackgroundColor)) {
           String colorName = "bg " + bg.toString();
           r[0] = colorName;
-          r[1] = Long.valueOf((bg.getRed() << 16) + (bg.getGreen() << 8) + (bg.getBlue()));
+          r[1] = (long) ((bg.getRed() << 16) + (bg.getGreen() << 8) + (bg.getBlue()));
           // Save it in the used colors map!
           usedColors.put(colorName, bg);
         }
@@ -1733,8 +1723,7 @@ public class TableView extends Composite {
       table.removeAll();
 
       // Refill the table
-      for (int i = 0; i < v.size(); i++) {
-        Object[] r = v.get(i);
+      for (Object[] r : v) {
         TableItem item = new TableItem(table, SWT.NONE);
 
         String colorName = (String) r[0];
@@ -1754,7 +1743,8 @@ public class TableView extends Composite {
             string = "<null>";
             item.setForeground(j - 2, nullTextColor);
           } else {
-            item.setForeground(j - 2, GuiResource.getInstance().getColorBlack());
+            Color textColor = GuiResource.getInstance().getColorBlack();
+            item.setForeground(j - 2, textColor);
           }
           if (string != null) {
             item.setText(j - 2, string);
@@ -2210,8 +2200,7 @@ public class TableView extends Composite {
       ArrayUtils.reverse(items);
     }
 
-    for (int r = 0; r < items.length; r++) {
-      TableItem ti = items[r];
+    for (TableItem ti : items) {
       for (int c = 1; c < table.getColumnCount(); c++) {
         if (c > 1) {
           selection.append(CLIPBOARD_DELIMITER);
@@ -2334,13 +2323,9 @@ public class TableView extends Composite {
     int[] items = table.getSelectionIndices();
     table.setSelection(items);
 
-    // Check if there is an active control (active textbox/combobox/...) and dispose it when
-    // deleting a row
-    Control activeControl = getActiveTableItem().getDisplay().getFocusControl();
-    // Check if the table is the parent
-    if (activeControl != null && activeControl.getParent().equals(table)) {
-      activeControl.dispose();
-    }
+    // Close any active editors before deleting rows
+    // This prevents the editor value from being saved to the wrong row
+    closeActiveEditors();
 
     if (items.length == 0) {
       return;
@@ -2436,13 +2421,9 @@ public class TableView extends Composite {
     ta.setDelete(before, itemsToDelete);
     addUndo(ta);
 
-    // Check if there is an active control (active textbox/combobox/...) and dispose it when
-    // deleting a row
-    Control activeControl = getActiveTableItem().getDisplay().getFocusControl();
-    // Check if the table is the parent
-    if (activeControl != null && activeControl.getParent().equals(table)) {
-      activeControl.dispose();
-    }
+    // Close any active editors before deleting rows
+    // This prevents the editor value from being saved to the wrong row
+    closeActiveEditors();
 
     // Delete non-selected items.
     table.remove(itemsToDelete);
@@ -2477,11 +2458,20 @@ public class TableView extends Composite {
   }
 
   public void edit(int rowNr, int colNr) {
+    // Don't create editors if the table is disabled
+    if (!table.isEnabled() || !this.isEnabled()) {
+      return;
+    }
     setPosition(rowNr, colNr);
     edit(rowNr, colNr, true, (char) 0);
   }
 
   private void edit(int rowNr, int colNr, boolean selectText, char extra) {
+    // Don't create editors if the table is disabled
+    if (!table.isEnabled() || !this.isEnabled()) {
+      return;
+    }
+
     selectionStart = -1;
 
     TableItem row = table.getItem(rowNr);
@@ -2671,12 +2661,6 @@ public class TableView extends Composite {
     }
     PropsUi.setLook(text);
 
-    // There's an issue with Hop web when editing in a table
-    // The text is white on a white background for some reason
-    // However, we can force the colors here.
-    //
-    fixWebLook(text);
-
     int width = tableColumn[colNr].getWidth();
     int height = 30;
 
@@ -2689,19 +2673,6 @@ public class TableView extends Composite {
     text.setFocus();
     text.setSize(width, height);
     editor.layout();
-  }
-
-  private void fixWebLook(Control control) {
-    if (EnvironmentUtils.getInstance().isWeb()) {
-      String hopWebTheme = EnvironmentUtils.getInstance().getHopWebTheme();
-      if ("dark".equalsIgnoreCase(hopWebTheme)) {
-        control.setForeground(GuiResource.getInstance().getColorWhite());
-        control.setBackground(GuiResource.getInstance().getColorBlack());
-      } else {
-        control.setForeground(GuiResource.getInstance().getColorBlack());
-        control.setBackground(GuiResource.getInstance().getColorWhite());
-      }
-    }
   }
 
   private void setColumnWidthBasedOnTextField(final int colNr, final boolean useVariables) {
@@ -2799,20 +2770,19 @@ public class TableView extends Composite {
 
       safelyDisposeControl(comboVar);
 
+      int comboStyle = SWT.SINGLE | SWT.LEFT;
+      if (columnInfo.isReadOnly()) {
+        comboStyle |= SWT.READ_ONLY;
+      }
       comboVar =
           new ComboVar(
-              variables,
-              table,
-              SWT.SINGLE | SWT.LEFT,
-              getCaretPositionInterface,
-              insertTextInterface);
+              variables, table, comboStyle, getCaretPositionInterface, insertTextInterface);
       if (lsFocusInTabItem != null) {
         comboVar.getCComboWidget().addListener(SWT.FocusIn, lsFocusInTabItem);
       } else {
         comboVar.setItems(opt);
       }
       PropsUi.setLook(comboVar);
-      fixWebLook(comboVar.getCComboWidget());
       comboVar.addTraverseListener(lsTraverse);
       comboVar.setData(CANCEL_KEYS, new String[] {"TAB", CONST_SHIFT_TAB});
       comboVar.addModifyListener(lsModCombo);
@@ -2843,7 +2813,6 @@ public class TableView extends Composite {
       String cellValue = item.getText(colNr);
       combo = new Combo(table, columnInfo.isReadOnly() ? SWT.READ_ONLY : SWT.NONE);
       PropsUi.setLook(combo);
-      fixWebLook(combo);
       combo.addTraverseListener(lsTraverse);
       combo.setData(CANCEL_KEYS, new String[] {"TAB", CONST_SHIFT_TAB});
       combo.addModifyListener(lsModCombo);
@@ -3234,8 +3203,8 @@ public class TableView extends Composite {
       case NewTableRow:
         int[] idx = ta.getCurrentIndex();
         table.remove(idx);
-        for (int i = 0; i < idx.length; i++) {
-          if (idx[i] < rowNr) {
+        for (int j : idx) {
+          if (j < rowNr) {
             rowNr--; // shift with the rest.
           }
         }
@@ -3343,8 +3312,8 @@ public class TableView extends Composite {
       case DeleteTableRow:
         idx = ta.getCurrentIndex();
         table.remove(idx);
-        for (int i = 0; i < idx.length; i++) {
-          if (idx[i] < rowNr) {
+        for (int j : idx) {
+          if (j < rowNr) {
             rowNr--; // shift with the rest.
           }
         }
@@ -3521,6 +3490,61 @@ public class TableView extends Composite {
     }
   }
 
+  /**
+   * Closes and cleans up any active editors in the table. This method should be called when you
+   * need to ensure that no editors are active, such as when disabling the table, deleting rows, or
+   * performing other operations that require a clean state.
+   *
+   * <p>This method:
+   *
+   * <ul>
+   *   <li>Triggers focus lost handlers to save any pending edits
+   *   <li>Safely disposes all active editor controls (text, combo, comboVar, button)
+   *   <li>Cleans up the TableEditor's active control
+   * </ul>
+   */
+  public void closeActiveEditors() {
+    // Check if there is an active text editor and save its value
+    if (text != null && !text.isDisposed() && lsFocusText != null) {
+      lsFocusText.focusLost(null);
+      // Text focus lost handler disposes the control itself
+    }
+
+    // Check if there is an active combo editor and save its value
+    if (combo != null && !combo.isDisposed() && lsFocusCombo != null) {
+      lsFocusCombo.focusLost(null);
+      // Combo focus lost handler doesn't dispose, so we need to do it
+      safelyDisposeControl(combo);
+      combo = null;
+    }
+
+    // Check if there is an active comboVar editor and save its value
+    if (comboVar != null && !comboVar.isDisposed() && lsFocusCombo != null) {
+      lsFocusCombo.focusLost(null);
+      // ComboVar focus lost handler doesn't dispose, so we need to do it
+      safelyDisposeControl(comboVar);
+      comboVar = null;
+    }
+
+    // Close any active button
+    if (button != null && !button.isDisposed()) {
+      button.dispose();
+      button = null;
+    }
+
+    // Clean up the table editor's active control
+    if (editor != null) {
+      Control oldEditor = editor.getEditor();
+      if (oldEditor != null && !oldEditor.isDisposed()) {
+        try {
+          oldEditor.dispose();
+        } catch (SWTException swte) {
+          // Eat "Widget Is Disposed Exception"
+        }
+      }
+    }
+  }
+
   // Filtering...
 
   @GuiToolbarElement(
@@ -3561,8 +3585,8 @@ public class TableView extends Composite {
   public IRowMeta getRowWithoutValues() {
     IRowMeta f = new RowMeta();
     f.addValueMeta(new ValueMetaInteger("#"));
-    for (int i = 0; i < columns.length; i++) {
-      f.addValueMeta(new ValueMetaString(columns[i].getName()));
+    for (ColumnInfo column : columns) {
+      f.addValueMeta(new ValueMetaString(column.getName()));
     }
     return f;
   }
@@ -3572,7 +3596,7 @@ public class TableView extends Composite {
     IRowMeta rowMeta = getRowWithoutValues();
     Object[] rowData = new Object[rowMeta.size()];
 
-    rowData[0] = Long.valueOf(nr);
+    rowData[0] = (long) nr;
     for (int i = 1; i < rowMeta.size(); i++) {
       rowData[i] = ti.getText(i);
     }
@@ -3708,7 +3732,7 @@ public class TableView extends Composite {
     void delete(int[] items);
   }
 
-  @Setter
+  @Setter @Getter
   private ITableViewModifyListener tableViewModifyListener =
       new ITableViewModifyListener() {
         @Override

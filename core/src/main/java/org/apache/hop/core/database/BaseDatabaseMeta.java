@@ -184,6 +184,21 @@ public abstract class BaseDatabaseMeta implements Cloneable, IDatabase {
   @HopMetadataProperty protected String pluginId;
   @HopMetadataProperty protected String pluginName;
 
+  // SSH Tunnel fields
+  @HopMetadataProperty protected boolean sshTunnelEnabled;
+  @HopMetadataProperty protected String sshTunnelHost;
+  @HopMetadataProperty protected String sshTunnelPort;
+  @HopMetadataProperty protected String sshTunnelUsername;
+
+  @HopMetadataProperty(password = true)
+  protected String sshTunnelPassword;
+
+  @HopMetadataProperty protected boolean sshTunnelUsePrivateKey;
+  @HopMetadataProperty protected String sshTunnelPrivateKeyFile;
+
+  @HopMetadataProperty(password = true)
+  protected String sshTunnelPassphrase;
+
   public BaseDatabaseMeta() {
     attributes = Collections.synchronizedMap(new HashMap<>());
     changed = false;
@@ -1415,7 +1430,7 @@ public abstract class BaseDatabaseMeta implements Cloneable, IDatabase {
   /**
    * @param string
    * @return A string that is properly quoted for use in a SQL statement (insert, update, delete,
-   *     etc)
+   *     etc.)
    */
   @Override
   public String quoteSqlString(String string) {
@@ -1946,22 +1961,33 @@ public abstract class BaseDatabaseMeta implements Cloneable, IDatabase {
     }
 
     String typeName = rm.getColumnTypeName(index);
-    // Most dbs expose uuid as "UUID", sql server (native) as "UNIQUEIDENTIFIER"
-    if ("uuid".equalsIgnoreCase(typeName) || "uniqueidentifier".equalsIgnoreCase(typeName)) {
-      try {
+    if (typeName == null) {
+      return null;
+    }
 
-        int uuidTypeId = ValueMetaFactory.getIdForValueMeta("UUID");
+    typeName = typeName.toLowerCase();
+    try {
+      switch (typeName) {
+          // Most dbs expose uuid as "UUID", sql server (native) as "UNIQUEIDENTIFIER"
+        case "uniqueidentifier", "uuid":
+          {
+            int uuidTypeId = ValueMetaFactory.getIdForValueMeta("UUID");
 
-        // Keep any existing metadata
-        IValueMeta u = ValueMetaFactory.cloneValueMeta(v, uuidTypeId);
+            // Keep any existing metadata
+            IValueMeta u = ValueMetaFactory.cloneValueMeta(v, uuidTypeId);
 
-        u.setLength(-1);
-        u.setPrecision(-1);
+            u.setLength(-1);
+            u.setPrecision(-1);
 
-        return u;
-      } catch (HopPluginException ignore) {
-        // UUID plugin not present
+            return u;
+          }
+        case "json", "jsonb":
+          return ValueMetaFactory.cloneValueMeta(v, IValueMeta.TYPE_JSON);
+        default:
+          break;
       }
+    } catch (HopPluginException ignore) {
+      // plugin not present
     }
     return null;
   }

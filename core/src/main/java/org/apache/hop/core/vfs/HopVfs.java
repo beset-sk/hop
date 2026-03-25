@@ -315,7 +315,7 @@ public class HopVfs {
    * Read a text file (like an XML document). WARNING DO NOT USE FOR DATA FILES.
    *
    * @param vfsFilename the filename or URL to read from
-   * @param charSetName the character set of the string (UTF-8, ISO8859-1, etc)
+   * @param charSetName the character set of the string (UTF-8, ISO8859-1, etc.)
    * @return The content of the file as a String
    * @throws org.apache.hop.core.exception.HopFileException
    */
@@ -373,6 +373,15 @@ public class HopVfs {
           /* Ignore */
         }
       }
+    }
+  }
+
+  public static boolean isLocalFileSystem(String path) {
+    try {
+      FileObject fileObject = getFileObject(path);
+      return fileObject instanceof LocalFile;
+    } catch (HopFileException e) {
+      return false;
     }
   }
 
@@ -459,6 +468,16 @@ public class HopVfs {
     }
   }
 
+  /**
+   * Utility to normalize file name depending on OS.
+   *
+   * <p>On Window clean some situation where {@code c:/project/\workflow.hwf} is normalized to
+   * {@code c:\project\workflow.hwf}
+   */
+  public static String normalize(String filename) throws HopFileException {
+    return getFilename(getFileObject(filename));
+  }
+
   public static String getFilename(FileObject fileObject) {
     FileName fileName = fileObject.getName();
     String root = fileName.getRootURI();
@@ -518,7 +537,7 @@ public class HopVfs {
    * Creates a file using "java.io.tmpdir" directory
    *
    * @param prefix - file name
-   * @param prefix - file extension
+   * @param suffix - file extension
    * @return FileObject
    * @throws HopFileException
    */
@@ -628,8 +647,8 @@ public class HopVfs {
 
       boolean found = false;
       String[] schemes = fsManager.getSchemes();
-      for (int i = 0; i < schemes.length; i++) {
-        if (vfsFileName.startsWith(schemes[i] + ":")) {
+      for (String scheme : schemes) {
+        if (vfsFileName.startsWith(scheme + ":")) {
           found = true;
           break;
         }

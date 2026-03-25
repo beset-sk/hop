@@ -45,12 +45,15 @@ import org.apache.hop.testing.util.DataSetConst;
     description = "i18n::PipelineUnitTest.description",
     image = "Test_tube_icon.svg",
     documentationUrl = "/metadata-types/pipeline-unit-test.html",
-    hopMetadataPropertyType = HopMetadataPropertyType.PIPELINE_UNIT_TEST)
+    hopMetadataPropertyType = HopMetadataPropertyType.PIPELINE_UNIT_TEST,
+    supportsGlobalReplace = true)
 public class PipelineUnitTest extends HopMetadataBase implements Cloneable, IHopMetadata {
 
   @HopMetadataProperty private String description;
 
-  @HopMetadataProperty(key = "pipeline_filename")
+  @HopMetadataProperty(
+      key = "pipeline_filename",
+      hopMetadataPropertyType = HopMetadataPropertyType.HOP_FILE)
   protected String pipelineFilename; // file (3rd priority)
 
   @HopMetadataProperty(key = "input_data_sets")
@@ -84,7 +87,7 @@ public class PipelineUnitTest extends HopMetadataBase implements Cloneable, IHop
     type = TestType.DEVELOPMENT;
     databaseReplacements = new ArrayList<>();
     variableValues = new ArrayList<>();
-    basePath = null;
+    basePath = "${" + DataSetConst.VARIABLE_HOP_UNIT_TESTS_FOLDER + "}";
     autoOpening = true;
   }
 
@@ -256,10 +259,10 @@ public class PipelineUnitTest extends HopMetadataBase implements Cloneable, IHop
     if (StringUtils.isEmpty(baseFilePath)) {
       baseFilePath = "";
     }
-    if (StringUtils.isNotEmpty(baseFilePath)) {
-      if (!baseFilePath.endsWith("/") && !baseFilePath.endsWith("\\")) {
-        baseFilePath += "/";
-      }
+    if (StringUtils.isNotEmpty(baseFilePath)
+        && !baseFilePath.endsWith("/")
+        && !baseFilePath.endsWith("\\")) {
+      baseFilePath += "/";
     }
     return baseFilePath + pipelineFilename;
   }

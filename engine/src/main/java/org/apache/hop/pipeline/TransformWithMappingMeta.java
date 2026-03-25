@@ -207,10 +207,8 @@ public abstract class TransformWithMappingMeta<Main extends ITransform, Data ext
         try {
           childNamedParams.addParameterDefinition(key, "", "");
           childNamedParams.setParameterValue(key, value);
-        } catch (DuplicateParamException e) {
+        } catch (DuplicateParamException | UnknownParamException e) {
           // this was explicitly checked before
-        } catch (UnknownParamException e) {
-          // this is explicitly checked for up front
         }
 
         childVariableSpace.setVariable(key, value);
@@ -319,14 +317,12 @@ public abstract class TransformWithMappingMeta<Main extends ITransform, Data ext
   }
 
   private static boolean isInternalVariable(String variableName, String type) {
-    switch (type) {
-      case "Pipeline":
-        return isPipelineInternalVariable(variableName);
-      case "Workflow":
-        return isWorkflowInternalVariable(variableName);
-      default:
-        return isWorkflowInternalVariable(variableName) || isPipelineInternalVariable(variableName);
-    }
+    return switch (type) {
+      case "Pipeline" -> isPipelineInternalVariable(variableName);
+      case "Workflow" -> isWorkflowInternalVariable(variableName);
+      default ->
+          isWorkflowInternalVariable(variableName) || isPipelineInternalVariable(variableName);
+    };
   }
 
   private static boolean isPipelineInternalVariable(String variableName) {

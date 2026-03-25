@@ -32,6 +32,7 @@ import org.apache.hop.base.AbstractMeta;
 import org.apache.hop.base.BaseHopMeta;
 import org.apache.hop.core.CheckResult;
 import org.apache.hop.core.Const;
+import org.apache.hop.core.HopVersionProvider;
 import org.apache.hop.core.ICheckResult;
 import org.apache.hop.core.IProgressMonitor;
 import org.apache.hop.core.NotePadMeta;
@@ -214,17 +215,16 @@ public class WorkflowMeta extends AbstractMeta
    * @return the start
    */
   public ActionMeta getStart() {
-    for (int i = 0; i < nrActions(); i++) {
-      ActionMeta cge = getAction(i);
-      if (cge.isStart()) {
-        return cge;
+    for (ActionMeta action : workflowActions) {
+      if (action.isStart()) {
+        return action;
       }
     }
     return null;
   }
 
   /**
-   * Compares two workflow on name, filename, etc. The comparison algorithm is as follows:<br>
+   * Compares two workflows on name, filename, etc. The comparison algorithm is as follows:<br>
    *
    * <ol>
    *   <li>The first workflow's filename is checked first; if it has none, the workflow is created.
@@ -340,8 +340,7 @@ public class WorkflowMeta extends AbstractMeta
     changedActions = false;
     changedHops = false;
 
-    for (int i = 0; i < nrActions(); i++) {
-      ActionMeta action = getAction(i);
+    for (ActionMeta action : workflowActions) {
       action.setChanged(false);
     }
     for (WorkflowHopMeta hop : workflowHops) {
@@ -358,14 +357,7 @@ public class WorkflowMeta extends AbstractMeta
    */
   @Override
   public boolean hasChanged() {
-    if (super.hasChanged()) {
-      return true;
-    }
-
-    if (haveActionsChanged()) {
-      return true;
-    }
-    return haveWorkflowHopsChanged();
+    return super.hasChanged() || haveActionsChanged() || haveWorkflowHopsChanged();
   }
 
   /**
@@ -413,16 +405,14 @@ public class WorkflowMeta extends AbstractMeta
 
     xml.append("    ").append(XmlHandler.openTag(XML_TAG_PARAMETERS)).append(Const.CR);
     String[] parameters = listParameters();
-    for (int idx = 0; idx < parameters.length; idx++) {
+    for (String parameter : parameters) {
       xml.append("      ").append(XmlHandler.openTag(CONST_PARAMETER)).append(Const.CR);
-      xml.append(CONST_SPACE).append(XmlHandler.addTagValue("name", parameters[idx]));
+      xml.append(CONST_SPACE).append(XmlHandler.addTagValue("name", parameter));
       try {
         xml.append(CONST_SPACE)
-            .append(XmlHandler.addTagValue("default_value", getParameterDefault(parameters[idx])));
+            .append(XmlHandler.addTagValue("default_value", getParameterDefault(parameter)));
         xml.append(CONST_SPACE)
-            .append(
-                XmlHandler.addTagValue(
-                    CONST_DESCRIPTION, getParameterDescription(parameters[idx])));
+            .append(XmlHandler.addTagValue(CONST_DESCRIPTION, getParameterDescription(parameter)));
       } catch (UnknownParamException e) {
         // skip the default value and/or description. This exception should never happen because we
         // use listParameters()
@@ -624,10 +614,8 @@ public class WorkflowMeta extends AbstractMeta
 
       ActionMeta action = getAction(i);
       Point p = action.getLocation();
-      if (p != null) {
-        if (x >= p.x && x <= p.x + iconsize && y >= p.y && y <= p.y + iconsize) {
-          return action;
-        }
+      if (p != null && x >= p.x && x <= p.x + iconsize && y >= p.y && y <= p.y + iconsize) {
+        return action;
       }
     }
     return null;
@@ -674,7 +662,7 @@ public class WorkflowMeta extends AbstractMeta
   /**
    * Adds the action.
    *
-   * @param action the je
+   * @param action the action meta to add
    */
   public void addAction(ActionMeta action) {
     workflowActions.add(action);
@@ -685,7 +673,7 @@ public class WorkflowMeta extends AbstractMeta
   /**
    * Adds the workflow hop.
    *
-   * @param hop the hi
+   * @param hop the workflow hop meta to add
    */
   public void addWorkflowHop(WorkflowHopMeta hop) {
     workflowHops.add(hop);
@@ -695,36 +683,38 @@ public class WorkflowMeta extends AbstractMeta
   /**
    * Adds the action.
    *
-   * @param p the p
-   * @param action the si
+   * @param index index at which the specified action is to be inserted
+   * @param action the action meta to add
    */
-  public void addAction(int p, ActionMeta action) {
-    workflowActions.add(p, action);
+  public void addAction(int index, ActionMeta action) {
+    workflowActions.add(index, action);
     changedActions = true;
+    setChanged();
   }
 
   /**
    * Adds the workflow hop.
    *
-   * @param p the p
-   * @param hop the hi
+   * @param index index at which the specified hop is to be inserted
+   * @param hop the workflow hop meta to add
    */
-  public void addWorkflowHop(int p, WorkflowHopMeta hop) {
+  public void addWorkflowHop(int index, WorkflowHopMeta hop) {
     try {
-      workflowHops.add(p, hop);
+      workflowHops.add(index, hop);
     } catch (IndexOutOfBoundsException e) {
       workflowHops.add(hop);
     }
     changedHops = true;
+    setChanged();
   }
 
   /**
    * Removes the action.
    *
-   * @param i the i
+   * @param index the index of the action to be removed
    */
-  public void removeAction(int i) {
-    ActionMeta deleted = workflowActions.remove(i);
+  public void removeAction(int index) {
+    ActionMeta deleted = workflowActions.remove(index);
     if (deleted != null) {
       // give transform a chance to cleanup
       deleted.setParentWorkflowMeta(null);
@@ -792,8 +782,7 @@ public class WorkflowMeta extends AbstractMeta
    * @return The ActionMeta or null if nothing was found!
    */
   public ActionMeta findAction(String name) {
-    for (int i = 0; i < nrActions(); i++) {
-      ActionMeta action = getAction(i);
+    for (ActionMeta action : workflowActions) {
       if (action.getName().equalsIgnoreCase(name)) {
         return action;
       }
@@ -804,8 +793,8 @@ public class WorkflowMeta extends AbstractMeta
   /**
    * Find workflow hop.
    *
-   * @param name the name
-   * @return the workflow hop meta
+   * @param name the name of the hop to look for
+   * @return the workflow hop meta or null if nothing was found.
    */
   public WorkflowHopMeta findWorkflowHop(String name) {
     for (WorkflowHopMeta hop : workflowHops) {
@@ -819,18 +808,15 @@ public class WorkflowMeta extends AbstractMeta
   }
 
   /**
-   * Find workflow hop from.
+   * Find the first workflow hop from.
    *
-   * @param action the action meta
-   * @return the workflow hop meta
+   * @param action the action meta at the start of the hop.
+   * @return the first hop found or null if nothing was found.
    */
   public WorkflowHopMeta findWorkflowHopFrom(ActionMeta action) {
     if (action != null) {
       for (WorkflowHopMeta hop : workflowHops) {
-
-        // Return the first we find!
-        //
-        if (hop != null && (hop.getFromAction() != null) && hop.getFromAction().equals(action)) {
+        if (action.equals(hop.getFromAction())) {
           return hop;
         }
       }
@@ -841,9 +827,9 @@ public class WorkflowMeta extends AbstractMeta
   /**
    * Find workflow hop.
    *
-   * @param from the from
-   * @param to the to
-   * @return the workflow hop meta
+   * @param from the action meta at the start of the hop
+   * @param to the to action meta at the end of the hop.
+   * @return the workflow hop meta or null if nothing was found.
    */
   public WorkflowHopMeta findWorkflowHop(ActionMeta from, ActionMeta to) {
     return findWorkflowHop(from, to, false);
@@ -852,37 +838,36 @@ public class WorkflowMeta extends AbstractMeta
   /**
    * Find workflow hop.
    *
-   * @param from the from
-   * @param to the to
-   * @param includeDisabled the include disabled
-   * @return the workflow hop meta
+   * @param from the action meta at the start of the hop
+   * @param to the to action meta at the end of the hop.
+   * @param includeDisabled include disabled hop
+   * @return the workflow hop meta or null if nothing was found.
    */
   public WorkflowHopMeta findWorkflowHop(ActionMeta from, ActionMeta to, boolean includeDisabled) {
     for (WorkflowHopMeta hop : workflowHops) {
-      if (hop.isEnabled() || includeDisabled) {
-        if (hop != null
-            && hop.getFromAction() != null
-            && hop.getToAction() != null
-            && hop.getFromAction().equals(from)
-            && hop.getToAction().equals(to)) {
-          return hop;
-        }
+      if ((hop.isEnabled() || includeDisabled)
+          && hop.getFromAction() != null
+          && hop.getToAction() != null
+          && hop.getFromAction().equals(from)
+          && hop.getToAction().equals(to)) {
+        return hop;
       }
     }
     return null;
   }
 
   /**
-   * Find workflow hop to.
+   * Find the first workflow hop to.
    *
-   * @param actionMeta the action meta
-   * @return the workflow hop meta
+   * @param action the to action meta at the end of the hop.
+   * @return the first workflow hop meta or null if nothing was found.
    */
-  public WorkflowHopMeta findWorkflowHopTo(ActionMeta actionMeta) {
-    for (WorkflowHopMeta hop : workflowHops) {
-      if (hop != null && hop.getToAction() != null && hop.getToAction().equals(actionMeta)) {
-        // Return the first!
-        return hop;
+  public WorkflowHopMeta findWorkflowHopTo(ActionMeta action) {
+    if (action != null) {
+      for (WorkflowHopMeta hop : workflowHops) {
+        if (action.equals(hop.getToAction())) {
+          return hop;
+        }
       }
     }
     return null;
@@ -1149,11 +1134,11 @@ public class WorkflowMeta extends AbstractMeta
     for (WorkflowHopMeta hop : workflowHops) {
       // Look at all the hops
 
-      if (hop.getFromAction() != null && hop.getToAction() != null) {
-        if (hop.getFromAction().getName().equalsIgnoreCase(name)
-            || hop.getToAction().getName().equalsIgnoreCase(name)) {
-          hops.add(hop);
-        }
+      if (hop.getFromAction() != null
+          && hop.getToAction() != null
+          && (hop.getFromAction().getName().equalsIgnoreCase(name)
+              || hop.getToAction().getName().equalsIgnoreCase(name))) {
+        hops.add(hop);
       }
     }
     return hops.toArray(new WorkflowHopMeta[hops.size()]);
@@ -1161,14 +1146,14 @@ public class WorkflowMeta extends AbstractMeta
 
   public boolean isPathExist(IAction from, IAction to) {
     for (WorkflowHopMeta hop : workflowHops) {
-      if (hop.getFromAction() != null && hop.getToAction() != null) {
-        if (hop.getFromAction().getName().equalsIgnoreCase(from.getName())) {
-          if (hop.getToAction().getName().equalsIgnoreCase(to.getName())) {
-            return true;
-          }
-          if (isPathExist(hop.getToAction().getAction(), to)) {
-            return true;
-          }
+      if (hop.getFromAction() != null
+          && hop.getToAction() != null
+          && hop.getFromAction().getName().equalsIgnoreCase(from.getName())) {
+        if (hop.getToAction().getName().equalsIgnoreCase(to.getName())) {
+          return true;
+        }
+        if (isPathExist(hop.getToAction().getAction(), to)) {
+          return true;
         }
       }
     }
@@ -1178,14 +1163,11 @@ public class WorkflowMeta extends AbstractMeta
 
   /** Select all. */
   public void selectAll() {
-    int i;
-    for (i = 0; i < nrActions(); i++) {
-      ActionMeta action = getAction(i);
+    for (ActionMeta action : workflowActions) {
       action.setSelected(true);
     }
-    for (i = 0; i < nrNotes(); i++) {
-      NotePadMeta ni = getNote(i);
-      ni.setSelected(true);
+    for (NotePadMeta note : getNotes()) {
+      note.setSelected(true);
     }
     setChanged();
     notifyObservers("refreshGraph");
@@ -1193,14 +1175,11 @@ public class WorkflowMeta extends AbstractMeta
 
   /** Unselect all. */
   public void unselectAll() {
-    int i;
-    for (i = 0; i < nrActions(); i++) {
-      ActionMeta action = getAction(i);
+    for (ActionMeta action : workflowActions) {
       action.setSelected(false);
     }
-    for (i = 0; i < nrNotes(); i++) {
-      NotePadMeta ni = getNote(i);
-      ni.setSelected(false);
+    for (NotePadMeta note : getNotes()) {
+      note.setSelected(false);
     }
   }
 
@@ -1212,8 +1191,7 @@ public class WorkflowMeta extends AbstractMeta
   public Point getMaximum() {
     int maxx = 0;
     int maxy = 0;
-    for (int i = 0; i < nrActions(); i++) {
-      ActionMeta action = getAction(i);
+    for (ActionMeta action : workflowActions) {
       Point loc = action.getLocation();
       if (loc.x > maxx) {
         maxx = loc.x;
@@ -1222,14 +1200,13 @@ public class WorkflowMeta extends AbstractMeta
         maxy = loc.y;
       }
     }
-    for (int i = 0; i < nrNotes(); i++) {
-      NotePadMeta ni = getNote(i);
-      Point loc = ni.getLocation();
-      if (loc.x + ni.width > maxx) {
-        maxx = loc.x + ni.width;
+    for (NotePadMeta note : getNotes()) {
+      Point loc = note.getLocation();
+      if (loc.x + note.width > maxx) {
+        maxx = loc.x + note.width;
       }
-      if (loc.y + ni.height > maxy) {
-        maxy = loc.y + ni.height;
+      if (loc.y + note.height > maxy) {
+        maxy = loc.y + note.height;
       }
     }
 
@@ -1244,9 +1221,8 @@ public class WorkflowMeta extends AbstractMeta
   public Point getMinimum() {
     int minx = Integer.MAX_VALUE;
     int miny = Integer.MAX_VALUE;
-    for (int i = 0; i < nrActions(); i++) {
-      ActionMeta actionMeta = getAction(i);
-      Point loc = actionMeta.getLocation();
+    for (ActionMeta action : workflowActions) {
+      Point loc = action.getLocation();
       if (loc.x < minx) {
         minx = loc.x;
       }
@@ -1254,9 +1230,8 @@ public class WorkflowMeta extends AbstractMeta
         miny = loc.y;
       }
     }
-    for (int i = 0; i < nrNotes(); i++) {
-      NotePadMeta notePadMeta = getNote(i);
-      Point loc = notePadMeta.getLocation();
+    for (NotePadMeta note : getNotes()) {
+      Point loc = note.getLocation();
       if (loc.x < minx) {
         minx = loc.x;
       }
@@ -1280,9 +1255,9 @@ public class WorkflowMeta extends AbstractMeta
   }
 
   /**
-   * Gets the selected locations.
+   * Gets the selected actions locations.
    *
-   * @return the selected locations
+   * @return the selected actions locations
    */
   public Point[] getSelectedLocations() {
     List<ActionMeta> actions = getSelectedActions();
@@ -1296,9 +1271,9 @@ public class WorkflowMeta extends AbstractMeta
   }
 
   /**
-   * Get all the selected note locations
+   * Get all the selected notes locations
    *
-   * @return The selected transform and notes locations.
+   * @return The selected notes locations.
    */
   public Point[] getSelectedNoteLocations() {
     List<Point> points = new ArrayList<>();
@@ -1348,9 +1323,9 @@ public class WorkflowMeta extends AbstractMeta
    * @return the action copy
    */
   public ActionMeta findStart() {
-    for (int i = 0; i < nrActions(); i++) {
-      if (getAction(i).isStart()) {
-        return getAction(i);
+    for (ActionMeta actionMeta : workflowActions) {
+      if (actionMeta.isStart()) {
+        return actionMeta;
       }
     }
     return null;
@@ -1573,9 +1548,8 @@ public class WorkflowMeta extends AbstractMeta
       return true;
     }
 
-    for (int i = 0; i < nrActions(); i++) {
-      ActionMeta action = getAction(i);
-      if (action.hasChanged()) {
+    for (ActionMeta actionMeta : workflowActions) {
+      if (actionMeta.hasChanged()) {
         return true;
       }
     }
@@ -1592,10 +1566,9 @@ public class WorkflowMeta extends AbstractMeta
       return true;
     }
 
-    for (WorkflowHopMeta hi : workflowHops) {
-      // Look at all the hops
-
-      if (hi.hasChanged()) {
+    // Look at all the hops
+    for (WorkflowHopMeta hop : workflowHops) {
+      if (hop.hasChanged()) {
         return true;
       }
     }
@@ -1645,6 +1618,9 @@ public class WorkflowMeta extends AbstractMeta
     setInternalNameHopVariable(variables);
 
     updateCurrentDir(variables);
+
+    HopVersionProvider versionProvider = new HopVersionProvider();
+    variables.setVariable(Const.HOP_VERSION, versionProvider.getVersion()[0]);
   }
 
   // changed to protected for testing purposes
@@ -1812,11 +1788,8 @@ public class WorkflowMeta extends AbstractMeta
    */
   public List<ResourceReference> getResourceDependencies(IVariables variables) {
     List<ResourceReference> resourceReferences = new ArrayList<>();
-    ActionMeta copy = null;
-    IAction action = null;
-    for (int i = 0; i < workflowActions.size(); i++) {
-      copy = workflowActions.get(i); // get the action copy
-      action = copy.getAction();
+    for (ActionMeta actionMeta : workflowActions) {
+      IAction action = actionMeta.getAction();
       resourceReferences.addAll(action.getResourceDependencies(variables, this));
     }
 
@@ -1887,12 +1860,7 @@ public class WorkflowMeta extends AbstractMeta
           definitions.put(fullname, definition);
         }
       }
-    } catch (FileSystemException e) {
-      throw new HopException(
-          BaseMessages.getString(
-              PKG, "WorkflowMeta.Exception.AnErrorOccuredReadingWorkflow", getFilename()),
-          e);
-    } catch (HopFileException e) {
+    } catch (FileSystemException | HopFileException e) {
       throw new HopException(
           BaseMessages.getString(
               PKG, "WorkflowMeta.Exception.AnErrorOccuredReadingWorkflow", getFilename()),

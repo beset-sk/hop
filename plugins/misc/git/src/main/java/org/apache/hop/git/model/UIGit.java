@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -45,6 +46,7 @@ import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.ui.core.dialog.EnterSelectionDialog;
 import org.apache.hop.ui.core.dialog.ErrorDialog;
 import org.apache.hop.ui.hopgui.HopGui;
+import org.eclipse.jgit.api.CleanCommand;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.DiffCommand;
 import org.eclipse.jgit.api.Git;
@@ -108,7 +110,6 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.util.FileUtils;
 import org.eclipse.jgit.util.RawParseUtils;
-import org.eclipse.jgit.util.SystemReader;
 
 public class UIGit extends VCS {
   protected static final Class<?> PKG = UIGit.class;
@@ -307,17 +308,33 @@ public class UIGit extends VCS {
     return remotes.contains(Constants.DEFAULT_REMOTE_NAME);
   }
 
+  /**
+   * Commits changes to the repository with a specified author and message.
+   *
+   * @param authorName The name of the author making the commit.
+   * @param message The message describing the commit.
+   * @return true if the commit is successful; otherwise, false.
+   * @throws HopException If an error occurs during the commit operation.
+   */
   public boolean commit(String authorName, String message) throws HopException {
+    return this.commit(authorName, message, false);
+  }
+
+  /**
+   * Commits changes to the repository with a specified author, message, and amend option.
+   *
+   * @param authorName The name of the author making the commit.
+   * @param message The message describing the commit.
+   * @param amend Whether the commit should amend the previous commit.
+   * @return true if the commit is successful; otherwise, false.
+   * @throws HopException If an error occurs during the commit operation.
+   */
+  public boolean commit(String authorName, String message, boolean amend) throws HopException {
     PersonIdent author = RawParseUtils.parsePersonIdent(authorName);
-    // Set the local time
-    PersonIdent author2 =
-        new PersonIdent(
-            author.getName(),
-            author.getEmailAddress(),
-            SystemReader.getInstance().getCurrentTime(),
-            SystemReader.getInstance().getTimezone(SystemReader.getInstance().getCurrentTime()));
+    // Set the local time and use the system time zone
+    PersonIdent committer = new PersonIdent(author, Instant.now());
     try {
-      git.commit().setAuthor(author2).setMessage(message).call();
+      git.commit().setAuthor(committer).setMessage(message).setAmend(amend).call();
       return true;
     } catch (Exception e) {
       throw new HopException("Error in git commit", e);
@@ -331,15 +348,55 @@ public class UIGit extends VCS {
   public List<ObjectRevision> getRevisions(String path) {
     List<ObjectRevision> revisions = new ArrayList<>();
     try {
+      // Normalize the path for JGit (forward slashes, no leading slash)
+      String normalizedPath = normalizePathForJGit(path);
+      if (path != null && !".".equals(path)) {
+        LogChannel.UI.logDebug(
+            "Getting revisions for path - original: '"
+                + path
+                + "', normalized: '"
+                + normalizedPath
+                + "'");
+      }
+
+      // Check if there are working tree changes for the specific path
+      boolean hasWorkingTreeChanges = false;
       if (!isClean()
           || git.getRepository().getRepositoryState() == RepositoryState.MERGING_RESOLVED) {
-        GitObjectRevision rev =
-            new GitObjectRevision(WORKINGTREE, "*", new Date(), " // " + VCS.WORKINGTREE);
-        revisions.add(rev);
+        // If a specific path is provided, check if that path has changes
+        if (normalizedPath != null && !".".equals(normalizedPath)) {
+          List<UIFile> stagedFiles = getStagedFiles();
+          List<UIFile> unstagedFiles = getUnstagedFiles();
+          for (UIFile file : stagedFiles) {
+            if (file.getName().equals(normalizedPath)
+                || file.getName().startsWith(normalizedPath + "/")) {
+              hasWorkingTreeChanges = true;
+              break;
+            }
+          }
+          if (!hasWorkingTreeChanges) {
+            for (UIFile file : unstagedFiles) {
+              if (file.getName().equals(normalizedPath)
+                  || file.getName().startsWith(normalizedPath + "/")) {
+                hasWorkingTreeChanges = true;
+                break;
+              }
+            }
+          }
+        } else {
+          // No specific path, so there are working tree changes
+          hasWorkingTreeChanges = true;
+        }
+
+        if (hasWorkingTreeChanges) {
+          GitObjectRevision rev =
+              new GitObjectRevision(WORKINGTREE, "*", new Date(), " // " + VCS.WORKINGTREE);
+          revisions.add(rev);
+        }
       }
       LogCommand logCommand = git.log();
-      if (path != null && !".".equals(path)) {
-        logCommand = logCommand.addPath(path);
+      if (normalizedPath != null && !".".equals(normalizedPath)) {
+        logCommand = logCommand.addPath(normalizedPath);
       }
       Iterable<RevCommit> iterable = logCommand.call();
       for (RevCommit commit : iterable) {
@@ -352,7 +409,7 @@ public class UIGit extends VCS {
         revisions.add(rev);
       }
     } catch (Exception e) {
-      // Do nothing
+      LogChannel.UI.logError("Error getting git revisions for path: " + path, e);
     }
     return revisions;
   }
@@ -365,9 +422,10 @@ public class UIGit extends VCS {
     List<UIFile> files = new ArrayList<>();
     Status status = null;
     try {
+      String normalizedPath = normalizePathForJGit(path);
       StatusCommand statusCommand = git.status();
-      if (path != null && !".".equals(path)) {
-        statusCommand = statusCommand.addPath(path);
+      if (normalizedPath != null && !".".equals(normalizedPath)) {
+        statusCommand = statusCommand.addPath(normalizedPath);
       }
 
       status = statusCommand.call();
@@ -376,7 +434,6 @@ public class UIGit extends VCS {
       return files;
     }
     status.getUntracked().forEach(name -> files.add(new UIFile(name, ChangeType.ADD, false)));
-    status.getModified().forEach(name -> files.add(new UIFile(name, ChangeType.MODIFY, false)));
     status.getConflicting().forEach(name -> files.add(new UIFile(name, ChangeType.MODIFY, false)));
     status.getMissing().forEach(name -> files.add(new UIFile(name, ChangeType.DELETE, false)));
     return files;
@@ -393,6 +450,7 @@ public class UIGit extends VCS {
     }
     status.getAdded().forEach(name -> files.add(new UIFile(name, ChangeType.ADD, true)));
     status.getChanged().forEach(name -> files.add(new UIFile(name, ChangeType.MODIFY, true)));
+    status.getModified().forEach(name -> files.add(new UIFile(name, ChangeType.MODIFY, true)));
     status.getRemoved().forEach(name -> files.add(new UIFile(name, ChangeType.DELETE, true)));
     return files;
   }
@@ -445,18 +503,19 @@ public class UIGit extends VCS {
 
   public void add(String filePattern) throws HopException {
     try {
-      if (filePattern.endsWith(CONST_OURS) || filePattern.endsWith(CONST_THEIRS)) {
+      String normalizedPattern = normalizePathForJGit(filePattern);
+      if (normalizedPattern.endsWith(CONST_OURS) || normalizedPattern.endsWith(CONST_THEIRS)) {
         FileUtils.rename(
-            new File(directory, filePattern),
-            new File(directory, FilenameUtils.removeExtension(filePattern)),
+            new File(directory, normalizedPattern),
+            new File(directory, FilenameUtils.removeExtension(normalizedPattern)),
             StandardCopyOption.REPLACE_EXISTING);
-        filePattern = FilenameUtils.removeExtension(filePattern);
+        normalizedPattern = FilenameUtils.removeExtension(normalizedPattern);
         org.apache.commons.io.FileUtils.deleteQuietly(
-            new File(directory, filePattern + CONST_OURS));
+            new File(directory, normalizedPattern + CONST_OURS));
         org.apache.commons.io.FileUtils.deleteQuietly(
-            new File(directory, filePattern + CONST_THEIRS));
+            new File(directory, normalizedPattern + CONST_THEIRS));
       }
-      git.add().addFilepattern(filePattern).call();
+      git.add().addFilepattern(normalizedPattern).call();
     } catch (Exception e) {
       throw new HopException("Error adding '" + filePattern + "'to git", e);
     }
@@ -464,7 +523,8 @@ public class UIGit extends VCS {
 
   public void rm(String filepattern) {
     try {
-      git.rm().addFilepattern(filepattern).call();
+      String normalizedPattern = normalizePathForJGit(filepattern);
+      git.rm().addFilepattern(normalizedPattern).call();
     } catch (Exception e) {
       showMessageBox(BaseMessages.getString(PKG, CONST_DIALOG_ERROR), e.getMessage());
     }
@@ -482,7 +542,8 @@ public class UIGit extends VCS {
   /** Reset a file to HEAD (mixed) */
   public void resetPath(String path) {
     try {
-      git.reset().addPath(path).call();
+      String normalizedPath = normalizePathForJGit(path);
+      git.reset().addPath(normalizedPath).call();
     } catch (Exception e) {
       showMessageBox(BaseMessages.getString(PKG, CONST_DIALOG_ERROR), e.getMessage());
     }
@@ -645,15 +706,33 @@ public class UIGit extends VCS {
               .filter(update -> update.getStatus() != RemoteRefUpdate.Status.OK)
               .filter(update -> update.getStatus() != RemoteRefUpdate.Status.UP_TO_DATE)
               .forEach(
-                  update -> // for each failed refspec
-                  sb.append(
-                          result.getURI().toString()
-                              + "\n"
-                              + update.getSrcRef()
-                              + "\n"
-                              + update.getStatus().toString()
-                              + (update.getMessage() == null ? "" : "\n" + update.getMessage())
-                              + "\n\n"));
+                  // for each failed refspec
+                  update -> {
+                    sb.append("Errors while pushing: ")
+                        .append("\n")
+                        .append("Destination: ")
+                        .append(result.getURI().toString())
+                        .append("\n")
+                        .append("Branch name: ")
+                        .append(update.getSrcRef())
+                        .append("\n");
+                    switch (update.getStatus()) {
+                      case REJECTED_NONFASTFORWARD:
+                        sb.append(" * ")
+                            .append(update.getStatus().toString())
+                            .append(
+                                " - Remote repository contains changes. Merge the remote changes (e.g. 'git pull') before pushing again.")
+                            .append("\n");
+                        break;
+                      default:
+                        sb.append(" * ")
+                            .append(update.getStatus().toString())
+                            .append(" - ")
+                            .append(update.getMessage() == null ? "" : "\n" + update.getMessage())
+                            .append("\n");
+                        break;
+                    }
+                  });
           if (sb.isEmpty()) {
             showMessageBox(
                 BaseMessages.getString(PKG, "Dialog.Success"),
@@ -671,9 +750,11 @@ public class UIGit extends VCS {
   public String diff(String oldCommitId, String newCommitId, String file) {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     try {
+      String normalizedFile = normalizePathForJGit(file);
       getDiffCommand(oldCommitId, newCommitId)
           .setOutputStream(out)
-          .setPathFilter(file == null ? TreeFilter.ALL : PathFilter.create(file))
+          .setPathFilter(
+              normalizedFile == null ? TreeFilter.ALL : PathFilter.create(normalizedFile))
           .call();
       return out.toString(StandardCharsets.UTF_8);
     } catch (Exception e) {
@@ -682,9 +763,10 @@ public class UIGit extends VCS {
   }
 
   public InputStream open(String file, String commitId) throws HopException {
+    String normalizedFile = normalizePathForJGit(file);
     if (commitId.equals(WORKINGTREE)) {
       String baseDirectory = getDirectory();
-      String filePath = baseDirectory + Const.FILE_SEPARATOR + file;
+      String filePath = baseDirectory + Const.FILE_SEPARATOR + normalizedFile;
       try {
         return HopVfs.getInputStream(filePath);
       } catch (HopFileException e) {
@@ -695,23 +777,29 @@ public class UIGit extends VCS {
     RevTree tree = commit.getTree();
     try (TreeWalk tw = new TreeWalk(git.getRepository())) {
       tw.addTree(tree);
-      tw.setFilter(PathFilter.create(file));
+      tw.setFilter(PathFilter.create(normalizedFile));
       tw.setRecursive(true);
       tw.next();
       ObjectLoader loader = git.getRepository().open(tw.getObjectId(0));
       return loader.openStream();
     } catch (MissingObjectException e) {
       throw new HopException(
-          "Unable to find file '" + file + CONST_FOR_COMMIT_ID + commitId + "", e);
+          "Unable to find file '" + normalizedFile + CONST_FOR_COMMIT_ID + commitId + "", e);
     } catch (IncorrectObjectTypeException e) {
       throw new HopException(
-          "Incorrect object type error for file '" + file + CONST_FOR_COMMIT_ID + commitId + "", e);
+          "Incorrect object type error for file '"
+              + normalizedFile
+              + CONST_FOR_COMMIT_ID
+              + commitId
+              + "",
+          e);
     } catch (CorruptObjectException e) {
       throw new HopException(
-          "Corrupt object error for file '" + file + CONST_FOR_COMMIT_ID + commitId + "", e);
+          "Corrupt object error for file '" + normalizedFile + CONST_FOR_COMMIT_ID + commitId + "",
+          e);
     } catch (IOException e) {
       throw new HopException(
-          "Error reading git file '" + file + CONST_FOR_COMMIT_ID + commitId + "", e);
+          "Error reading git file '" + normalizedFile + CONST_FOR_COMMIT_ID + commitId + "", e);
     }
   }
 
@@ -758,24 +846,47 @@ public class UIGit extends VCS {
 
   public void revertPath(String path) throws HopException {
     try {
+      String normalizedPath = normalizePathForJGit(path);
       // Revert files to HEAD state
-      Status status = git.status().addPath(path).call();
+      Status status = git.status().addPath(normalizedPath).call();
       if (!status.getUntracked().isEmpty() || !status.getAdded().isEmpty()) {
-        resetPath(path);
-        org.apache.commons.io.FileUtils.deleteQuietly(new File(directory, path));
+        resetPath(normalizedPath);
+        org.apache.commons.io.FileUtils.deleteQuietly(new File(directory, normalizedPath));
       }
 
       /*
        * This is a work-around to discard changes of conflicting files
        * Git CLI `git checkout -- conflicted.txt` discards the changes, but jgit does not
        */
-      git.add().addFilepattern(path).call();
+      git.add().addFilepattern(normalizedPath).call();
 
-      git.checkout().setStartPoint(Constants.HEAD).addPath(path).call();
+      git.checkout().setStartPoint(Constants.HEAD).addPath(normalizedPath).call();
       org.apache.commons.io.FileUtils.deleteQuietly(new File(directory, path + CONST_OURS));
       org.apache.commons.io.FileUtils.deleteQuietly(new File(directory, path + CONST_THEIRS));
     } catch (Exception e) {
       throw new HopException("Git: error reverting path '" + path + "'", e);
+    }
+  }
+
+  /**
+   * Clean untracked files and directories under the given path (e.g. a folder).
+   *
+   * @param path The path to clean (relative to repo root)
+   * @throws HopException when the clean operation fails
+   */
+  public void cleanPath(String path) throws HopException {
+    try {
+      String normalizedPath = normalizePathForJGit(path);
+      if (normalizedPath == null || ".".equals(normalizedPath)) {
+        normalizedPath = "";
+      }
+      CleanCommand cleanCommand = git.clean();
+      if (!normalizedPath.isEmpty()) {
+        cleanCommand.setPaths(Collections.singleton(normalizedPath));
+      }
+      cleanCommand.setCleanDirectories(true).setForce(true).call();
+    } catch (Exception e) {
+      throw new HopException("Git: error cleaning path '" + path + "'", e);
     }
   }
 
@@ -788,9 +899,10 @@ public class UIGit extends VCS {
   public List<String> getRevertPathFiles(String path) throws HopException {
     try {
       Set<String> files = new HashSet<>();
+      String normalizedPath = normalizePathForJGit(path);
       StatusCommand statusCommand = git.status();
-      if (path != null && !".".equals(path)) {
-        statusCommand = statusCommand.addPath(path);
+      if (normalizedPath != null && !".".equals(normalizedPath)) {
+        statusCommand = statusCommand.addPath(normalizedPath);
       }
 
       // Get files to be reverted to HEAD state
@@ -808,10 +920,46 @@ public class UIGit extends VCS {
     }
   }
 
+  /**
+   * Get the subset of revert-path files that will be deleted by revert (untracked or added). For
+   * these files revert removes the file; for others (changed, missing, uncommitted) the file stays
+   * and only content is reset.
+   *
+   * @param path The path to revert (same as for getRevertPathFiles)
+   * @return Paths that will be deleted (untracked + added)
+   */
+  public Set<String> getRevertPathFilesThatWillBeDeleted(String path) throws HopException {
+    try {
+      Set<String> files = new HashSet<>();
+      String normalizedPath = normalizePathForJGit(path);
+      StatusCommand statusCommand = git.status();
+      if (normalizedPath != null && !".".equals(normalizedPath)) {
+        statusCommand = statusCommand.addPath(normalizedPath);
+      }
+      Status status = statusCommand.call();
+      files.addAll(status.getUntracked());
+      files.addAll(status.getAdded());
+      return files;
+    } catch (Exception e) {
+      throw new HopException("Git: error getting revert path files for '" + path + "'", e);
+    }
+  }
+
   public boolean createBranch(String value) {
     try {
       git.branchCreate().setName(value).call();
       checkoutBranch(getExpandedName(value, VCS.TYPE_BRANCH));
+      return true;
+    } catch (Exception e) {
+      showMessageBox(BaseMessages.getString(PKG, CONST_DIALOG_ERROR), e.getMessage());
+      return false;
+    }
+  }
+
+  public boolean renameBranch(String oldName, String newName) {
+    try {
+      git.branchRename().setOldName(oldName).setNewName(newName).call();
+      checkoutBranch(getExpandedName(newName, VCS.TYPE_BRANCH));
       return true;
     } catch (Exception e) {
       showMessageBox(BaseMessages.getString(PKG, CONST_DIALOG_ERROR), e.getMessage());
@@ -869,15 +1017,16 @@ public class UIGit extends VCS {
   }
 
   private void checkout(String path, String commitId, String postfix) throws HopException {
-    InputStream stream = open(path, commitId);
-    File file = new File(directory + Const.FILE_SEPARATOR + path + postfix);
+    String normalizedPath = normalizePathForJGit(path);
+    InputStream stream = open(normalizedPath, commitId);
+    File file = new File(directory + Const.FILE_SEPARATOR + normalizedPath + postfix);
     try {
       org.apache.commons.io.FileUtils.copyInputStreamToFile(stream, file);
       stream.close();
     } catch (IOException e) {
       throw new HopException(
           "Error checking out file '"
-              + path
+              + normalizedPath
               + CONST_FOR_COMMIT_ID
               + commitId
               + "' and postfix "
@@ -915,6 +1064,26 @@ public class UIGit extends VCS {
         return treeIterator;
       }
     }
+  }
+
+  /**
+   * Normalize a file path for JGit operations. JGit requires paths to: - Use forward slashes (/) as
+   * separators - Be relative to the repository root - Not start with a slash
+   *
+   * @param path The path to normalize (can be null)
+   * @return The normalized path, or the original if it's null or "."
+   */
+  private String normalizePathForJGit(String path) {
+    if (path == null || ".".equals(path)) {
+      return path;
+    }
+    // Convert backslashes to forward slashes
+    String normalized = path.replace("\\", "/");
+    // Remove leading slash if present
+    if (normalized.startsWith("/")) {
+      normalized = normalized.substring(1);
+    }
+    return normalized;
   }
 
   public String getShortenedName(String name) {
@@ -1012,9 +1181,10 @@ public class UIGit extends VCS {
 
   public Set<String> getIgnored(String path) {
     try {
+      String normalizedPath = normalizePathForJGit(path);
       StatusCommand statusCommand = git.status();
-      if (path != null && !".".equals(path)) {
-        statusCommand = statusCommand.addPath(path);
+      if (normalizedPath != null && !".".equals(normalizedPath)) {
+        statusCommand = statusCommand.addPath(normalizedPath);
       }
       Status status = statusCommand.call();
       return status.getIgnoredNotInIndex();

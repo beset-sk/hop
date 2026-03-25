@@ -53,6 +53,7 @@ write_server_config() {
   echo "    <shutdownPort>${HOP_SERVER_SHUTDOWNPORT}</shutdownPort>" >>${HOP_SERVER_XML}
   echo "    <username>${HOP_SERVER_USER}</username>" >>${HOP_SERVER_XML}
   echo "    <password>${HOP_SERVER_PASS}</password>" >>${HOP_SERVER_XML}
+  echo "    <enable_auth>${HOP_SERVER_AUTH}</enable_auth>" >>${HOP_SERVER_XML}
 
   # If an SSL configuration is needed we need to include it here
   #
@@ -203,7 +204,7 @@ if [ -n "${HOP_CONFIG_OPTIONS}" ]; then
   # We have a hop-config to run with the given options
   #
   echo "Configuring Hop with : ${HOP_CONFIG_OPTIONS}"
-  "${DEPLOYMENT_PATH}"/hop-config.sh \
+  "${DEPLOYMENT_PATH}"/hop-conf.sh \
     "{HOP_CONFIG_OPTIONS}" \
     2>&1 | tee ${HOP_LOG_PATH}
 fi

@@ -27,7 +27,6 @@ import org.apache.hop.core.parameters.UnknownParamException;
 import org.apache.hop.core.plugins.ActionPluginType;
 import org.apache.hop.core.plugins.IPlugin;
 import org.apache.hop.core.plugins.PluginRegistry;
-import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.ui.core.ConstUi;
@@ -38,6 +37,7 @@ import org.apache.hop.ui.core.dialog.MessageBox;
 import org.apache.hop.ui.core.gui.GuiResource;
 import org.apache.hop.ui.core.gui.WindowProperty;
 import org.apache.hop.ui.core.widget.ColumnInfo;
+import org.apache.hop.ui.core.widget.OsHelper;
 import org.apache.hop.ui.core.widget.TableView;
 import org.apache.hop.ui.pipeline.transform.BaseTransformDialog;
 import org.apache.hop.ui.util.HelpUtils;
@@ -196,19 +196,6 @@ public class WorkflowDialog extends Dialog {
     return workflowMeta;
   }
 
-  public String[] listParameterNames() {
-    int count = wParamFields.nrNonEmpty();
-    java.util.List<String> list = new ArrayList<>();
-    for (int i = 0; i < count; i++) {
-      TableItem item = wParamFields.getNonEmpty(i);
-      String parameterName = item.getText(1);
-      if (!Utils.isEmpty(parameterName) && !list.contains(parameterName)) {
-        list.add(parameterName);
-      }
-    }
-    return list.toArray(new String[list.size()]);
-  }
-
   private void addWorkflowTab() {
     // ////////////////////////
     // START OF WORKFLOW TAB///
@@ -234,6 +221,7 @@ public class WorkflowDialog extends Dialog {
     fdlWorkflowName.right = new FormAttachment(middle, -margin);
     fdlWorkflowName.top = new FormAttachment(0, margin);
     wlWorkflowName.setLayoutData(fdlWorkflowName);
+
     wWorkflowName = new Text(wWorkflowComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
     PropsUi.setLook(wWorkflowName);
     wWorkflowName.addModifyListener(lsMod);
@@ -332,19 +320,20 @@ public class WorkflowDialog extends Dialog {
     FormData fdlWorkflowStatus = new FormData();
     fdlWorkflowStatus.left = new FormAttachment(0, 0);
     fdlWorkflowStatus.right = new FormAttachment(middle, -margin);
-    fdlWorkflowStatus.top = new FormAttachment(wExtendedDescription, margin * 2);
+    fdlWorkflowStatus.top = new FormAttachment(wExtendedDescription, margin);
     wlWorkflowStatus.setLayoutData(fdlWorkflowStatus);
     wWorkflowStatus = new Combo(wWorkflowComp, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
     wWorkflowStatus.add(BaseMessages.getString(PKG, "WorkflowDialog.Draft_WorkflowStatus.Label"));
     wWorkflowStatus.add(
         BaseMessages.getString(PKG, "WorkflowDialog.Production_WorkflowStatus.Label"));
     wWorkflowStatus.add("");
-    wWorkflowStatus.select(-1); // +1: starts at -1
+    // +1: starts at -1
+    wWorkflowStatus.select(-1);
 
     PropsUi.setLook(wWorkflowStatus);
     FormData fdWorkflowStatus = new FormData();
     fdWorkflowStatus.left = new FormAttachment(middle, 0);
-    fdWorkflowStatus.top = new FormAttachment(wExtendedDescription, margin * 2);
+    fdWorkflowStatus.top = new FormAttachment(wExtendedDescription, margin);
     fdWorkflowStatus.right = new FormAttachment(100, 0);
     wWorkflowStatus.setLayoutData(fdWorkflowStatus);
 
@@ -463,7 +452,6 @@ public class WorkflowDialog extends Dialog {
 
     String actualName =
         AbstractMeta.extractNameFromFilename(sync, name, filename, WorkflowMeta.WORKFLOW_EXTENSION);
-    wWorkflowName.setEnabled(!sync);
     wWorkflowName.setEditable(!sync);
 
     wWorkflowName.setText(Const.NVL(actualName, ""));
@@ -493,10 +481,10 @@ public class WorkflowDialog extends Dialog {
     fdlFields.top = new FormAttachment(0, 0);
     wlFields.setLayoutData(fdlFields);
 
-    final int FieldsCols = 3;
-    final int FieldsRows = workflowMeta.listParameters().length;
+    final int fieldsCols = 3;
+    final int fieldsRows = workflowMeta.listParameters().length;
 
-    ColumnInfo[] colinf = new ColumnInfo[FieldsCols];
+    ColumnInfo[] colinf = new ColumnInfo[fieldsCols];
     colinf[0] =
         new ColumnInfo(
             BaseMessages.getString(PKG, "WorkflowDialog.ColumnInfo.Parameter.Label"),
@@ -519,7 +507,7 @@ public class WorkflowDialog extends Dialog {
             wParamComp,
             SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI,
             colinf,
-            FieldsRows,
+            fieldsRows,
             lsMod,
             props);
 
@@ -663,7 +651,7 @@ public class WorkflowDialog extends Dialog {
     }
   }
 
-  public static final Button setShellImage(Shell shell, IAction action) {
+  public static Button setShellImage(Shell shell, IAction action) {
     Button helpButton = null;
     try {
       final IPlugin plugin = getPlugin(action);
@@ -676,9 +664,11 @@ public class WorkflowDialog extends Dialog {
 
       helpButton = HelpUtils.createHelpButton(shell, plugin);
 
-      shell.setImage(getImage(shell, plugin));
+      if (!OsHelper.isMac()) {
+        shell.setImage(getImage(shell, plugin));
+      }
 
-    } catch (Throwable e) {
+    } catch (Exception e) {
       // Ignore unexpected errors, not worth it
     }
     return helpButton;

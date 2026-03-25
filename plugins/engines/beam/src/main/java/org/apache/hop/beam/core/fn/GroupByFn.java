@@ -139,25 +139,22 @@ public class GroupByFn extends DoFn<KV<HopRow, Iterable<HopRow>>, HopRow> {
                 if (result == null) {
                   result = subject;
                 } else {
-                  switch (subjectValueMeta.getType()) {
-                    case IValueMeta.TYPE_INTEGER:
-                      result = (Long) result + (Long) subject;
-                      break;
-                    case IValueMeta.TYPE_NUMBER:
-                      result = (Double) result + (Double) subject;
-                      break;
-                    default:
-                      throw new HopException(
-                          "SUM aggregation not yet implemented for field and data type : "
-                              + subjectValueMeta.toString());
-                  }
+                  result =
+                      switch (subjectValueMeta.getType()) {
+                        case IValueMeta.TYPE_INTEGER -> (Long) result + (Long) subject;
+                        case IValueMeta.TYPE_NUMBER -> (Double) result + (Double) subject;
+                        default ->
+                            throw new HopException(
+                                "SUM aggregation not yet implemented for field and data type : "
+                                    + subjectValueMeta.toString());
+                      };
                 }
               }
               break;
             case COUNT_ALL:
               if (subject != null) {
                 if (result == null) {
-                  result = Long.valueOf(1L);
+                  result = 1L;
                 } else {
                   result = (Long) result + 1L;
                 }
@@ -240,6 +237,7 @@ public class GroupByFn extends DoFn<KV<HopRow, Iterable<HopRow>>, HopRow> {
                   bd = bd.divide(BigDecimal.valueOf(counts[i]));
                 }
                 results[i] = bd;
+                break;
               default:
                 throw new HopException(
                     "Unable to calculate average on data type : " + subjectValueMeta.getTypeDesc());

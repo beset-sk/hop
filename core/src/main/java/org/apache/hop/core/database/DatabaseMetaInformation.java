@@ -32,7 +32,9 @@ import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.i18n.BaseMessages;
 
-/** Contains the schema's, catalogs, tables, views, synonyms, etc we can find in the databases... */
+/**
+ * Contains the schema's, catalogs, tables, views, synonyms, etc. we can find in the databases...
+ */
 public class DatabaseMetaInformation {
   private static final Class<?> PKG = Database.class;
 
@@ -95,8 +97,8 @@ public class DatabaseMetaInformation {
             && connectionExtraOptions.containsKey(catalogFilterKey)) {
           String catsFilterCommaList = connectionExtraOptions.get(catalogFilterKey);
           String[] catsFilterArray = catsFilterCommaList.split(",");
-          for (int i = 0; i < catsFilterArray.length; i++) {
-            catalogList.add(new Catalog(catsFilterArray[i].trim()));
+          for (String s : catsFilterArray) {
+            catalogList.add(new Catalog(s.trim()));
           }
         }
         if (catalogList.isEmpty()) {
@@ -166,8 +168,8 @@ public class DatabaseMetaInformation {
               && connectionExtraOptions.containsKey(schemaFilterKey)) {
             String schemasFilterCommaList = connectionExtraOptions.get(schemaFilterKey);
             String[] schemasFilterArray = schemasFilterCommaList.split(",");
-            for (int i = 0; i < schemasFilterArray.length; i++) {
-              schemaList.add(new Schema(schemasFilterArray[i].trim()));
+            for (String s : schemasFilterArray) {
+              schemaList.add(new Schema(s.trim()));
             }
           }
           if (schemaList.isEmpty()) {

@@ -65,14 +65,13 @@ public class DrawDiffOnActionExtensionPoint implements IExtensionPoint {
                   String status = je.getAttribute(ATTR_GIT, ATTR_STATUS);
                   Point n = je.getLocation();
                   String location;
-                  if (status.equals(REMOVED)) {
-                    location = "removed.svg";
-                  } else if (status.equals(CHANGED)) {
-                    location = "changed.svg";
-                  } else if (status.equals(ADDED)) {
-                    location = "added.svg";
-                  } else { // Unchanged
-                    return;
+                  switch (status) {
+                    case REMOVED -> location = "removed.svg";
+                    case CHANGED -> location = "changed.svg";
+                    case ADDED -> location = "added.svg";
+                    default -> {
+                      return;
+                    }
                   }
                   int iconSize = ConstUi.ICON_SIZE;
                   try {
@@ -87,8 +86,8 @@ public class DrawDiffOnActionExtensionPoint implements IExtensionPoint {
                         new SvgFile(location, getClass().getClassLoader()),
                         (int) x,
                         (int) y,
-                        iconSize / 4,
-                        iconSize / 4,
+                        iconSize / 2,
+                        iconSize / 2,
                         gc.getMagnification(),
                         0);
                   } catch (Exception e) {

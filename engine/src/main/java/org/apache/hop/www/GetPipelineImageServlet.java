@@ -19,12 +19,13 @@ package org.apache.hop.www;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.Serial;
 import org.apache.hop.core.annotations.HopServerServlet;
 import org.apache.hop.core.util.Utils;
 import org.apache.hop.i18n.BaseMessages;
@@ -34,8 +35,7 @@ import org.apache.hop.pipeline.engine.IPipelineEngine;
 
 @HopServerServlet(id = "pipelineImage", name = "Generate a PNG image of a pipeline")
 public class GetPipelineImageServlet extends BaseHttpServlet implements IHopServerPlugin {
-
-  private static final long serialVersionUID = -4365372274638005929L;
+  @Serial private static final long serialVersionUID = -4365372274638005929L;
   public static final float ZOOM_FACTOR = 1.0f;
 
   private static final Class<?> PKG = GetPipelineImageServlet.class;
@@ -96,10 +96,18 @@ public class GetPipelineImageServlet extends BaseHttpServlet implements IHopServ
         out.write(svgStream.toByteArray());
       }
     } catch (Exception e) {
-      throw new IOException("Error building SVG image of pipleine", e);
+      logError("Error building SVG image of pipeline", e);
+      sendSafeError(
+          response,
+          HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          "Unable to generate pipeline image.");
     } finally {
       if (svgStream != null) {
-        svgStream.close();
+        try {
+          svgStream.close();
+        } catch (IOException e) {
+          logError("Failed to close pipeline SVG buffer stream", e);
+        }
       }
     }
   }

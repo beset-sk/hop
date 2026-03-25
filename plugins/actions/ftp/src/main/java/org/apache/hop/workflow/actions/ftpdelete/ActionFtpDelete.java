@@ -18,6 +18,7 @@
 package org.apache.hop.workflow.actions.ftpdelete;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -44,6 +45,7 @@ import org.apache.hop.workflow.action.ActionBase;
 import org.apache.hop.workflow.action.IAction;
 import org.apache.hop.workflow.action.validator.ActionValidatorUtils;
 import org.apache.hop.workflow.action.validator.AndValidator;
+import org.apache.hop.workflow.actions.sftp.FileItem;
 import org.apache.hop.workflow.actions.sftp.SftpClient;
 import org.apache.hop.workflow.actions.util.FtpClientUtil;
 import org.apache.hop.workflow.actions.util.IFtpConnection;
@@ -501,7 +503,9 @@ public class ActionFtpDelete extends ActionBase implements Cloneable, IAction, I
   /** Needed for the Vector coming from sshclient.ls() * */
   @Override
   public Result execute(Result previousResult, int nr) {
-    logBasic(BaseMessages.getString(PKG, "ActionFTPDelete.Started", serverName));
+    if (isBasic()) {
+      logBasic(BaseMessages.getString(PKG, "ActionFTPDelete.Started", serverName));
+    }
     RowMetaAndData resultRow = null;
     Result result = previousResult;
     List<RowMetaAndData> rows = result.getRows();
@@ -561,10 +565,8 @@ public class ActionFtpDelete extends ActionBase implements Cloneable, IAction, I
         // CHECK THIS !!!
         if (filelist.length == 1) {
           String translatedWildcard = resolve(wildcard);
-          if (!Utils.isEmpty(translatedWildcard)) {
-            if (filelist[0].startsWith(translatedWildcard)) {
-              throw new HopException(filelist[0]);
-            }
+          if (!Utils.isEmpty(translatedWildcard) && filelist[0].startsWith(translatedWildcard)) {
+            throw new HopException(filelist[0]);
           }
         }
       } else if (protocol.equals(PROTOCOL_SFTP)) {
@@ -572,7 +574,14 @@ public class ActionFtpDelete extends ActionBase implements Cloneable, IAction, I
         sftpConnect(realServerName, realUsername, realServerPort, realPassword, realFtpDirectory);
 
         // Get all the files in the current directory...
-        filelist = sftpclient.dir();
+        ArrayList<FileItem> dirlist = sftpclient.dir();
+
+        if (!dirlist.isEmpty()) {
+          filelist =
+              dirlist.stream()
+                  .map(FileItem::getFileName) // adapt getter if it's named differently
+                  .toArray(String[]::new);
+        }
       }
 
       if (isDetailed()) {
@@ -587,8 +596,8 @@ public class ActionFtpDelete extends ActionBase implements Cloneable, IAction, I
       Pattern pattern = null;
       if (copyPrevious) {
         // Copy the input row to the (command line) arguments
-        for (int iteration = 0; iteration < rows.size(); iteration++) {
-          resultRow = rows.get(iteration);
+        for (RowMetaAndData row : rows) {
+          resultRow = row;
 
           // Get file names
           String filePrevious = resultRow.getString(0, null);

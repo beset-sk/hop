@@ -84,7 +84,9 @@ public class WorkflowExecutorMeta
   private static final Class<?> PKG = WorkflowExecutorMeta.class;
 
   /** The name of the workflow run configuration to execute with */
-  @HopMetadataProperty(key = "run_configuration")
+  @HopMetadataProperty(
+      key = "run_configuration",
+      hopMetadataPropertyType = HopMetadataPropertyType.WORKFLOW_RUN_CONFIG)
   private String runConfigurationName;
 
   @HopMetadataProperty(
@@ -300,19 +302,19 @@ public class WorkflowExecutorMeta
     row.clear();
 
     if (nextTransform != null && nextTransform.equals(resultRowsTargetTransformMeta)) {
-      for (int i = 0; i < resultRowsField.size(); i++) {
+      for (WorkflowExecutorResultRows workflowExecutorResultRows : resultRowsField) {
         IValueMeta value;
         try {
           value =
               ValueMetaFactory.createValueMeta(
-                  resultRowsField.get(i).getName(),
-                  ValueMetaFactory.getIdForValueMeta(resultRowsField.get(i).getType()),
-                  resultRowsField.get(i).getLength(),
-                  resultRowsField.get(i).getPrecision());
+                  workflowExecutorResultRows.getName(),
+                  ValueMetaFactory.getIdForValueMeta(workflowExecutorResultRows.getType()),
+                  workflowExecutorResultRows.getLength(),
+                  workflowExecutorResultRows.getPrecision());
         } catch (HopPluginException e) {
-          value = new ValueMetaNone(resultRowsField.get(i).getName());
+          value = new ValueMetaNone(workflowExecutorResultRows.getName());
           value.setLength(
-              resultRowsField.get(i).getLength(), resultRowsField.get(i).getPrecision());
+              workflowExecutorResultRows.getLength(), workflowExecutorResultRows.getPrecision());
         }
         row.addValueMeta(value);
       }
@@ -627,12 +629,15 @@ public class WorkflowExecutorMeta
     switch (index) {
       case 0:
         setExecutionResultTargetTransformMeta(transform);
+        setExecutionResultTargetTransform(transform.getName());
         break;
       case 1:
         setResultRowsTargetTransformMeta(transform);
+        setResultRowsTargetTransform(transform.getName());
         break;
       case 2:
         setResultFilesTargetTransformMeta(transform);
+        setResultFilesTargetTransform(transform.getName());
         break;
       default:
         break;
@@ -706,8 +711,11 @@ public class WorkflowExecutorMeta
   @Override
   public boolean cleanAfterHopFromRemove() {
     setExecutionResultTargetTransformMeta(null);
+    setExecutionResultTargetTransform(null);
     setResultRowsTargetTransformMeta(null);
+    setResultRowsTargetTransform(null);
     setResultFilesTargetTransformMeta(null);
+    setResultFilesTargetTransform(null);
     return true;
   }
 
@@ -723,16 +731,24 @@ public class WorkflowExecutorMeta
     if (getExecutionResultTargetTransformMeta() != null
         && toTransformName.equals(getExecutionResultTargetTransformMeta().getName())) {
       setExecutionResultTargetTransformMeta(null);
+      setExecutionResultTargetTransform(null);
       hasChanged = true;
     } else if (getResultRowsTargetTransformMeta() != null
         && toTransformName.equals(getResultRowsTargetTransformMeta().getName())) {
       setResultRowsTargetTransformMeta(null);
+      setResultRowsTargetTransform(null);
       hasChanged = true;
     } else if (getResultFilesTargetTransformMeta() != null
         && toTransformName.equals(getResultFilesTargetTransformMeta().getName())) {
       setResultFilesTargetTransformMeta(null);
+      setResultFilesTargetTransform(null);
       hasChanged = true;
     }
     return hasChanged;
+  }
+
+  @Override
+  public boolean supportsDrillDown() {
+    return true;
   }
 }

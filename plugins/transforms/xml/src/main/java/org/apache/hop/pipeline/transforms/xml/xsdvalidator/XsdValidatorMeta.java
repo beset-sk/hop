@@ -153,7 +153,7 @@ public class XsdValidatorMeta extends BaseTransformMeta<XsdValidator, XsdValidat
   public XsdValidatorMeta() {
     super(); // allocate BaseTransformMeta
     allowExternalEntities =
-        Boolean.valueOf(
+        Boolean.parseBoolean(
             System.getProperties()
                 .getProperty(
                     ALLOW_EXTERNAL_ENTITIES_FOR_XSD_VALIDATION,
@@ -242,7 +242,7 @@ public class XsdValidatorMeta extends BaseTransformMeta<XsdValidator, XsdValidat
     xsdDefinedField = "";
     xsdSource = SPECIFY_FILENAME;
     allowExternalEntities =
-        Boolean.valueOf(
+        Boolean.parseBoolean(
             System.getProperties()
                 .getProperty(
                     ALLOW_EXTERNAL_ENTITIES_FOR_XSD_VALIDATION,
@@ -345,15 +345,13 @@ public class XsdValidatorMeta extends BaseTransformMeta<XsdValidator, XsdValidat
       remarks.add(cr);
     }
 
-    if (xsdSource.equals(SPECIFY_FILENAME)) {
-      if (Utils.isEmpty(xsdFilename)) {
-        cr =
-            new CheckResult(
-                ICheckResult.TYPE_RESULT_ERROR,
-                BaseMessages.getString(PKG, "XsdValidatorMeta.CheckResult.XSDFieldEmpty"),
-                transforminfo);
-        remarks.add(cr);
-      }
+    if (xsdSource.equals(SPECIFY_FILENAME) && Utils.isEmpty(xsdFilename)) {
+      cr =
+          new CheckResult(
+              ICheckResult.TYPE_RESULT_ERROR,
+              BaseMessages.getString(PKG, "XsdValidatorMeta.CheckResult.XSDFieldEmpty"),
+              transforminfo);
+      remarks.add(cr);
     }
 
     if (prev != null && !prev.isEmpty()) {

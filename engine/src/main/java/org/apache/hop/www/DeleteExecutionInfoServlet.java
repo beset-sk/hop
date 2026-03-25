@@ -17,12 +17,13 @@
 
 package org.apache.hop.www;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.Serial;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hop.core.Const;
@@ -33,9 +34,15 @@ import org.apache.hop.execution.ExecutionInfoLocation;
 import org.apache.hop.metadata.api.IHopMetadataSerializer;
 import org.apache.hop.metadata.serializer.multi.MultiMetadataProvider;
 
-@HopServerServlet(id = "registerExecInfo", name = "Register execution information")
+/**
+ * @deprecated Execution deletion is now handled by {@link GetExecutionInfoServlet} ({@code
+ *     /hop/getExecInfo}) via its {@code DELETE} type parameter. This endpoint has no callers in the
+ *     application and will be removed in a future release.
+ */
+@Deprecated(since = "2.18.0")
+@HopServerServlet(id = "deleteExecInfo", name = "Delete execution information (deprecated)")
 public class DeleteExecutionInfoServlet extends BaseHttpServlet implements IHopServerPlugin {
-  private static final long serialVersionUID = -1901302231769020201L;
+  @Serial private static final long serialVersionUID = -1901302231769020201L;
 
   public static final String CONTEXT_PATH = "/hop/deleteExecInfo";
   public static final String PARAMETER_ID = "id";
@@ -66,8 +73,14 @@ public class DeleteExecutionInfoServlet extends BaseHttpServlet implements IHopS
     //
     String locationName = StringEscapeUtils.escapeHtml(request.getParameter(PARAMETER_LOCATION));
 
-    PrintWriter out = response.getWriter();
-    BufferedReader in = request.getReader();
+    PrintWriter out = getSafeWriter(response);
+    if (out == null) {
+      return;
+    }
+    BufferedReader in = getSafeReader(request, response);
+    if (in == null) {
+      return;
+    }
 
     response.setContentType("text/xml");
     out.print(XmlHandler.getXmlHeader());

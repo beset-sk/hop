@@ -27,6 +27,7 @@ public class GoogleCloudConfig {
   public static final String HOP_CONFIG_GOOGLE_CLOUD_CONFIG_KEY = "googleCloud";
 
   private String serviceAccountKeyFile;
+  private Boolean scanFoldersForLastModifDate;
   private String maxAttempts;
   private String initialRetryDelay;
   private String retryDelayMultiplier;
@@ -38,7 +39,11 @@ public class GoogleCloudConfig {
   private String connectionTimeout;
   private String readTimeout;
 
+  /** Cache TTL in seconds for list-result caching (same as S3/MinIO/Azure). */
+  private String cacheTtlSeconds;
+
   public GoogleCloudConfig() {
+    scanFoldersForLastModifDate = false;
     maxAttempts = "6";
     initialRetryDelay = "1";
     retryDelayMultiplier = "2.0";
@@ -49,11 +54,13 @@ public class GoogleCloudConfig {
     maxRpcTimeout = "50";
     connectionTimeout = "20";
     readTimeout = "20";
+    cacheTtlSeconds = "5";
   }
 
   public GoogleCloudConfig(GoogleCloudConfig config) {
     this();
     serviceAccountKeyFile = config.serviceAccountKeyFile;
+    scanFoldersForLastModifDate = config.scanFoldersForLastModifDate;
     maxAttempts = config.maxAttempts;
     initialRetryDelay = config.initialRetryDelay;
     retryDelayMultiplier = config.retryDelayMultiplier;
@@ -64,5 +71,6 @@ public class GoogleCloudConfig {
     maxRpcTimeout = config.maxRpcTimeout;
     connectionTimeout = config.connectionTimeout;
     readTimeout = config.readTimeout;
+    cacheTtlSeconds = config.cacheTtlSeconds;
   }
 }

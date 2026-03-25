@@ -41,6 +41,7 @@ import org.apache.hop.ui.core.gui.GuiResource;
 import org.apache.hop.ui.core.gui.WindowProperty;
 import org.apache.hop.ui.core.vfs.HopVfsFileDialog;
 import org.apache.hop.ui.core.widget.ComboVar;
+import org.apache.hop.ui.core.widget.OsHelper;
 import org.apache.hop.ui.core.widget.TextVar;
 import org.apache.hop.ui.hopgui.HopGui;
 import org.apache.hop.ui.hopgui.HopGuiExtensionPoint;
@@ -49,6 +50,7 @@ import org.apache.hop.ui.hopgui.delegates.HopGuiDirectorySelectedExtension;
 import org.apache.hop.ui.hopgui.delegates.HopGuiFileDialogExtension;
 import org.apache.hop.ui.hopgui.delegates.HopGuiFileOpenedExtension;
 import org.apache.hop.ui.pipeline.transform.BaseTransformDialog;
+import org.apache.hop.ui.util.EnvironmentUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
@@ -113,6 +115,51 @@ public abstract class BaseDialog extends Dialog {
   protected String baseDialogTitle;
 
   @Setter private int footerTopPadding = BaseDialog.ELEMENT_SPACING * 4;
+
+  /**
+   * Gets the appropriate shell style flags for dialogs, taking into account the environment and
+   * platform.
+   *
+   * <p>Returns different styles based on the runtime environment:
+   *
+   * <ul>
+   *   <li><b>Hop Web (RAP):</b> Returns {@code SWT.DIALOG_TRIM | SWT.RESIZE} without SWT.MAX and
+   *       SWT.MIN, as minimize/maximize buttons cause issues in web environments
+   *   <li><b>macOS:</b> Returns {@code SWT.APPLICATION_MODAL | SWT.CLOSE | SWT.TITLE | SWT.RESIZE}
+   *       to support multi-monitor setups. Using {@code SWT.DIALOG_TRIM} on macOS with child shells
+   *       (created with a parent) causes dialogs to disappear or become inaccessible when moved to
+   *       another display. The {@code APPLICATION_MODAL} flag combined with these styles provides
+   *       proper multi-monitor support while maintaining dialog behavior.
+   *   <li><b>Other Desktop Platforms:</b> Returns {@code SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX |
+   *       SWT.MIN} with full window controls including minimize and maximize buttons
+   * </ul>
+   *
+   * <p><b>Important macOS Multi-Monitor Note:</b> On macOS, child shells (created with {@code new
+   * Shell(parent, style)}) are bound to the parent window's display by the macOS window system.
+   * When dialogs need to work across multiple monitors, they should either:
+   *
+   * <ul>
+   *   <li>Use {@code APPLICATION_MODAL} style (as done here) to detach from parent coordinate space
+   *   <li>Or be created with {@code new Shell(display, style)} instead of {@code new Shell(parent,
+   *       style)} to create independent windows
+   * </ul>
+   *
+   * <p>Note: {@code SWT.DIALOG_TRIM} includes {@code SWT.TITLE}, {@code SWT.CLOSE}, and {@code
+   * SWT.BORDER} by default.
+   *
+   * @return The shell style flags appropriate for the current environment and platform
+   */
+  public static int getDefaultDialogStyle() {
+    if (EnvironmentUtils.getInstance().isWeb()) {
+      // For Hop Web, use simpler style without min/max buttons
+      return SWT.DIALOG_TRIM | SWT.RESIZE;
+    } else if (OsHelper.isMac()) {
+      return SWT.PRIMARY_MODAL | SWT.CLOSE | SWT.TITLE | SWT.RESIZE;
+    } else {
+      // For other desktop platforms, include min/max buttons
+      return SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN;
+    }
+  }
 
   protected BaseDialog(final Shell shell) {
     this(shell, null, -1);
@@ -356,13 +403,40 @@ public abstract class BaseDialog extends Dialog {
             fileObject = null;
           }
         } else {
-
-          // Take the first extension with "filename" prepended
+          // If fileObject is provided, try to extract the filename from it
           //
-          if (filterExtensions != null && filterExtensions.length > 0) {
-            String filterExtension = filterExtensions[0];
-            String extension = filterExtension.substring(filterExtension.lastIndexOf("."));
-            vfsDialog.setSaveFilename("filename" + extension);
+          try {
+            if (fileObject != null) {
+              String baseName = fileObject.getName().getBaseName();
+              // Check if this looks like a file (has content and possibly an extension)
+              // rather than a folder. Even non-existent files should have a basename.
+              if (StringUtils.isNotEmpty(baseName)) {
+                vfsDialog.setSaveFilename(baseName);
+              } else {
+                // Take the first extension with "filename" prepended
+                //
+                if (filterExtensions != null && filterExtensions.length > 0) {
+                  String filterExtension = filterExtensions[0];
+                  String extension = filterExtension.substring(filterExtension.lastIndexOf("."));
+                  vfsDialog.setSaveFilename("filename" + extension);
+                }
+              }
+            } else {
+              // Take the first extension with "filename" prepended
+              //
+              if (filterExtensions != null && filterExtensions.length > 0) {
+                String filterExtension = filterExtensions[0];
+                String extension = filterExtension.substring(filterExtension.lastIndexOf("."));
+                vfsDialog.setSaveFilename("filename" + extension);
+              }
+            }
+          } catch (Exception e) {
+            // If there's an error checking fileObject, fall back to default
+            if (filterExtensions != null && filterExtensions.length > 0) {
+              String filterExtension = filterExtensions[0];
+              String extension = filterExtension.substring(filterExtension.lastIndexOf("."));
+              vfsDialog.setSaveFilename("filename" + extension);
+            }
           }
         }
       }
@@ -397,14 +471,31 @@ public abstract class BaseDialog extends Dialog {
     }
 
     if (fileObject != null) {
-      dialog.setFileName(HopVfs.getFilename(fileObject));
       try {
-        if (fileObject.isFile()) {
-          dialog.setFilterPath(HopVfs.getFilename(fileObject.getParent()));
+        if (save) {
+          // For save dialogs, we've already set saveFilename above
+          // Just set the filter path to the parent directory
+          if (fileObject.isFile()) {
+            dialog.setFilterPath(HopVfs.getFilename(fileObject.getParent()));
+          } else {
+            // If it doesn't exist or is a folder, try to get the parent
+            FileObject parent = fileObject.getParent();
+            if (parent != null && parent.exists()) {
+              dialog.setFilterPath(HopVfs.getFilename(parent));
+            } else {
+              // Fall back to the fileObject itself
+              dialog.setFilterPath(HopVfs.getFilename(fileObject));
+            }
+          }
         } else {
-          dialog.setFilterPath(HopVfs.getFilename(fileObject));
+          // For open dialogs, set fileName to navigate to that location
+          dialog.setFileName(HopVfs.getFilename(fileObject));
+          if (fileObject.isFile()) {
+            dialog.setFilterPath(HopVfs.getFilename(fileObject.getParent()));
+          } else {
+            dialog.setFilterPath(HopVfs.getFilename(fileObject));
+          }
         }
-
       } catch (FileSystemException fse) {
         // This wasn't a valid filename, ignore the error to reduce spamming
       }
@@ -445,6 +536,8 @@ public abstract class BaseDialog extends Dialog {
     // Is this reading from a VFS URL?
     //
     if (filterPath.contains("://") || filterPath.contains(":///")) {
+      // Strip filterPath from fileName (these are equal when selecting a folder)
+      fileName = fileName.replace(filterPath, "");
       if (filterPath.endsWith("/")) {
         return filterPath + fileName;
       } else {
@@ -671,13 +764,26 @@ public abstract class BaseDialog extends Dialog {
     //
     shell.addListener(SWT.Close, e -> e.doit = cancelSupplier.get());
 
+    // Close on Escape (same as cancel)
+    //
+    shell.addListener(
+        SWT.Traverse,
+        e -> {
+          if (e.detail == SWT.TRAVERSE_ESCAPE) {
+            e.doit = false;
+            shell.close();
+          }
+        });
+
     // Check for enter being pressed in text input fields
     //
     addDefaultListeners(shell, okConsumer);
 
-    // Set default icons on tab items to make them more manageable.
+    // Add spaces on tab items to make them more manageable
     //
-    setDefaultIconsOnTabs(shell);
+    addSpacesOnTabs(shell);
+
+    shell.setMinimumSize(650, 250);
 
     // Set the size as well...
     //
@@ -697,18 +803,18 @@ public abstract class BaseDialog extends Dialog {
     }
   }
 
-  public static void setDefaultIconsOnTabs(Composite composite) {
+  public static void addSpacesOnTabs(Composite composite) {
     if (composite == null || composite.isDisposed()) {
       return;
     }
 
     for (Control control : composite.getChildren()) {
-      // Some of these are composites so check first
+      // Some of these are composites, so check first
       //
       if (control instanceof CTabFolder cTabFolder) {
         for (CTabItem item : cTabFolder.getItems()) {
-          if (item.getImage() == null) {
-            item.setImage(GuiResource.getInstance().getImageHop());
+          if (item.getText() != null) {
+            item.setText("  " + item.getText() + "  ");
           }
         }
       }

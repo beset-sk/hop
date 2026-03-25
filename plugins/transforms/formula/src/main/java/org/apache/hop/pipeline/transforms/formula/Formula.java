@@ -139,10 +139,8 @@ public class Formula extends BaseTransform<FormulaMeta, FormulaData> {
     }
 
     Object[] outputRowData = RowDataUtil.resizeArray(r, data.outputRowMeta.size());
-    Object outputValue = null;
-
     for (int i = 0; i < meta.getFormulas().size(); i++) {
-
+      Object outputValue = null;
       FormulaMetaFunction formula = meta.getFormulas().get(i);
       FormulaParser parser =
           new FormulaParser(
@@ -222,7 +220,7 @@ public class Formula extends BaseTransform<FormulaMeta, FormulaData> {
     if (isRowLevel()) {
       logRowlevel("Wrote row #" + getLinesWritten() + " : " + Arrays.toString(r));
     }
-    if (checkFeedback(getLinesRead())) {
+    if (checkFeedback(getLinesRead()) && isBasic()) {
       logBasic("Linenr " + getLinesRead());
     }
 

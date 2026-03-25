@@ -60,10 +60,11 @@ import org.apache.hop.metadata.api.IHopMetadataProvider;
 @HopMetadata(
     key = "rdbms",
     name = "i18n::DatabaseMeta.name",
-    description = "i18n::DatabaseMeta.Description",
+    description = "i18n::DatabaseMeta.description",
     image = "ui/images/database.svg",
     documentationUrl = "/metadata-types/rdbms-connection.html",
-    hopMetadataPropertyType = HopMetadataPropertyType.RDBMS_CONNECTION)
+    hopMetadataPropertyType = HopMetadataPropertyType.RDBMS_CONNECTION,
+    supportsGlobalReplace = true)
 public class DatabaseMeta extends HopMetadataBase implements Cloneable, IHopMetadata {
   private static final Class<?> PKG = Database.class;
 
@@ -350,8 +351,6 @@ public class DatabaseMeta extends HopMetadataBase implements Cloneable, IHopMeta
    * <p>TYPE_ACCESS_NATIVE
    *
    * <p>TYPE_ACCESS_OCI
-   *
-   * <p>
    *
    * @return The type of database access.
    */
@@ -884,7 +883,7 @@ public class DatabaseMeta extends HopMetadataBase implements Cloneable, IHopMeta
   private static final Future<Map<String, IDatabase>> createDatabaseInterfacesMap() {
     return ExecutorUtil.getExecutor()
         .submit(
-            new Callable<Map<String, IDatabase>>() {
+            new Callable<>() {
               private Map<String, IDatabase> doCreate() {
                 ILogChannel log = LogChannel.GENERAL;
                 PluginRegistry registry = PluginRegistry.getInstance();
@@ -2008,8 +2007,7 @@ public class DatabaseMeta extends HopMetadataBase implements Cloneable, IHopMeta
       return null;
     }
 
-    for (int i = 0; i < databases.size(); i++) {
-      DatabaseMeta ci = databases.get(i);
+    for (DatabaseMeta ci : databases) {
       if (ci.getName().trim().equalsIgnoreCase(dbname.trim())) {
         return ci;
       }
@@ -2329,5 +2327,71 @@ public class DatabaseMeta extends HopMetadataBase implements Cloneable, IHopMeta
    */
   public boolean isHideUrlInTestConnection() {
     return iDatabase.isHideUrlInTestConnection();
+  }
+
+  // SSH Tunnel delegation methods
+
+  public boolean isSshTunnelEnabled() {
+    return iDatabase.isSshTunnelEnabled();
+  }
+
+  public void setSshTunnelEnabled(boolean enabled) {
+    iDatabase.setSshTunnelEnabled(enabled);
+  }
+
+  public String getSshTunnelHost() {
+    return iDatabase.getSshTunnelHost();
+  }
+
+  public void setSshTunnelHost(String host) {
+    iDatabase.setSshTunnelHost(host);
+  }
+
+  public String getSshTunnelPort() {
+    return iDatabase.getSshTunnelPort();
+  }
+
+  public void setSshTunnelPort(String port) {
+    iDatabase.setSshTunnelPort(port);
+  }
+
+  public String getSshTunnelUsername() {
+    return iDatabase.getSshTunnelUsername();
+  }
+
+  public void setSshTunnelUsername(String username) {
+    iDatabase.setSshTunnelUsername(username);
+  }
+
+  public String getSshTunnelPassword() {
+    return iDatabase.getSshTunnelPassword();
+  }
+
+  public void setSshTunnelPassword(String password) {
+    iDatabase.setSshTunnelPassword(password);
+  }
+
+  public boolean isSshTunnelUsePrivateKey() {
+    return iDatabase.isSshTunnelUsePrivateKey();
+  }
+
+  public void setSshTunnelUsePrivateKey(boolean usePrivateKey) {
+    iDatabase.setSshTunnelUsePrivateKey(usePrivateKey);
+  }
+
+  public String getSshTunnelPrivateKeyFile() {
+    return iDatabase.getSshTunnelPrivateKeyFile();
+  }
+
+  public void setSshTunnelPrivateKeyFile(String privateKeyFile) {
+    iDatabase.setSshTunnelPrivateKeyFile(privateKeyFile);
+  }
+
+  public String getSshTunnelPassphrase() {
+    return iDatabase.getSshTunnelPassphrase();
+  }
+
+  public void setSshTunnelPassphrase(String passphrase) {
+    iDatabase.setSshTunnelPassphrase(passphrase);
   }
 }

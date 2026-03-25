@@ -34,6 +34,7 @@ import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.HopEnvironment;
+import org.apache.hop.core.HopVersionProvider;
 import org.apache.hop.core.IExecutor;
 import org.apache.hop.core.IExtensionData;
 import org.apache.hop.core.Result;
@@ -679,18 +680,6 @@ public abstract class Workflow extends Variables
       return res;
     }
 
-    // If previous is not null then that action has finished
-    if (previous != null) {
-      if (log.isBasic()) {
-        log.logBasic(
-            BaseMessages.getString(
-                PKG,
-                "Workflow.Log.FinishedAction",
-                previous.getName(),
-                previousResult.getResult() + ""));
-      }
-    }
-
     // Start this action!
     if (log.isBasic()) {
       log.logBasic(
@@ -770,11 +759,23 @@ public abstract class Workflow extends Variables
 
       // Action execution duration
       newResult.setElapsedTimeMillis(System.currentTimeMillis() - start);
+      newResult.setEntryNr(nr);
 
       activeActions.remove(actionMeta);
 
       for (IActionListener actionListener : actionListeners) {
         actionListener.afterExecution(this, actionMeta, cloneAction, newResult);
+      }
+
+      // Log action as finished as soon as its body has completed (action can no longer fail after
+      // this point)
+      if (log.isBasic()) {
+        log.logBasic(
+            BaseMessages.getString(
+                PKG,
+                "Workflow.Log.FinishedAction",
+                actionMeta.getName(),
+                newResult.isResult() + ""));
       }
 
       Thread.currentThread().setContextClassLoader(cl);
@@ -789,6 +790,14 @@ public abstract class Workflow extends Variables
 
       // Save this result as well...
       //
+      long actionBytesRead = 0;
+      long actionBytesWritten = 0;
+      if (Const.toBoolean(getVariable(Const.HOP_METRIC_DATA_VOLUME, "N"))) {
+        actionBytesRead = newResult.getBytesReadThisAction();
+        actionBytesWritten = newResult.getBytesWrittenThisAction();
+        newResult.setBytesReadThisAction(0);
+        newResult.setBytesWrittenThisAction(0);
+      }
       ActionResult jerAfter =
           new ActionResult(
               newResult,
@@ -796,7 +805,9 @@ public abstract class Workflow extends Variables
               BaseMessages.getString(PKG, CONST_ACTION_FINISHED),
               null,
               actionMeta.getName(),
-              resolve(actionMeta.getAction().getFilename()));
+              resolve(actionMeta.getAction().getFilename()),
+              actionBytesRead,
+              actionBytesWritten);
       workflowTracker.addWorkflowTracker(new WorkflowTracker(workflowMeta, jerAfter));
       synchronized (actionResults) {
         actionResults.add(jerAfter);
@@ -843,7 +854,7 @@ public abstract class Workflow extends Variables
       if (hopMeta.isUnconditional()) {
         nextComment = BaseMessages.getString(PKG, "Workflow.Comment.FollowedUnconditional");
       } else {
-        if (newResult.getResult()) {
+        if (newResult.isResult()) {
           nextComment = BaseMessages.getString(PKG, "Workflow.Comment.FollowedSuccess");
         } else {
           nextComment = BaseMessages.getString(PKG, "Workflow.Comment.FollowedFailure");
@@ -856,13 +867,11 @@ public abstract class Workflow extends Variables
       // green or red, execute the next action...
       //
       if (hopMeta.isUnconditional()
-          || (actionMeta.isEvaluation() && (hopMeta.isEvaluation() == newResult.getResult()))) {
+          || (actionMeta.isEvaluation() && (hopMeta.isEvaluation() == newResult.isResult()))) {
 
         // If the next action is a join, only execute once
-        if (nextAction.isJoin()) {
-          if (activeActions.contains(nextAction)) {
-            continue;
-          }
+        if (nextAction.isJoin() && activeActions.contains(nextAction)) {
+          continue;
         }
 
         // Pass along the previous result, perhaps the next workflow can use it...
@@ -882,8 +891,15 @@ public abstract class Workflow extends Variables
           Runnable runnable =
               () -> {
                 try {
+                  // Pass a previous result without rows to the parallel branch so that
+                  // branch-local result rows start from a clean slate but still inherit
+                  // metrics/files/etc.
+                  Result prevWithoutRows = newResult.lightClone();
+                  prevWithoutRows.setRows(null); // ensure rows are empty
+
                   Result threadResult =
-                      executeFromStart(nr + 1, newResult, nextAction, actionMeta, nextComment);
+                      executeFromStart(
+                          nr + 1, prevWithoutRows, nextAction, actionMeta, nextComment);
                   threadResults.add(threadResult);
                 } catch (Throwable e) {
                   log.logError(Const.getStackTracker(e));
@@ -946,10 +962,10 @@ public abstract class Workflow extends Variables
       }
     }
 
-    // Perhaps we don't have next transforms??
-    // In this case, return the previous result.
+    // Perhaps we don't have next actions??
+    // In this case, return the result of the action we just ran.
     if (res == null) {
-      res = prevResult;
+      res = newResult;
     }
 
     // See if there were any errors in the parallel execution
@@ -967,9 +983,9 @@ public abstract class Workflow extends Variables
       throw threadExceptions.poll();
     }
 
-    // In parallel execution, we aggregate all the results, simply add them to
-    // the previous result...
-    //
+    // In parallel execution, aggregate full results from branches. Since we started each
+    // branch with no previous rows, any rows present here were produced by the branch and
+    // should be included in the final result.
     for (Result threadResult : threadResults) {
       res.add(threadResult);
     }
@@ -979,14 +995,6 @@ public abstract class Workflow extends Variables
     //
     if (res.getNrErrors() > 0) {
       res.setResult(false);
-    }
-    // Log the final action that has finished
-    if (res.getEntryNr() == nr) {
-      if (log.isBasic()) {
-        log.logBasic(
-            BaseMessages.getString(
-                PKG, "Workflow.Log.FinishedAction", actionMeta.getName(), res.getResult() + ""));
-      }
     }
 
     return res;
@@ -1216,6 +1224,9 @@ public abstract class Workflow extends Variables
     } else {
       this.setVariable(Const.INTERNAL_VARIABLE_WORKFLOW_PARENT_ID, null);
     }
+
+    HopVersionProvider versionProvider = new HopVersionProvider();
+    setVariable(Const.HOP_VERSION, versionProvider.getVersion()[0]);
   }
 
   /**

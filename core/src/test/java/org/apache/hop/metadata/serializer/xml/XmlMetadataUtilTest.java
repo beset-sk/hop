@@ -17,21 +17,24 @@
 
 package org.apache.hop.metadata.serializer.xml;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Arrays;
-import junit.framework.TestCase;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.xml.XmlHandler;
+import org.apache.hop.metadata.serializer.memory.MemoryMetadataProvider;
 import org.apache.hop.metadata.serializer.xml.classes.Field;
 import org.apache.hop.metadata.serializer.xml.classes.Info;
 import org.apache.hop.metadata.serializer.xml.classes.MetaData;
 import org.apache.hop.metadata.serializer.xml.classes.TestEnum;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 
-public class XmlMetadataUtilTest extends TestCase {
+/** Unit test for {@link XmlMetadataUtil} */
+class XmlMetadataUtilTest {
 
   @Test
-  public void testMetaXml() throws Exception {
+  void testMetaXml() throws Exception {
     MetaData metaTest = new MetaData();
     metaTest.setFilename("filename.csv");
     metaTest.setGroup("\"");
@@ -128,7 +131,8 @@ public class XmlMetadataUtilTest extends TestCase {
     // Now load that object back in from XML...
     //
     Node node = XmlHandler.loadXmlString("<meta>" + xml + "</meta>", "meta");
-    MetaData metaData = XmlMetadataUtil.deSerializeFromXml(null, node, MetaData.class, null);
+    MetaData metaData =
+        XmlMetadataUtil.deSerializeFromXml(node, MetaData.class, new MemoryMetadataProvider());
 
     assertEquals(metaTest.getFilename(), metaData.getFilename());
     assertEquals(metaTest.getGroup(), metaData.getGroup());

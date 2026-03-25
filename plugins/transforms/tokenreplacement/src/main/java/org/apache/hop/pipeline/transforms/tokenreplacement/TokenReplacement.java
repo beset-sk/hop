@@ -35,6 +35,8 @@ import org.apache.hop.core.Const;
 import org.apache.hop.core.ResultFile;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.exception.HopValueException;
+import org.apache.hop.core.io.CountingInputStream;
+import org.apache.hop.core.io.CountingOutputStream;
 import org.apache.hop.core.row.RowDataUtil;
 import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.vfs.HopVfs;
@@ -184,10 +186,14 @@ public class TokenReplacement extends BaseTransform<TokenReplacementMeta, TokenR
       if (!HopVfs.fileExists(inputFilename, variables)) {
         throw new HopException("Input file " + inputFilename + " does not exist.");
       }
+      data.currentCountingInputStream =
+          new CountingInputStream(HopVfs.getInputStream(inputFilename, variables));
+      String inputEncoding = Const.NVL(resolve(meta.getOutputFileEncoding()), "UTF-8");
       reader =
           new TokenReplacingReader(
               resolver,
-              new InputStreamReader(HopVfs.getInputStream(inputFilename, variables)),
+              new InputStreamReader(
+                  data.currentCountingInputStream, Charset.forName(inputEncoding)),
               resolve(meta.getTokenStartString()),
               resolve(meta.getTokenEndString()));
 
@@ -258,6 +264,12 @@ public class TokenReplacement extends BaseTransform<TokenReplacementMeta, TokenR
       throw new HopException(ex.getMessage(), ex);
     } finally {
       try {
+        if (data.currentCountingInputStream != null) {
+          dataVolumeIn =
+              (dataVolumeIn != null ? dataVolumeIn : 0L)
+                  + data.currentCountingInputStream.getCount();
+        }
+        data.currentCountingInputStream = null;
         reader.close();
         if (stringWriter != null) {
           stringWriter.close();
@@ -279,7 +291,7 @@ public class TokenReplacement extends BaseTransform<TokenReplacementMeta, TokenR
 
     putRow(data.outputRowMeta, r); // in case we want it to go further...
     data.rowNumber++;
-    if (checkFeedback(getLinesOutput())) {
+    if (checkFeedback(getLinesOutput()) && isBasic()) {
       logBasic("linenr " + getLinesOutput());
     }
 
@@ -305,7 +317,9 @@ public class TokenReplacement extends BaseTransform<TokenReplacementMeta, TokenR
 
   public void openNewOutputFile(String filename) throws HopException {
     if (data.openFiles.contains(filename)) {
-      logDetailed("File " + filename + " is already open.");
+      if (isDetailed()) {
+        logDetailed("File " + filename + " is already open.");
+      }
       return;
     }
     if (meta.isCreateParentFolder()) {
@@ -320,7 +334,8 @@ public class TokenReplacement extends BaseTransform<TokenReplacementMeta, TokenR
 
     OutputStream writer =
         HopVfs.getOutputStream(filename, meta.isAppendOutputFileName(), variables);
-    OutputStream bufferedWriter = new BufferedOutputStream(writer, 5000);
+    CountingOutputStream countingStream = new CountingOutputStream(writer);
+    OutputStream bufferedWriter = new BufferedOutputStream(countingStream, 5000);
 
     try {
       if (fileExists && meta.isAppendOutputFileName()) {
@@ -331,7 +346,7 @@ public class TokenReplacement extends BaseTransform<TokenReplacementMeta, TokenR
     }
 
     data.openFiles.add(filename);
-    data.openWriters.add(writer);
+    data.openWriters.add(countingStream);
     data.openBufferedWriters.add(bufferedWriter);
   }
 
@@ -365,6 +380,9 @@ public class TokenReplacement extends BaseTransform<TokenReplacementMeta, TokenR
       while (itWriter.hasNext()) {
         OutputStream writer = itWriter.next();
         if (writer != null) {
+          if (writer instanceof CountingOutputStream cos) {
+            dataVolumeOut = (dataVolumeOut != null ? dataVolumeOut : 0L) + cos.getCount();
+          }
           writer.close();
         }
       }

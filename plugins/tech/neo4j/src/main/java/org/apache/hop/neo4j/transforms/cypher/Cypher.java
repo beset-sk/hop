@@ -42,7 +42,7 @@ import org.apache.hop.pipeline.transform.TransformMeta;
 import org.json.simple.JSONValue;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Result;
-import org.neo4j.driver.TransactionWork;
+import org.neo4j.driver.TransactionCallback;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.exceptions.ServiceUnavailableException;
 import org.neo4j.driver.summary.Notification;
@@ -147,7 +147,9 @@ public class Cypher extends BaseTransform<CypherMeta, CypherData> {
   private void reconnect() throws HopConfigException {
     closeSessionDriver();
 
-    logBasic("RECONNECTING to database");
+    if (isBasic()) {
+      logBasic("RECONNECTING to database");
+    }
 
     // Wait for 30 seconds before reconnecting.
     // Let's give the server a breath of fresh air.
@@ -317,7 +319,7 @@ public class Cypher extends BaseTransform<CypherMeta, CypherData> {
 
     // Execute all the statements in there in one transaction...
     //
-    TransactionWork<Integer> transactionWork =
+    TransactionCallback<Integer> transactionWork =
         transaction -> {
           for (CypherStatement cypherStatement : data.cypherStatements) {
             Result result =
@@ -339,10 +341,10 @@ public class Cypher extends BaseTransform<CypherMeta, CypherData> {
       for (int attempt = 0; attempt < data.attempts; attempt++) {
         try {
           if (meta.isReadOnly()) {
-            nrProcessed = data.session.readTransaction(transactionWork);
+            nrProcessed = data.session.executeRead(transactionWork);
             setLinesInput(getLinesInput() + data.cypherStatements.size());
           } else {
-            nrProcessed = data.session.writeTransaction(transactionWork);
+            nrProcessed = data.session.executeWrite(transactionWork);
             setLinesOutput(getLinesOutput() + data.cypherStatements.size());
           }
           // If all went as expected we can stop retrying...
@@ -381,13 +383,15 @@ public class Cypher extends BaseTransform<CypherMeta, CypherData> {
     try {
       for (int attempt = 0; attempt < data.attempts; attempt++) {
         if (attempt > 0) {
-          logBasic("Attempt #" + (attempt + 1) + "/" + data.attempts + " on Neo4j transaction");
+          if (isBasic()) {
+            logBasic("Attempt #" + (attempt + 1) + "/" + data.attempts + " on Neo4j transaction");
+          }
         }
         try {
           if (meta.isReadOnly()) {
-            data.session.readTransaction(cypherTransactionWork);
+            data.session.executeRead(cypherTransactionWork);
           } else {
-            data.session.writeTransaction(cypherTransactionWork);
+            data.session.executeWrite(cypherTransactionWork);
           }
           // Stop the attempts now
           //
@@ -411,9 +415,9 @@ public class Cypher extends BaseTransform<CypherMeta, CypherData> {
       if (meta.isRetryingOnDisconnect()) {
         reconnect();
         if (meta.isReadOnly()) {
-          data.session.readTransaction(cypherTransactionWork);
+          data.session.executeRead(cypherTransactionWork);
         } else {
-          data.session.writeTransaction(cypherTransactionWork);
+          data.session.executeWrite(cypherTransactionWork);
         }
       } else {
         throw e;
@@ -592,16 +596,18 @@ public class Cypher extends BaseTransform<CypherMeta, CypherData> {
       for (Notification notification : summary.notifications()) {
         if ("WARNING".equalsIgnoreCase(notification.severity())) {
           // Log it
-          logBasic(
-              notification.severity()
-                  + " : "
-                  + notification.title()
-                  + " : "
-                  + notification.code()
-                  + " : "
-                  + notification.description()
-                  + ", position "
-                  + notification.position());
+          if (isBasic()) {
+            logBasic(
+                notification.severity()
+                    + " : "
+                    + notification.title()
+                    + " : "
+                    + notification.code()
+                    + " : "
+                    + notification.description()
+                    + ", position "
+                    + notification.position());
+          }
         } else {
           // This is an error
           //

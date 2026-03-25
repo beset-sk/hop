@@ -17,14 +17,18 @@
 
 package org.apache.hop.www;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.UUID;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hop.core.Const;
@@ -36,6 +40,7 @@ import org.apache.hop.core.logging.LoggingObjectType;
 import org.apache.hop.core.logging.SimpleLoggingObject;
 import org.apache.hop.core.metadata.SerializableMetadataProvider;
 import org.apache.hop.core.row.IRowMeta;
+import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
@@ -54,8 +59,7 @@ import org.apache.hop.www.service.WebService;
 public class WebServiceServlet extends BaseHttpServlet implements IHopServerPlugin {
 
   private static final Class<?> PKG = WebServiceServlet.class;
-
-  private static final long serialVersionUID = 3634806745373343432L;
+  @Serial private static final long serialVersionUID = 3634806745373343432L;
 
   public static final String CONTEXT_PATH = "/hop/webService";
 
@@ -68,7 +72,15 @@ public class WebServiceServlet extends BaseHttpServlet implements IHopServerPlug
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    this.doGet(request, response);
+    try {
+      doGet(request, response);
+    } catch (Exception e) {
+      logError("Error handling web service POST request", e);
+      sendSafeError(
+          response,
+          HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          "Unable to process web service request.");
+    }
   }
 
   @Override
@@ -89,8 +101,11 @@ public class WebServiceServlet extends BaseHttpServlet implements IHopServerPlug
 
     String webServiceName = request.getParameter("service");
     if (StringUtils.isEmpty(webServiceName)) {
-      throw new ServletException(
+      sendSafeError(
+          response,
+          HttpServletResponse.SC_BAD_REQUEST,
           "Please specify a service parameter pointing to the name of the web service object");
+      return;
     }
 
     String runConfigurationName = request.getParameter("runConfig");
@@ -120,13 +135,31 @@ public class WebServiceServlet extends BaseHttpServlet implements IHopServerPlug
       String transformName = variables.resolve(webService.getTransformName());
       String fieldName = variables.resolve(webService.getFieldName());
       String contentType = variables.resolve(webService.getContentType());
+      String statusCodeField = variables.resolve(webService.getStatusCode());
       String bodyContentVariable = variables.resolve(webService.getBodyContentVariable());
+      String headerContentVariable = variables.resolve(webService.getHeaderContentVariable());
 
       String bodyContent = "";
       if (StringUtils.isNotEmpty(bodyContentVariable)) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOUtils.copy(request.getInputStream(), out);
         bodyContent = out.toString(StandardCharsets.UTF_8);
+      }
+
+      String headerContent = "";
+      if (StringUtils.isNotEmpty(headerContentVariable)) {
+        // Create JSON object containing all request headers
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode headersJson = objectMapper.createObjectNode();
+
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+          String headerName = headerNames.nextElement();
+          String headerValue = request.getHeader(headerName);
+          headersJson.put(headerName, headerValue);
+        }
+
+        headerContent = objectMapper.writeValueAsString(headersJson);
       }
 
       if (StringUtils.isEmpty(contentType)) {
@@ -157,6 +190,10 @@ public class WebServiceServlet extends BaseHttpServlet implements IHopServerPlug
 
       if (StringUtils.isNotEmpty(bodyContentVariable)) {
         pipeline.setVariable(bodyContentVariable, Const.NVL(bodyContent, ""));
+      }
+
+      if (StringUtils.isNotEmpty(headerContentVariable)) {
+        pipeline.setVariable(headerContentVariable, Const.NVL(headerContent, ""));
       }
 
       // Set all the other parameters as variables/parameters...
@@ -205,8 +242,31 @@ public class WebServiceServlet extends BaseHttpServlet implements IHopServerPlug
             public void rowWrittenEvent(IRowMeta rowMeta, Object[] row)
                 throws HopTransformException {
               try {
-                String outputString = rowMeta.getString(row, fieldName, "");
-                outputStream.write(outputString.getBytes(StandardCharsets.UTF_8));
+                response.setStatus(rowMeta.getInteger(row, statusCodeField, 200L).intValue());
+
+                // Get the field index and metadata to detect field type
+                int fieldIndex = rowMeta.indexOfValue(fieldName);
+                if (fieldIndex < 0) {
+                  throw new HopTransformException("Field '" + fieldName + "' not found in row");
+                }
+
+                IValueMeta valueMeta = rowMeta.getValueMeta(fieldIndex);
+
+                // Check if field is binary type and handle accordingly
+                byte[] outputData;
+                if (valueMeta.getType() == IValueMeta.TYPE_BINARY) {
+                  // Binary output - get raw bytes without encoding conversion
+                  outputData = rowMeta.getBinary(row, fieldIndex);
+                  if (outputData == null) {
+                    outputData = new byte[0];
+                  }
+                } else {
+                  // Text output - convert to string and encode as UTF-8
+                  String outputString = rowMeta.getString(row, fieldName, "");
+                  outputData = outputString.getBytes(StandardCharsets.UTF_8);
+                }
+
+                outputStream.write(outputData);
                 outputStream.flush();
               } catch (HopValueException e) {
                 throw new HopTransformException(
@@ -224,10 +284,12 @@ public class WebServiceServlet extends BaseHttpServlet implements IHopServerPlug
       pipeline.startThreads();
       pipeline.waitUntilFinished();
 
-      response.setStatus(HttpServletResponse.SC_OK);
-
     } catch (Exception e) {
-      throw new ServletException("Error producing web service output", e);
+      logError("Error producing web service output", e);
+      sendSafeError(
+          response,
+          HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+          "Error producing web service output.");
     }
   }
 

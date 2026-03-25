@@ -18,143 +18,104 @@
 package org.apache.hop.pipeline.transforms.csvinput;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.hop.core.HopEnvironment;
-import org.apache.hop.core.exception.HopException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
+import org.apache.hop.core.HopClientEnvironment;
 import org.apache.hop.core.file.TextFileInputField;
 import org.apache.hop.core.plugins.PluginRegistry;
-import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
-import org.apache.hop.pipeline.TransformLoadSaveTester;
-import org.apache.hop.pipeline.transform.ITransformMeta;
-import org.apache.hop.pipeline.transforms.loadsave.initializer.IInitializer;
-import org.apache.hop.pipeline.transforms.loadsave.validator.ArrayLoadSaveValidator;
-import org.apache.hop.pipeline.transforms.loadsave.validator.IFieldLoadSaveValidator;
+import org.apache.hop.core.row.IValueMeta;
+import org.apache.hop.core.row.value.ValueMetaDate;
+import org.apache.hop.core.row.value.ValueMetaInteger;
+import org.apache.hop.core.row.value.ValueMetaNumber;
+import org.apache.hop.core.row.value.ValueMetaPlugin;
+import org.apache.hop.core.row.value.ValueMetaPluginType;
+import org.apache.hop.core.row.value.ValueMetaString;
+import org.apache.hop.core.xml.XmlHandler;
+import org.apache.hop.metadata.serializer.memory.MemoryMetadataProvider;
+import org.apache.hop.metadata.serializer.xml.XmlMetadataUtil;
+import org.apache.hop.pipeline.transform.TransformMeta;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-class CsvInputMetaTest implements IInitializer<ITransformMeta> {
-  TransformLoadSaveTester<CsvInputMeta> transformLoadSaveTester;
-  Class<CsvInputMeta> testMetaClass = CsvInputMeta.class;
-
-  @RegisterExtension
-  static RestoreHopEngineEnvironmentExtension env = new RestoreHopEngineEnvironmentExtension();
-
-  private static class TextFileInputFieldValidator
-      implements IFieldLoadSaveValidator<TextFileInputField> {
-    @Override
-    public TextFileInputField getTestObject() {
-      return new TextFileInputField(
-          UUID.randomUUID().toString(), new Random().nextInt(), new Random().nextInt());
-    }
-
-    @Override
-    public boolean validateTestObject(TextFileInputField testObject, Object actual) {
-      if (!(actual instanceof TextFileInputField)) {
-        return false;
-      }
-
-      TextFileInputField another = (TextFileInputField) actual;
-      return new EqualsBuilder()
-          .append(testObject.getName(), another.getName())
-          .append(testObject.getLength(), another.getLength())
-          .append(testObject.getType(), another.getType())
-          .append(testObject.getTrimType(), another.getTrimType())
-          .isEquals();
-    }
-  }
-
+class CsvInputMetaTest {
   @BeforeEach
-  void setUpLoadSave() throws Exception {
-    HopEnvironment.init();
-    PluginRegistry.init();
-    List<String> attributes =
-        Arrays.asList(
-            "bufferSize",
-            "delimiter",
-            "enclosure",
-            "encoding",
-            "filename",
-            "filenameField",
-            "inputFields",
-            "rowNumField",
-            "addResultFile",
-            "headerPresent",
-            "includingFilename",
-            "lazyConversionActive",
-            "newlinePossibleInFields",
-            "runningInParallel");
-
-    Map<String, String> getterMap =
-        new HashMap<String, String>() {
-          {
-            put("inputFields", "getInputFields");
-            put("hasHeader", "hasHeader");
-            put("includeFilename", "includeFilename");
-            put("includeRowNumber", "includeRowNumber");
-          }
-        };
-    Map<String, String> setterMap =
-        new HashMap<String, String>() {
-          {
-            put("inputFields", "setInputFields");
-            put("includeFilename", "includeFilename");
-            put("includeRowNumber", "includeRowNumber");
-          }
-        };
-
-    Map<String, IFieldLoadSaveValidator<?>> attrValidatorMap = new HashMap<>();
-    attrValidatorMap.put(
-        "inputFields", new ArrayLoadSaveValidator<>(new TextFileInputFieldValidator(), 5));
-
-    Map<String, IFieldLoadSaveValidator<?>> typeValidatorMap = new HashMap<>();
-
-    transformLoadSaveTester =
-        new TransformLoadSaveTester(
-            testMetaClass, attributes, getterMap, setterMap, attrValidatorMap, typeValidatorMap);
-  }
-
-  // Call the allocate method on the LoadSaveTester meta class
-  @Override
-  public void modify(ITransformMeta someMeta) {
-    if (someMeta instanceof CsvInputMeta) {
-      ((CsvInputMeta) someMeta).allocate(5);
+  void beforeEach() throws Exception {
+    PluginRegistry registry = PluginRegistry.getInstance();
+    String[] classNames = {
+      ValueMetaString.class.getName(), ValueMetaInteger.class.getName(),
+      ValueMetaDate.class.getName(), ValueMetaNumber.class.getName()
+    };
+    for (String className : classNames) {
+      registry.registerPluginClass(className, ValueMetaPluginType.class, ValueMetaPlugin.class);
     }
   }
 
   @Test
-  void testSerialization() throws HopException {
-    transformLoadSaveTester.testSerialization();
+  void testLoadSave() throws Exception {
+    HopClientEnvironment.init();
+    Path path =
+        Paths.get(Objects.requireNonNull(getClass().getResource("/csv-file-input.xml")).toURI());
+    String xml = Files.readString(path);
+    CsvInputMeta meta = new CsvInputMeta();
+    XmlMetadataUtil.deSerializeFromXml(
+        XmlHandler.loadXmlString(xml, TransformMeta.XML_TAG),
+        CsvInputMeta.class,
+        meta,
+        new MemoryMetadataProvider());
+
+    validate(meta);
+
+    // Do a round trip:
+    //
+    String xmlCopy =
+        XmlHandler.openTag(TransformMeta.XML_TAG)
+            + XmlMetadataUtil.serializeObjectToXml(meta)
+            + XmlHandler.closeTag(TransformMeta.XML_TAG);
+    CsvInputMeta metaCopy = new CsvInputMeta();
+    XmlMetadataUtil.deSerializeFromXml(
+        XmlHandler.loadXmlString(xmlCopy, TransformMeta.XML_TAG),
+        CsvInputMeta.class,
+        metaCopy,
+        new MemoryMetadataProvider());
+    validate(metaCopy);
   }
 
-  @Test
-  void testClone() {
-    final CsvInputMeta original = new CsvInputMeta();
-    original.setDelimiter(";");
-    original.setEnclosure("'");
-    final TextFileInputField[] originalFields = new TextFileInputField[1];
-    final TextFileInputField originalField = new TextFileInputField();
-    originalField.setName("field");
-    originalFields[0] = originalField;
-    original.setInputFields(originalFields);
+  private static void validate(CsvInputMeta meta) {
+    assertEquals("filename.csv", meta.getFilename());
+    assertEquals("filenameField", meta.getFilenameField());
+    assertEquals("rowNum", meta.getRowNumField());
+    assertTrue(meta.isIncludingFilename());
+    assertEquals(",", meta.getDelimiter());
+    assertEquals("\"", meta.getEnclosure());
+    assertTrue(meta.isHeaderPresent());
+    assertEquals("50000", meta.getBufferSize());
+    assertEquals("fields", meta.getSchemaDefinition());
+    assertTrue(meta.isIgnoreFields());
+    assertTrue(meta.isLazyConversionActive());
+    assertTrue(meta.isAddResult());
+    assertTrue(meta.isRunningInParallel());
+    assertTrue(meta.isNewlinePossibleInFields());
+    assertEquals("UTF-8", meta.getEncoding());
+    assertNotNull(meta.getInputFields());
+    assertEquals(2, meta.getInputFields().size());
 
-    final CsvInputMeta clone = (CsvInputMeta) original.clone();
-    // verify that the clone and its input fields are "equal" to the originals, but not the same
-    // objects
-    assertNotSame(original, clone);
-    assertEquals(original.getDelimiter(), clone.getDelimiter());
-    assertEquals(original.getEnclosure(), clone.getEnclosure());
+    TextFileInputField f1 = meta.getInputFields().get(0);
+    assertEquals("id", f1.getName());
+    assertEquals(IValueMeta.TYPE_INTEGER, f1.getType());
+    assertEquals(9, f1.getLength());
+    assertEquals(0, f1.getPrecision());
+    assertEquals(IValueMeta.TRIM_TYPE_BOTH, f1.getTrimType());
 
-    assertNotSame(original.getInputFields(), clone.getInputFields());
-    assertNotSame(original.getInputFields()[0], clone.getInputFields()[0]);
-    assertEquals(original.getInputFields()[0].getName(), clone.getInputFields()[0].getName());
+    TextFileInputField f2 = meta.getInputFields().get(1);
+    assertEquals("name", f2.getName());
+    assertEquals(IValueMeta.TYPE_STRING, f2.getType());
+    assertEquals(100, f2.getLength());
+    assertEquals(-1, f2.getPrecision());
+    assertEquals(IValueMeta.TRIM_TYPE_RIGHT, f2.getTrimType());
   }
 }

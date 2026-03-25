@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.hop.core.CheckResult;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.ICheckResult;
 import org.apache.hop.core.Result;
@@ -30,9 +31,11 @@ import org.apache.hop.core.database.Database;
 import org.apache.hop.core.database.DatabaseMeta;
 import org.apache.hop.core.exception.HopDatabaseException;
 import org.apache.hop.core.exception.HopException;
+import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.metadata.api.HopMetadataProperty;
+import org.apache.hop.metadata.api.HopMetadataPropertyType;
 import org.apache.hop.metadata.api.IEnumHasCodeAndDescription;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
 import org.apache.hop.metadata.api.IHopMetadataSerializer;
@@ -42,8 +45,6 @@ import org.apache.hop.resource.ResourceReference;
 import org.apache.hop.workflow.WorkflowMeta;
 import org.apache.hop.workflow.action.ActionBase;
 import org.apache.hop.workflow.action.IAction;
-import org.apache.hop.workflow.action.validator.ActionValidatorUtils;
-import org.apache.hop.workflow.action.validator.AndValidator;
 
 /** This check db connections */
 @Action(
@@ -55,6 +56,8 @@ import org.apache.hop.workflow.action.validator.AndValidator;
     keywords = "i18n::ActionCheckDbConnections.keyword",
     documentationUrl = "/workflow/actions/checkdbconnection.html",
     actionTransformTypes = {ActionTransformType.ENV_CHECK, ActionTransformType.RDBMS})
+@Getter
+@Setter
 public class ActionCheckDbConnections extends ActionBase implements Cloneable, IAction {
   private static final Class<?> PKG = ActionCheckDbConnections.class;
 
@@ -72,7 +75,10 @@ public class ActionCheckDbConnections extends ActionBase implements Cloneable, I
 
   public ActionCheckDbConnections(ActionCheckDbConnections other) {
     super(other.getName(), other.getDescription(), other.getPluginId());
-    this.connections = other.getConnections();
+    connections = new ArrayList<>();
+    if (other.getConnections() != null) {
+      other.getConnections().forEach(c -> connections.add(new CDConnection(c)));
+    }
   }
 
   @Override
@@ -131,7 +137,7 @@ public class ActionCheckDbConnections extends ActionBase implements Cloneable, I
                         waitTimeMessage));
               }
 
-              // The start time (in seconds ,Minutes or Hours)
+              // The start time (in seconds, minutes or hours)
               timeStart = System.currentTimeMillis();
 
               boolean continueLoop = true;
@@ -224,6 +230,9 @@ public class ActionCheckDbConnections extends ActionBase implements Cloneable, I
       IVariables variables, WorkflowMeta workflowMeta) {
     List<ResourceReference> references = super.getResourceDependencies(variables, workflowMeta);
 
+    if (connections == null) {
+      return references;
+    }
     for (CDConnection connection : connections) {
       DatabaseMeta databaseMeta = loadDatabaseMeta(resolve(connection.getName()));
       if (databaseMeta != null) {
@@ -247,18 +256,26 @@ public class ActionCheckDbConnections extends ActionBase implements Cloneable, I
       WorkflowMeta workflowMeta,
       IVariables variables,
       IHopMetadataProvider metadataProvider) {
-    ActionValidatorUtils.andValidator()
-        .validate(
-            this,
-            "tablename",
-            remarks,
-            AndValidator.putValidators(ActionValidatorUtils.notBlankValidator()));
-    ActionValidatorUtils.andValidator()
-        .validate(
-            this,
-            "columnname",
-            remarks,
-            AndValidator.putValidators(ActionValidatorUtils.notBlankValidator()));
+
+    if (connections == null || connections.isEmpty()) {
+      String message =
+          BaseMessages.getString(PKG, "ActionCheckDbConnections.CheckResult.NothingToCheck");
+      remarks.add(new CheckResult(ICheckResult.TYPE_RESULT_WARNING, message, this));
+    } else {
+      for (CDConnection connection : connections) {
+        if (Utils.isEmpty(connection.getName())) {
+          String message =
+              BaseMessages.getString(
+                  PKG, "ActionCheckDbConnections.CheckResult.MissingConnectionName");
+          remarks.add(new CheckResult(ICheckResult.TYPE_RESULT_ERROR, message, this));
+        }
+        if (Utils.isEmpty(connection.getWaitTime())) {
+          String message =
+              BaseMessages.getString(PKG, "ActionCheckDbConnections.CheckResult.MissingWaitTime");
+          remarks.add(new CheckResult(ICheckResult.TYPE_RESULT_ERROR, message, this));
+        }
+      }
+    }
   }
 
   public enum WaitTimeUnit implements IEnumHasCodeAndDescription {
@@ -279,9 +296,9 @@ public class ActionCheckDbConnections extends ActionBase implements Cloneable, I
         BaseMessages.getString(PKG, "ActionCheckDbConnections.UnitTimeHour.Label"),
         3600000L),
     ;
-    private final String code;
-    private final String description;
-    private final long factor;
+    @Getter private final String code;
+    @Getter private final String description;
+    @Getter private final long factor;
 
     WaitTimeUnit(String code, String description, long factor) {
       this.code = code;
@@ -297,41 +314,14 @@ public class ActionCheckDbConnections extends ActionBase implements Cloneable, I
       return IEnumHasCodeAndDescription.lookupDescription(
           WaitTimeUnit.class, description, MILLISECOND);
     }
-
-    /**
-     * Gets code
-     *
-     * @return value of code
-     */
-    @Override
-    public String getCode() {
-      return code;
-    }
-
-    /**
-     * Gets description
-     *
-     * @return value of description
-     */
-    @Override
-    public String getDescription() {
-      return description;
-    }
-
-    /**
-     * Gets factor
-     *
-     * @return value of factor
-     */
-    public long getFactor() {
-      return factor;
-    }
   }
 
   @Getter
   @Setter
   public static final class CDConnection {
-    @HopMetadataProperty(key = "name")
+    @HopMetadataProperty(
+        key = "name",
+        hopMetadataPropertyType = HopMetadataPropertyType.RDBMS_CONNECTION)
     private String name;
 
     @HopMetadataProperty(key = "waitfor")
@@ -351,23 +341,5 @@ public class ActionCheckDbConnections extends ActionBase implements Cloneable, I
       this.waitTime = c.waitTime;
       this.waitTimeUnit = c.waitTimeUnit;
     }
-  }
-
-  /**
-   * Gets connections
-   *
-   * @return value of connections
-   */
-  public List<CDConnection> getConnections() {
-    return connections;
-  }
-
-  /**
-   * Sets connections
-   *
-   * @param connections value of connections
-   */
-  public void setConnections(List<CDConnection> connections) {
-    this.connections = connections;
   }
 }

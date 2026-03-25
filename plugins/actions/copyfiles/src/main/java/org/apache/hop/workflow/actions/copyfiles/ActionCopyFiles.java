@@ -294,14 +294,12 @@ public class ActionCopyFiles extends ActionBase implements Cloneable, IAction {
       result.setResult(false);
       result.setNrErrors(1);
 
-      if (argFromPrevious) {
-        if (isDetailed()) {
-          logDetailed(
-              BaseMessages.getString(
-                  PKG,
-                  "ActionCopyFiles.Log.ArgFromPrevious.Found",
-                  (rows != null ? rows.size() : 0) + ""));
-        }
+      if (argFromPrevious && isDetailed()) {
+        logDetailed(
+            BaseMessages.getString(
+                PKG,
+                "ActionCopyFiles.Log.ArgFromPrevious.Found",
+                (rows != null ? rows.size() : 0) + ""));
       }
 
       if (argFromPrevious && rows != null) { // Copy the input row to the (command line) arguments
@@ -462,6 +460,8 @@ public class ActionCopyFiles extends ActionBase implements Cloneable, IAction {
               FileSelector fileSelector = new FileFilterSelector(nameFileFilter);
               destinationFileFolder.copyFrom(sourceFileFolder.getParent(), fileSelector);
 
+              trackBytesCopied(sourceFileFolder, result);
+
               if (isDetailed()) {
                 logDetailed(
                     BaseMessages.getString(
@@ -476,6 +476,8 @@ public class ActionCopyFiles extends ActionBase implements Cloneable, IAction {
 
               destinationFileFolder.copyFrom(
                   sourceFileFolder, new TextOneToOneFileSelector(destinationFileFolder));
+
+              trackBytesCopied(sourceFileFolder, result);
             } else {
               // Both source and destination are folders
               if (isDetailed()) {
@@ -494,6 +496,20 @@ public class ActionCopyFiles extends ActionBase implements Cloneable, IAction {
                 destinationFileFolder.copyFrom(sourceFileFolder, textFileSelector);
               } finally {
                 textFileSelector.shutdown();
+              }
+            }
+
+            // Track bytes for folder-to-folder copies via listAddResult
+            for (String copiedFile : listAddResult) {
+              try {
+                FileObject fo = HopVfs.getFileObject(copiedFile, getVariables());
+                if (fo.getType() == FileType.FILE && fo.getType().hasContent()) {
+                  long size = fo.getContent().getSize();
+                  result.setBytesReadThisAction(result.getBytesReadThisAction() + size);
+                  result.setBytesWrittenThisAction(result.getBytesWrittenThisAction() + size);
+                }
+              } catch (Exception e) {
+                logDebug("Could not get size of copied file: " + copiedFile);
               }
             }
 
@@ -550,8 +566,7 @@ public class ActionCopyFiles extends ActionBase implements Cloneable, IAction {
               int trimPathLength = destinationFilefoldername.length() + 1;
               FileObject addFile;
 
-              for (Iterator<String> iter = listAddResult.iterator(); iter.hasNext(); ) {
-                String fileaddentry = iter.next();
+              for (String fileaddentry : listAddResult) {
                 addFile = null; // re=null each iteration
 
                 // Try to get the file relative to the existing connection
@@ -639,6 +654,18 @@ public class ActionCopyFiles extends ActionBase implements Cloneable, IAction {
     }
 
     return entrystatus;
+  }
+
+  private void trackBytesCopied(FileObject sourceFile, Result result) {
+    try {
+      if (sourceFile.getType().hasContent()) {
+        long size = sourceFile.getContent().getSize();
+        result.setBytesReadThisAction(result.getBytesReadThisAction() + size);
+        result.setBytesWrittenThisAction(result.getBytesWrittenThisAction() + size);
+      }
+    } catch (Exception e) {
+      logDebug("Could not get size of source file: " + sourceFile);
+    }
   }
 
   private class TextOneToOneFileSelector implements FileSelector {

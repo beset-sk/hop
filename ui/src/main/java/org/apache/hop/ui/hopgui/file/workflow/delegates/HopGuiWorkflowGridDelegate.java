@@ -32,6 +32,7 @@ import org.apache.hop.ui.core.PropsUi;
 import org.apache.hop.ui.core.gui.GuiResource;
 import org.apache.hop.ui.core.widget.TreeMemory;
 import org.apache.hop.ui.hopgui.HopGui;
+import org.apache.hop.ui.hopgui.file.pipeline.PipelineMetricDisplayUtil;
 import org.apache.hop.ui.hopgui.file.workflow.HopGuiWorkflowGraph;
 import org.apache.hop.workflow.ActionResult;
 import org.eclipse.swt.SWT;
@@ -132,6 +133,14 @@ public class HopGuiWorkflowGridDelegate {
     column7.setText(BaseMessages.getString(PKG, "WorkflowLog.Column.LogDate"));
     column7.setWidth(150);
 
+    TreeColumn column8 = new TreeColumn(wTree, SWT.RIGHT);
+    column8.setText(BaseMessages.getString(PKG, "WorkflowLog.Column.BytesRead"));
+    column8.setWidth(120);
+
+    TreeColumn column9 = new TreeColumn(wTree, SWT.RIGHT);
+    column9.setText(BaseMessages.getString(PKG, "WorkflowLog.Column.BytesWritten"));
+    column9.setWidth(120);
+
     FormData fdTree = new FormData();
     fdTree.left = new FormAttachment(0, 0);
     fdTree.top = new FormAttachment(0, 0);
@@ -189,8 +198,8 @@ public class HopGuiWorkflowGridDelegate {
         String workflowName = workflowTracker.getWorkflowName();
 
         if (Utils.isEmpty(workflowName)) {
-          if (!Utils.isEmpty(workflowTracker.getWorfkflowFilename())) {
-            workflowName = workflowTracker.getWorfkflowFilename();
+          if (!Utils.isEmpty(workflowTracker.getWorkflowFilename())) {
+            workflowName = workflowTracker.getWorkflowFilename();
           } else {
             workflowName =
                 BaseMessages.getString(
@@ -198,7 +207,7 @@ public class HopGuiWorkflowGridDelegate {
           }
         }
         treeItem.setText(0, workflowName);
-        treeItem.setText(4, Const.NVL(workflowTracker.getWorfkflowFilename(), ""));
+        treeItem.setText(4, Const.NVL(workflowTracker.getWorkflowFilename(), ""));
 
         TreeMemory.getInstance()
             .storeExpanded(STRING_CHEF_LOG_TREE_NAME, new String[] {workflowName}, true);
@@ -268,11 +277,11 @@ public class HopGuiWorkflowGridDelegate {
             if (res != null) {
               treeItem.setText(
                   2,
-                  res.getResult()
+                  res.isResult()
                       ? BaseMessages.getString(PKG, "WorkflowLog.Tree.Success")
                       : BaseMessages.getString(PKG, "WorkflowLog.Tree.Failure"));
               treeItem.setText(5, Long.toString(res.getEntryNr()));
-              if (res.getResult()) {
+              if (res.isResult()) {
                 treeItem.setImage(2, GuiResource.getInstance().getImageSuccess());
                 treeItem.setForeground(2, GuiResource.getInstance().getColorSuccessGreen());
               } else {
@@ -287,6 +296,18 @@ public class HopGuiWorkflowGridDelegate {
             Date logDate = result.getLogDate();
             if (logDate != null) {
               treeItem.setText(6, new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(logDate));
+            }
+            if (Const.toBoolean(
+                HopGui.getInstance()
+                    .getVariables()
+                    .getVariable(Const.HOP_METRIC_DATA_VOLUME, "N"))) {
+              treeItem.setText(
+                  7, result.getBytesRead() > 0 ? formatBytes(result.getBytesRead()) : "");
+              treeItem.setText(
+                  8, result.getBytesWritten() > 0 ? formatBytes(result.getBytesWritten()) : "");
+            } else {
+              treeItem.setText(7, "");
+              treeItem.setText(8, "");
             }
           }
         }
@@ -306,5 +327,9 @@ public class HopGuiWorkflowGridDelegate {
 
     // Reset nr of items
     this.previousNrItems = -1;
+  }
+
+  private static String formatBytes(long bytes) {
+    return PipelineMetricDisplayUtil.formatDataVolume(bytes);
   }
 }

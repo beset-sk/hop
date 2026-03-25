@@ -36,6 +36,7 @@ import org.apache.hop.core.ResultFile;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.exception.HopTransformException;
 import org.apache.hop.core.exception.HopValueException;
+import org.apache.hop.core.io.CountingInputStream;
 import org.apache.hop.core.row.RowDataUtil;
 import org.apache.hop.core.row.RowMeta;
 import org.apache.hop.core.util.Utils;
@@ -189,11 +190,9 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
         return false;
       }
       data.fileObject = HopVfs.getFileObject(data.filenames[data.filenr], variables);
-      data.inputStream = HopVfs.getInputStream(data.fileObject);
+      data.inputStream = new CountingInputStream(HopVfs.getInputStream(data.fileObject));
       data.xmlEventReader = data.staxInstance.createXMLEventReader(data.inputStream, data.encoding);
-    } catch (IOException e) {
-      throw new HopException(e);
-    } catch (XMLStreamException e) {
+    } catch (IOException | XMLStreamException e) {
       throw new HopException(e);
     }
     data.filenr++;
@@ -228,6 +227,9 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
     }
     if (data.inputStream != null) {
       try {
+        if (data.inputStream instanceof CountingInputStream cis) {
+          dataVolumeIn = (dataVolumeIn != null ? dataVolumeIn : 0L) + cis.getCount();
+        }
         data.inputStream.close();
       } catch (IOException e) {
         if (isBasic()) {
@@ -291,11 +293,13 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
 
       data.filenames = filenames.toArray(new String[filenames.size()]);
 
-      logDetailed(
-          BaseMessages.getString(
-              PKG,
-              "XMLInputStream.Log.ReadingFromNrFiles",
-              Integer.toString(data.filenames.length)));
+      if (isDetailed()) {
+        logDetailed(
+            BaseMessages.getString(
+                PKG,
+                "XMLInputStream.Log.ReadingFromNrFiles",
+                Integer.toString(data.filenames.length)));
+      }
     }
   }
 
@@ -313,7 +317,7 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
       r[data.pos_xml_element_id] = data.elementLevelID[data.elementLevel];
     }
     if (data.pos_xml_element_level != -1) {
-      r[data.pos_xml_element_level] = Long.valueOf(data.elementLevel);
+      r[data.pos_xml_element_level] = (long) data.elementLevel;
     }
     if (data.pos_xml_parent_element_id != -1) {
       r[data.pos_xml_parent_element_id] = data.elementParentID[data.elementLevel];
@@ -372,7 +376,7 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
 
     int eventType = e.getEventType();
     if (data.pos_xml_dataType_numeric != -1) {
-      outputRowData[data.pos_xml_dataType_numeric] = Long.valueOf(eventType);
+      outputRowData[data.pos_xml_dataType_numeric] = (long) eventType;
     }
     if (data.pos_xml_dataTypeDescription != -1) {
       if (eventType == 0 || eventType > eventDescription.length) {
@@ -384,10 +388,10 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
       }
     }
     if (data.pos_xml_location_line != -1) {
-      outputRowData[data.pos_xml_location_line] = Long.valueOf(e.getLocation().getLineNumber());
+      outputRowData[data.pos_xml_location_line] = (long) e.getLocation().getLineNumber();
     }
     if (data.pos_xml_locationColumn != -1) {
-      outputRowData[data.pos_xml_locationColumn] = Long.valueOf(e.getLocation().getColumnNumber());
+      outputRowData[data.pos_xml_locationColumn] = (long) e.getLocation().getColumnNumber();
     }
 
     switch (eventType) {
@@ -487,7 +491,9 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
         break;
 
       default:
-        logBasic("Event:" + eventType);
+        if (isBasic()) {
+          logBasic("Event:" + eventType);
+        }
         outputRowData = null; // ignore & continue
     }
 
@@ -524,7 +530,7 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
       putRowOut(outputRowDataNamespace); // first put the element name info out
       // change data_type to ATTRIBUTE
       if (data.pos_xml_dataType_numeric != -1) {
-        outputRowData[data.pos_xml_dataType_numeric] = Long.valueOf(XMLStreamConstants.NAMESPACE);
+        outputRowData[data.pos_xml_dataType_numeric] = (long) XMLStreamConstants.NAMESPACE;
       }
       if (data.pos_xml_dataTypeDescription != -1) {
         outputRowData[data.pos_xml_dataTypeDescription] =
@@ -557,7 +563,7 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
       putRowOut(outputRowDataAttribute); // first put the element name (or namespace) info out
       // change data_type to ATTRIBUTE
       if (data.pos_xml_dataType_numeric != -1) {
-        outputRowData[data.pos_xml_dataType_numeric] = Long.valueOf(XMLStreamConstants.ATTRIBUTE);
+        outputRowData[data.pos_xml_dataType_numeric] = (long) XMLStreamConstants.ATTRIBUTE;
       }
       if (data.pos_xml_dataTypeDescription != -1) {
         outputRowData[data.pos_xml_dataTypeDescription] =
@@ -618,9 +624,9 @@ public class XmlInputStream extends BaseTransform<XmlInputStreamMeta, XmlInputSt
   }
 
   private void resetElementCounters() {
-    data.rowNumber = Long.valueOf(0);
+    data.rowNumber = 0L;
     data.elementLevel = 0;
-    data.elementID = Long.valueOf(0); // init value, could be parameterized later on
+    data.elementID = 0L; // init value, could be parameterized later on
     data.elementLevelID = new Long[PARENT_ID_ALLOCATE_SIZE];
     data.elementLevelID[0] = data.elementID; // inital id for level 0
     data.elementParentID = new Long[PARENT_ID_ALLOCATE_SIZE];

@@ -17,6 +17,8 @@
 
 package org.apache.hop.core;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.hop.core.exception.HopXmlException;
 import org.apache.hop.core.gui.IGuiPosition;
 import org.apache.hop.core.gui.IGuiSize;
@@ -42,44 +44,70 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
   public static final int COLOR_RGB_DEFAULT_BORDER_GREEN = 58;
   public static final int COLOR_RGB_DEFAULT_BORDER_BLUE = 90;
 
-  @HopMetadataProperty private String note;
+  @Setter @Getter @HopMetadataProperty private String note;
 
+  @Setter
+  @Getter
   @HopMetadataProperty(key = "fontname")
   private String fontName;
 
+  @Setter
+  @Getter
   @HopMetadataProperty(key = "fontsize")
   private int fontSize;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "fontbold")
   private boolean fontBold;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "fontitalic")
   private boolean fontItalic;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "fontcolorred")
   private int fontColorRed;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "fontcolorgreen")
   private int fontColorGreen;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "fontcolorblue")
   private int fontColorBlue;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "backgroundcolorred")
   private int backGroundColorRed;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "backgroundcolorgreen")
   private int backGroundColorGreen;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "backgroundcolorblue")
   private int backGroundColorBlue;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "bordercolorred")
   private int borderColorRed;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "bordercolorgreen")
   private int borderColorGreen;
 
+  @Getter
+  @Setter
   @HopMetadataProperty(key = "bordercolorblue")
   private int borderColorBlue;
 
@@ -88,6 +116,9 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
 
   @HopMetadataProperty public int width;
   @HopMetadataProperty public int height;
+
+  @Getter @Setter private int minimumWidth;
+  @Getter @Setter private int minimumHeight;
 
   private boolean selected;
   private boolean changed;
@@ -98,10 +129,6 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
     this.width = -1;
     this.height = -1;
     this.selected = false;
-
-    this.backGroundColorRed = COLOR_RGB_DEFAULT_BG_RED;
-    this.backGroundColorGreen = COLOR_RGB_DEFAULT_BG_GREEN;
-    this.backGroundColorBlue = COLOR_RGB_DEFAULT_BG_BLUE;
 
     setDefaultFont();
   }
@@ -115,11 +142,11 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
   }
 
   public NotePadMeta(
-      String n,
-      int xl,
-      int yl,
-      int w,
-      int h,
+      String note,
+      int x,
+      int y,
+      int width,
+      int height,
       String fontName,
       int fontSize,
       boolean fontBold,
@@ -127,16 +154,16 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
       int fontColorRed,
       int fontColorGreen,
       int fontColorBlue,
-      int backGrounColorRed,
-      int backGrounColorGreen,
-      int backGrounColorBlue,
+      int backGroundColorRed,
+      int backGroundColorGreen,
+      int backGroundColorBlue,
       int borderColorRed,
       int borderColorGreen,
       int borderColorBlue) {
-    this.note = n;
-    this.location = new Point(xl, yl);
-    this.width = w;
-    this.height = h;
+    this.note = note;
+    this.location = new Point(x, y);
+    this.width = width;
+    this.height = height;
     this.selected = false;
     this.fontName = fontName;
     this.fontSize = fontSize;
@@ -147,9 +174,9 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
     this.fontColorGreen = fontColorGreen;
     this.fontColorBlue = fontColorBlue;
     // background color
-    this.backGroundColorRed = backGrounColorRed;
-    this.backGroundColorGreen = backGrounColorGreen;
-    this.backGroundColorBlue = backGrounColorBlue;
+    this.backGroundColorRed = backGroundColorRed;
+    this.backGroundColorGreen = backGroundColorGreen;
+    this.backGroundColorBlue = backGroundColorBlue;
     // border color
     this.borderColorRed = borderColorRed;
     this.borderColorGreen = borderColorGreen;
@@ -223,83 +250,6 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
   }
 
   /**
-   * @return Returns the note.
-   */
-  public String getNote() {
-    return this.note;
-  }
-
-  /**
-   * @param note The note to set.
-   */
-  public void setNote(String note) {
-    this.note = note;
-  }
-
-  /**
-   * @param red the border red color.
-   */
-  public void setBorderColorRed(int red) {
-    this.borderColorRed = red;
-  }
-
-  /**
-   * @param green the border color green.
-   */
-  public void setBorderColorGreen(int green) {
-    this.borderColorGreen = green;
-  }
-
-  /**
-   * @param blue the border blue color.
-   */
-  public void setBorderColorBlue(int blue) {
-    this.borderColorBlue = blue;
-  }
-
-  /**
-   * @param red the backGround red color.
-   */
-  public void setBackGroundColorRed(int red) {
-    this.backGroundColorRed = red;
-  }
-
-  /**
-   * @param green the backGround green color.
-   */
-  public void setBackGroundColorGreen(int green) {
-    this.backGroundColorGreen = green;
-  }
-
-  /**
-   * @param blue the backGround blue color.
-   */
-  public void setBackGroundColorBlue(int blue) {
-    this.backGroundColorBlue = blue;
-  }
-
-  /**
-   * @param red the font color red.
-   */
-  public void setFontColorRed(int red) {
-    this.fontColorRed = red;
-  }
-
-  /**
-   * @param green the font color green.
-   */
-  public void setFontColorGreen(int green) {
-    this.fontColorGreen = green;
-  }
-
-  /**
-   * @param blue the font color blue.
-   */
-  public void setFontColorBlue(int blue) {
-    this.fontColorBlue = blue;
-  }
-
-  /**
    * @return Returns the selected.
    */
   @Override
@@ -354,6 +304,9 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
    */
   @Override
   public void setHeight(int height) {
+    if (this.height != height) {
+      setChanged();
+    }
     this.height = height;
   }
 
@@ -370,126 +323,10 @@ public class NotePadMeta implements Cloneable, IGuiPosition, IGuiSize {
    */
   @Override
   public void setWidth(int width) {
+    if (this.width != width) {
+      setChanged();
+    }
     this.width = width;
-  }
-
-  /**
-   * @return Returns the font name.
-   */
-  public String getFontName() {
-    return this.fontName;
-  }
-
-  /**
-   * @param fontname The font name.
-   */
-  public void setFontName(String fontname) {
-    this.fontName = fontname;
-  }
-
-  /**
-   * @return Returns the font size.
-   */
-  public int getFontSize() {
-    return this.fontSize;
-  }
-
-  /**
-   * @param fontbold The font bold.
-   */
-  public void setFontBold(boolean fontbold) {
-    this.fontBold = fontbold;
-  }
-
-  /**
-   * @return Returns the font bold.
-   */
-  public boolean isFontBold() {
-    return this.fontBold;
-  }
-
-  /**
-   * @param fontitalic The font italic.
-   */
-  public void setFontItalic(boolean fontitalic) {
-    this.fontItalic = fontitalic;
-  }
-
-  /**
-   * @return Returns the font italic.
-   */
-  public boolean isFontItalic() {
-    return this.fontItalic;
-  }
-
-  /**
-   * @return Returns the backGround color red.
-   */
-  public int getBorderColorRed() {
-    return this.borderColorRed;
-  }
-
-  /**
-   * @return Returns the backGround color green.
-   */
-  public int getBorderColorGreen() {
-    return this.borderColorGreen;
-  }
-
-  /**
-   * @return Returns the backGround color blue.
-   */
-  public int getBorderColorBlue() {
-    return this.borderColorBlue;
-  }
-
-  /**
-   * @return Returns the backGround color red.
-   */
-  public int getBackGroundColorRed() {
-    return this.backGroundColorRed;
-  }
-
-  /**
-   * @return Returns the backGround color green.
-   */
-  public int getBackGroundColorGreen() {
-    return this.backGroundColorGreen;
-  }
-
-  /**
-   * @return Returns the backGround color blue.
-   */
-  public int getBackGroundColorBlue() {
-    return this.backGroundColorBlue;
-  }
-
-  /**
-   * @return Returns the font color red.
-   */
-  public int getFontColorRed() {
-    return this.fontColorRed;
-  }
-
-  /**
-   * @return Returns the font color green.
-   */
-  public int getFontColorGreen() {
-    return this.fontColorGreen;
-  }
-
-  /**
-   * @return Returns the font color blue.
-   */
-  public int getFontColorBlue() {
-    return this.fontColorBlue;
-  }
-
-  /**
-   * @param fontsize The font name.
-   */
-  public void setFontSize(int fontsize) {
-    this.fontSize = fontsize;
   }
 
   private void setDefaultFont() {

@@ -182,6 +182,9 @@ public class Const {
       description = "The operating system the hop platform runs on.")
   public static final String HOP_PLATFORM_OS = "HOP_PLATFORM_OS";
 
+  /** Variable containing the current hop version in pipelines and workflows */
+  public static final String HOP_VERSION = "HOP_VERSION";
+
   /** The runtime that is being used */
   @Variable(scope = VariableScope.SYSTEM, description = "The runtime that is being used.")
   public static final String HOP_PLATFORM_RUNTIME = "HOP_PLATFORM_RUNTIME";
@@ -514,6 +517,18 @@ public class Const {
       description = "Set this variable to 'Y' to redirect stdout to Hop logging.")
   public static final String HOP_REDIRECT_STDOUT = "HOP_REDIRECT_STDOUT";
 
+  /**
+   * System wide flag to enable ANSI color codes in console output. Values: 'true', 'false', or
+   * 'auto' (default). 'auto' detects if output is to a terminal and enables colors only when
+   * appropriate (not when piped to files or log collectors).
+   */
+  @Variable(
+      scope = VariableScope.SYSTEM,
+      value = "auto",
+      description =
+          "Enable ANSI color codes in console output. Values: 'true' (always), 'false' (never), or 'auto' (only when output is to a terminal)")
+  public static final String HOP_CONSOLE_COLORS = "HOP_CONSOLE_COLORS";
+
   /** System wide flag to log stack traces in a simpler, more human readable format */
   @Variable(
       scope = VariableScope.SYSTEM,
@@ -555,11 +570,21 @@ public class Const {
   public static final String HOP_TRANSFORM_PERFORMANCE_SNAPSHOT_LIMIT =
       "HOP_TRANSFORM_PERFORMANCE_SNAPSHOT_LIMIT";
 
+  /**
+   * When set to Y or true, pipeline transforms track estimated data volume (bytes in) on the input
+   * side. The metric is exposed in pipeline metrics and can have a performance impact.
+   */
+  @Variable(
+      value = "N",
+      description =
+          "Enable pipeline metric for data volume (bytes in) per transform. When Y or true, each transform tracks estimated bytes read on input.")
+  public static final String HOP_METRIC_DATA_VOLUME = "HOP_METRIC_DATA_VOLUME";
+
   /** A variable to configure the maximum number of workflow trackers kept in memory. */
   @Variable(
       value = "5000",
       description =
-          "The maximum age (in minutes) of a log line while being kept internally by Hop. Set to 0 to keep all rows indefinitely (default)")
+          "The maximum number of workflow trackers childrens to keep track of. Default value is 5000.")
   public static final String HOP_MAX_WORKFLOW_TRACKER_SIZE = "HOP_MAX_WORKFLOW_TRACKER_SIZE";
 
   /**
@@ -884,6 +909,13 @@ public class Const {
       description =
           "A variable to configure the maximum number of characters of text that are extracted before an exception is thrown during extracting text from documents")
   public static final String HOP_ZIP_MAX_TEXT_SIZE = "HOP_ZIP_MAX_TEXT_SIZE";
+
+  /**
+   * A variable to configure if we should calculate the last modification date of a folder object
+   * for Google Cloud Storage.
+   */
+  public static final String HOP_GCP_GET_FOLDER_LASTMODIFICATION_DATE =
+      "HOP_GCP_GET_FOLDER_LASTMODIFICATION_DATE";
 
   /**
    * The default value for the {@link #HOP_ZIP_MAX_TEXT_SIZE} as a Long.
@@ -1504,11 +1536,32 @@ public class Const {
   }
 
   /**
-   * @return True if the OS is an OSX derivate.
+   * @return True if the OS is an OSX derivate. When a {@link ClientOsProvider} is set (e.g. by Hop
+   *     Web from the client's User-Agent), returns the client's OS so shortcuts and labels match
+   *     the user's machine.
    */
   public static boolean isOSX() {
+    if (clientOsProvider != null) {
+      try {
+        return clientOsProvider.isClientMac();
+      } catch (Exception e) {
+        // Fall through to server OS (e.g. provider called outside a web request)
+      }
+    }
     return getHopPlatformOs().startsWith("Darwin") || getSystemOs().toUpperCase().contains("OS X");
   }
+
+  /**
+   * Set the provider used by {@link #isOSX()} when running in a web context. The RAP/Hop Web module
+   * sets this so the client's OS (from User-Agent) is used for shortcut matching and display.
+   *
+   * @param provider the provider, or null to use server OS
+   */
+  public static void setClientOsProvider(ClientOsProvider provider) {
+    clientOsProvider = provider;
+  }
+
+  private static volatile ClientOsProvider clientOsProvider;
 
   /**
    * @return True if KDE is in use.
@@ -1627,7 +1680,7 @@ public class Const {
   }
 
   /**
-   * Get the primary IP address tied to a network interface (excluding loop-back etc)
+   * Get the primary IP address tied to a network interface (excluding loop-back etc.)
    *
    * @param networkInterfaceName the name of the network interface to interrogate
    * @return null if the network interface or address wasn't found.
@@ -1897,15 +1950,15 @@ public class Const {
    */
   public static int[] indexesOfFoundStrings(String[] lookup, String[] array) {
     List<Integer> indexesList = new ArrayList<>();
-    for (int i = 0; i < lookup.length; i++) {
-      int idx = indexOfString(lookup[i], array);
+    for (String s : lookup) {
+      int idx = indexOfString(s, array);
       if (idx >= 0) {
-        indexesList.add(Integer.valueOf(idx));
+        indexesList.add(idx);
       }
     }
     int[] indexes = new int[indexesList.size()];
     for (int i = 0; i < indexesList.size(); i++) {
-      indexes[i] = (indexesList.get(i)).intValue();
+      indexes[i] = indexesList.get(i);
     }
     return indexes;
   }
@@ -1920,15 +1973,15 @@ public class Const {
    */
   public static List<Integer> indexesOfFoundStrings(List<String> lookup, List<String> list) {
     List<Integer> indexesList = new ArrayList<>();
-    for (int i = 0; i < lookup.size(); i++) {
-      int idx = indexOfString(lookup.get(i), list);
+    for (String s : lookup) {
+      int idx = indexOfString(s, list);
       if (idx >= 0) {
-        indexesList.add(Integer.valueOf(idx));
+        indexesList.add(idx);
       }
     }
     int[] indexes = new int[indexesList.size()];
     for (int i = 0; i < indexesList.size(); i++) {
-      indexes[i] = (indexesList.get(i)).intValue();
+      indexes[i] = indexesList.get(i);
     }
     return indexesList;
   }
@@ -2521,17 +2574,12 @@ public class Const {
    * @return Trimmed string.
    */
   public static String trimToType(String string, int trimType) {
-    switch (trimType) {
-      case IValueMeta.TRIM_TYPE_BOTH:
-        return trim(string);
-      case IValueMeta.TRIM_TYPE_LEFT:
-        return ltrim(string);
-      case IValueMeta.TRIM_TYPE_RIGHT:
-        return rtrim(string);
-      case IValueMeta.TRIM_TYPE_NONE:
-      default:
-        return string;
-    }
+    return switch (trimType) {
+      case IValueMeta.TRIM_TYPE_BOTH -> trim(string);
+      case IValueMeta.TRIM_TYPE_LEFT -> ltrim(string);
+      case IValueMeta.TRIM_TYPE_RIGHT -> rtrim(string);
+      default -> string;
+    };
   }
 
   /**

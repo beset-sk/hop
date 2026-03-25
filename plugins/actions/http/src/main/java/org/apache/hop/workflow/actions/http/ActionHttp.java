@@ -43,6 +43,8 @@ import org.apache.hop.core.RowMetaAndData;
 import org.apache.hop.core.annotations.Action;
 import org.apache.hop.core.encryption.Encr;
 import org.apache.hop.core.exception.HopXmlException;
+import org.apache.hop.core.io.CountingInputStream;
+import org.apache.hop.core.io.CountingOutputStream;
 import org.apache.hop.core.row.value.ValueMetaString;
 import org.apache.hop.core.util.HttpClientManager;
 import org.apache.hop.core.util.Utils;
@@ -194,7 +196,9 @@ public class ActionHttp extends ActionBase {
     Result result = previousResult;
     result.setResult(false);
 
-    logBasic(BaseMessages.getString(PKG, "ActionHTTP.StartAction"));
+    if (isBasic()) {
+      logBasic(BaseMessages.getString(PKG, "ActionHTTP.StartAction"));
+    }
 
     // Get previous result rows...
     List<RowMetaAndData> resultRows;
@@ -249,15 +253,19 @@ public class ActionHttp extends ActionBase {
 
       OutputStream outputFile = null;
       OutputStream uploadStream = null;
-      BufferedInputStream fileStream = null;
+      InputStream fileStream = null;
       InputStream input = null;
+      long bytesReadThisRow = 0L;
+      long bytesWrittenThisRow = 0L;
 
       try {
         String urlToUse = resolve(row.getString(urlFieldnameToUse, ""));
         String realUploadFile = resolve(row.getString(uploadFieldnameToUse, ""));
         String realTargetFile = resolve(row.getString(destinationFieldnameToUse, ""));
 
-        logBasic(BaseMessages.getString(PKG, "ActionHTTP.Log.ConnectingURL", urlToUse));
+        if (isBasic()) {
+          logBasic(BaseMessages.getString(PKG, "ActionHTTP.Log.ConnectingURL", urlToUse));
+        }
 
         if (!Utils.isEmpty(proxyHostname)) {
           System.setProperty(CONST_HTTP_PROXY_HOST, resolve(proxyHostname));
@@ -297,7 +305,7 @@ public class ActionHttp extends ActionBase {
         }
 
         // Create the output File...
-        outputFile = HopVfs.getOutputStream(realTargetFile, fileAppended);
+        outputFile = new CountingOutputStream(HopVfs.getOutputStream(realTargetFile, fileAppended));
 
         // Get a stream for the specified URL
         server = new URL(urlToUse);
@@ -316,18 +324,17 @@ public class ActionHttp extends ActionBase {
           if (isDebug()) {
             logDebug(BaseMessages.getString(PKG, "ActionHTTP.Log.HeadersProvided"));
           }
-          for (int j = 0; j < headers.size(); j++) {
-            if (!Utils.isEmpty(headers.get(i).getHeaderValue())) {
+          for (Header header : headers) {
+            if (!Utils.isEmpty(header.getHeaderValue())) {
               connection.setRequestProperty(
-                  resolve(headers.get(i).getHeaderName()),
-                  resolve(headers.get(i).getHeaderValue()));
+                  resolve(header.getHeaderName()), resolve(header.getHeaderValue()));
               if (isDebug()) {
                 logDebug(
                     BaseMessages.getString(
                         PKG,
                         "ActionHTTP.Log.HeaderSet",
-                        resolve(headers.get(i).getHeaderName()),
-                        resolve(headers.get(i).getHeaderValue())));
+                        resolve(header.getHeaderName()),
+                        resolve(header.getHeaderValue())));
               }
             }
           }
@@ -342,14 +349,23 @@ public class ActionHttp extends ActionBase {
           }
 
           // Grab an output stream to upload data to web server
-          uploadStream = connection.getOutputStream();
-          fileStream = new BufferedInputStream(new FileInputStream(new File(realUploadFile)));
+          uploadStream = new CountingOutputStream(connection.getOutputStream());
+          fileStream =
+              new CountingInputStream(
+                  new BufferedInputStream(new FileInputStream(new File(realUploadFile))));
           try {
-            int c;
-            while ((c = fileStream.read()) >= 0) {
-              uploadStream.write(c);
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fileStream.read(buffer)) >= 0) {
+              uploadStream.write(buffer, 0, bytesRead);
             }
           } finally {
+            if (fileStream instanceof CountingInputStream countingInputStream) {
+              bytesReadThisRow += countingInputStream.getCount();
+            }
+            if (uploadStream instanceof CountingOutputStream countingOutputStream) {
+              bytesWrittenThisRow += countingOutputStream.getCount();
+            }
             // Close upload and file
             if (uploadStream != null) {
               uploadStream.close();
@@ -370,22 +386,30 @@ public class ActionHttp extends ActionBase {
         }
 
         // Read the result from the server...
-        input = connection.getInputStream();
+        input = new CountingInputStream(connection.getInputStream());
         Date date = new Date(connection.getLastModified());
-        logBasic(
-            BaseMessages.getString(
-                PKG, "ActionHTTP.Log.ReplayInfo", connection.getContentType(), date));
-
-        int oneChar;
-        long bytesRead = 0L;
-        while ((oneChar = input.read()) != -1) {
-          outputFile.write(oneChar);
-          bytesRead++;
+        if (isBasic()) {
+          logBasic(
+              BaseMessages.getString(
+                  PKG, "ActionHTTP.Log.ReplayInfo", connection.getContentType(), date));
         }
 
-        logBasic(
-            BaseMessages.getString(
-                PKG, "ActionHTTP.Log.FinisedWritingReply", bytesRead, realTargetFile));
+        byte[] buffer = new byte[8192];
+        int bytesRead;
+        while ((bytesRead = input.read(buffer)) != -1) {
+          outputFile.write(buffer, 0, bytesRead);
+        }
+        bytesReadThisRow += ((CountingInputStream) input).getCount();
+        bytesWrittenThisRow += ((CountingOutputStream) outputFile).getCount();
+
+        if (isBasic()) {
+          logBasic(
+              BaseMessages.getString(
+                  PKG,
+                  "ActionHTTP.Log.FinisedWritingReply",
+                  ((CountingInputStream) input).getCount(),
+                  realTargetFile));
+        }
 
         if (addFilenameResult) {
           // Add to the result files...
@@ -442,6 +466,9 @@ public class ActionHttp extends ActionBase {
         System.setProperty(CONST_HTTPS_PROXY_PORT, Const.NVL(beforeHttpsProxyPort, ""));
         System.setProperty(CONST_HTTP_NON_PROXY_HOSTS, Const.NVL(beforeNonProxyHosts, ""));
       }
+
+      result.setBytesReadThisAction(result.getBytesReadThisAction() + bytesReadThisRow);
+      result.setBytesWrittenThisAction(result.getBytesWrittenThisAction() + bytesWrittenThisRow);
     }
 
     return result;

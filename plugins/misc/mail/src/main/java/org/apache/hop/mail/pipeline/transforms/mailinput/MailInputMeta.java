@@ -37,6 +37,7 @@ import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.mail.workflow.actions.getpop.MailConnectionMeta;
 import org.apache.hop.metadata.api.HopMetadataProperty;
+import org.apache.hop.metadata.api.HopMetadataPropertyType;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
 import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.BaseTransformMeta;
@@ -66,7 +67,7 @@ public class MailInputMeta extends BaseTransformMeta<MailInput, MailInputData> {
   public int conditionReceivedDate;
 
   public Map<String, String> valueImaps =
-      new HashMap<String, String>() {
+      new HashMap<>() {
         {
           put("imaplistall", BaseMessages.getString(PKG, "ActionGetPOP.IMAPListGetAll.Label"));
           put("imaplistnew", BaseMessages.getString(PKG, "ActionGetPOP.IMAPListGetNew.Label"));
@@ -170,7 +171,9 @@ public class MailInputMeta extends BaseTransformMeta<MailInput, MailInputData> {
   @HopMetadataProperty(key = "rowlimit")
   private String rowLimit;
 
-  @HopMetadataProperty(key = "connection_name")
+  @HopMetadataProperty(
+      key = "connection_name",
+      hopMetadataPropertyType = HopMetadataPropertyType.MAIL_SERVER_CONNECTION)
   private String connectionName;
 
   /** The fields ... */
@@ -200,10 +203,10 @@ public class MailInputMeta extends BaseTransformMeta<MailInput, MailInputData> {
     MailInputMeta retval = (MailInputMeta) super.clone();
     int nrFields = inputFields.size();
     //    retval.allocate(nrFields);
-    List<MailInputField> retvalFields = new ArrayList<MailInputField>();
-    for (int i = 0; i < nrFields; i++) {
-      if (inputFields.get(i) != null) {
-        retvalFields.add((MailInputField) inputFields.get(i).clone());
+    List<MailInputField> retvalFields = new ArrayList<>();
+    for (MailInputField inputField : inputFields) {
+      if (inputField != null) {
+        retvalFields.add((MailInputField) inputField.clone());
         //        retval.inputFields.set(i) = (MailInputField) inputFields.get(i).clone();
       }
     }

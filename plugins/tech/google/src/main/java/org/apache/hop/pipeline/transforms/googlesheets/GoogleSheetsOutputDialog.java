@@ -16,7 +16,6 @@
  */
 package org.apache.hop.pipeline.transforms.googlesheets;
 
-import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -28,10 +27,8 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
-import java.io.IOException;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hop.core.Const;
 import org.apache.hop.core.Props;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.i18n.BaseMessages;
@@ -52,7 +49,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 public class GoogleSheetsOutputDialog extends BaseTransformDialog {
 
@@ -86,69 +82,23 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
 
   private static HttpRequestInitializer setHttpTimeout(
       final HttpRequestInitializer requestInitializer, final String timeout) {
-    return new HttpRequestInitializer() {
-      @Override
-      public void initialize(HttpRequest httpRequest) throws IOException {
-        requestInitializer.initialize(httpRequest);
-        Integer to = 5;
-        if (!timeout.isEmpty()) {
-          to = Integer.parseInt(timeout);
-        }
-
-        httpRequest.setConnectTimeout(to * 60000); // 3 minutes connect timeout
-        httpRequest.setReadTimeout(to * 60000); // 3 minutes read timeout
+    return httpRequest -> {
+      requestInitializer.initialize(httpRequest);
+      Integer to = 5;
+      if (!timeout.isEmpty()) {
+        to = Integer.parseInt(timeout);
       }
+
+      httpRequest.setConnectTimeout(to * 60000); // 3 minutes connect timeout
+      httpRequest.setReadTimeout(to * 60000); // 3 minutes read timeout
     };
   }
 
   @Override
   public String open() {
-    Shell parent = this.getParent();
+    createShell(BaseMessages.getString(PKG, "GoogleSheetsOutput.transform.Name"));
 
-    shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
-    PropsUi.setLook(shell);
-    setShellImage(shell, meta);
-
-    FormLayout formLayout = new FormLayout();
-    formLayout.marginWidth = Const.FORM_MARGIN;
-    formLayout.marginHeight = Const.FORM_MARGIN;
-
-    shell.setLayout(formLayout);
-    shell.setText(BaseMessages.getString(PKG, "GoogleSheetsOutput.transform.Name"));
-
-    int middle = props.getMiddlePct();
-    int margin = Const.MARGIN;
-
-    // OK and cancel buttons at the bottom
-    //
-    wOk = new Button(shell, SWT.PUSH);
-    wOk.setText(BaseMessages.getString(PKG, "System.Button.OK"));
-    wOk.addListener(SWT.Selection, e -> ok());
-    wCancel = new Button(shell, SWT.PUSH);
-    wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
-    wCancel.addListener(SWT.Selection, e -> cancel());
-
-    BaseTransformDialog.positionBottomButtons(shell, new Button[] {wOk, wCancel}, margin, null);
-
-    // transformName - Label
-    wlTransformName = new Label(shell, SWT.RIGHT);
-    wlTransformName.setText(BaseMessages.getString(PKG, "GoogleSheetsOutput.transform.Name"));
-    PropsUi.setLook(wlTransformName);
-    fdlTransformName = new FormData();
-    fdlTransformName.top = new FormAttachment(0, margin);
-    fdlTransformName.left = new FormAttachment(0, 0);
-    fdlTransformName.right = new FormAttachment(middle, -margin);
-    wlTransformName.setLayoutData(fdlTransformName);
-
-    // transformName - Text
-    wTransformName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-    wTransformName.setText(transformName);
-    PropsUi.setLook(wTransformName);
-    fdTransformName = new FormData();
-    fdTransformName.top = new FormAttachment(0, margin);
-    fdTransformName.left = new FormAttachment(middle, 0);
-    fdTransformName.right = new FormAttachment(100, 0);
-    wTransformName.setLayoutData(fdTransformName);
+    buildButtonBar().ok(e -> ok()).cancel(e -> cancel()).build();
 
     CTabFolder tabFolder = new CTabFolder(shell, SWT.BORDER);
     PropsUi.setLook(tabFolder, Props.WIDGET_STYLE_TAB);
@@ -221,7 +171,7 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
     timeoutLabel.setText("Time out in minutes :");
     PropsUi.setLook(timeoutLabel);
     FormData timeoutLabelForm = new FormData();
-    timeoutLabelForm.top = new FormAttachment(appNameLabel, margin);
+    timeoutLabelForm.top = new FormAttachment(wAppName, margin);
     timeoutLabelForm.left = new FormAttachment(0, 0);
     timeoutLabelForm.right = new FormAttachment(middle, -margin);
     timeoutLabel.setLayoutData(timeoutLabelForm);
@@ -230,7 +180,7 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
     wTimeout = new TextVar(variables, serviceAccountComposite, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
     PropsUi.setLook(wTimeout);
     FormData timeoutData = new FormData();
-    timeoutData.top = new FormAttachment(appNameLabel, margin);
+    timeoutData.top = new FormAttachment(wAppName, margin);
     timeoutData.left = new FormAttachment(middle, 0);
     timeoutData.right = new FormAttachment(wbPrivateKey, -margin);
     wTimeout.setLayoutData(timeoutData);
@@ -440,7 +390,7 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
     wlCreate.setText(BaseMessages.getString(PKG, "GoogleSheetsOutputDialog.Create.Label"));
     PropsUi.setLook(wlCreate);
     FormData fdlCreate = new FormData();
-    fdlCreate.top = new FormAttachment(wlAppend, 2 * margin);
+    fdlCreate.top = new FormAttachment(wlAppend, margin);
     fdlCreate.left = new FormAttachment(0, 0);
     fdlCreate.right = new FormAttachment(middle, -margin);
     wlCreate.setLayoutData(fdlCreate);
@@ -478,7 +428,7 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
     wlShare.setText(BaseMessages.getString(PKG, "GoogleSheetsOutputDialog.Share.Label"));
     PropsUi.setLook(wlShare);
     FormData fdlShare = new FormData();
-    fdlShare.top = new FormAttachment(wlReplace, 2 * margin);
+    fdlShare.top = new FormAttachment(wlReplace, margin);
     fdlShare.left = new FormAttachment(0, 0);
     fdlShare.right = new FormAttachment(middle, -margin);
     wlShare.setLayoutData(fdlShare);
@@ -526,16 +476,16 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
 
     FormData tabFolderData = new FormData();
     tabFolderData.left = new FormAttachment(0, 0);
-    tabFolderData.top = new FormAttachment(wTransformName, margin);
+    tabFolderData.top = new FormAttachment(wSpacer, margin);
     tabFolderData.right = new FormAttachment(100, 0);
-    tabFolderData.bottom = new FormAttachment(wOk, -2 * margin);
+    tabFolderData.bottom = new FormAttachment(100, -50);
     tabFolder.setLayoutData(tabFolderData);
 
     tabFolder.setSelection(0);
 
     getData(meta);
     meta.setChanged(changed);
-
+    focusTransformName();
     BaseDialog.defaultShellHandling(shell, c -> ok(), c -> cancel());
 
     return transformName;
@@ -544,7 +494,8 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
   private void selectWorksheet() {
     try {
       NetHttpTransport netHttpTransport =
-          GoogleSheetsConnectionFactory.newTransport(meta.getProxyHost(), meta.getProxyPort());
+          GoogleSheetsConnectionFactory.newTransport(
+              variables.resolve(meta.getProxyHost()), variables.resolve(meta.getProxyPort()));
       JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
       String scope = SheetsScopes.SPREADSHEETS_READONLY;
 
@@ -553,7 +504,8 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
               scope,
               variables.resolve(meta.getJsonCredentialPath()),
               variables.resolve(meta.getImpersonation()),
-              variables);
+              variables,
+              netHttpTransport);
       Sheets service =
           new Sheets.Builder(
                   netHttpTransport,
@@ -602,7 +554,8 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
   private void selectSpreadSheetKey() {
     try {
       NetHttpTransport netHttpTransport =
-          GoogleSheetsConnectionFactory.newTransport(meta.getProxyHost(), meta.getProxyPort());
+          GoogleSheetsConnectionFactory.newTransport(
+              variables.resolve(meta.getProxyHost()), variables.resolve(meta.getProxyPort()));
       JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
       String scope = "https://www.googleapis.com/auth/drive";
       HttpRequestInitializer credential =
@@ -610,7 +563,8 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
               scope,
               variables.resolve(meta.getJsonCredentialPath()),
               variables.resolve(meta.getImpersonation()),
-              variables);
+              variables,
+              netHttpTransport);
       Drive service =
           new Drive.Builder(
                   netHttpTransport,
@@ -666,7 +620,8 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
   private void testServiceAccount() {
     try {
       NetHttpTransport netHttpTransport =
-          GoogleSheetsConnectionFactory.newTransport(meta.getProxyHost(), meta.getProxyPort());
+          GoogleSheetsConnectionFactory.newTransport(
+              variables.resolve(meta.getProxyHost()), variables.resolve(meta.getProxyPort()));
       JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
       String scope = SheetsScopes.SPREADSHEETS_READONLY;
 
@@ -675,7 +630,8 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
               scope,
               variables.resolve(wPrivateKeyStore.getText()),
               variables.resolve(wImpersonation.getText()),
-              variables);
+              variables,
+              netHttpTransport);
       // Build a Drive connection to test it
       //
       new Drive.Builder(
@@ -705,8 +661,6 @@ public class GoogleSheetsOutputDialog extends BaseTransformDialog {
   }
 
   private void getData(GoogleSheetsOutputMeta meta) {
-    this.wTransformName.selectAll();
-
     if (!StringUtils.isEmpty(meta.getSpreadsheetKey())) {
       this.wSpreadsheetKey.setText(meta.getSpreadsheetKey());
     }

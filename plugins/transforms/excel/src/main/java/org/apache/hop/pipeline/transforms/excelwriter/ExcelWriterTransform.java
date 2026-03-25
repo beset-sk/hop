@@ -22,11 +22,14 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.ResultFile;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.exception.HopFileException;
+import org.apache.hop.core.exception.HopTransformException;
+import org.apache.hop.core.io.CountingOutputStream;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.row.RowMeta;
@@ -39,6 +42,9 @@ import org.apache.hop.pipeline.Pipeline;
 import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.BaseTransform;
 import org.apache.hop.pipeline.transform.TransformMeta;
+import org.apache.hop.staticschema.metadata.SchemaDefinition;
+import org.apache.hop.staticschema.metadata.SchemaFieldDefinition;
+import org.apache.hop.staticschema.util.SchemaDefinitionUtil;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -151,6 +157,28 @@ public class ExcelWriterTransform
       } else {
         data.outputRowMeta = getInputRowMeta().clone();
         data.inputRowMeta = getInputRowMeta().clone();
+      }
+
+      // If we are usign a schema and ingoring fields create the outputfields
+      if (meta.isIgnoreFields()) {
+        meta.setOutputFields(new ArrayList<>());
+        try {
+          SchemaDefinition loadedSchemaDefinition =
+              (new SchemaDefinitionUtil())
+                  .loadSchemaDefinition(metadataProvider, meta.getSchemaDefinition());
+          if (loadedSchemaDefinition != null) {
+            for (SchemaFieldDefinition schemaFieldDefinition :
+                loadedSchemaDefinition.getFieldDefinitions()) {
+              ExcelWriterOutputField excelOutputField = new ExcelWriterOutputField();
+              excelOutputField.setName(schemaFieldDefinition.getName());
+              excelOutputField.setFormat(schemaFieldDefinition.getFormatMask());
+              excelOutputField.setType(schemaFieldDefinition.getHopType());
+              meta.getOutputFields().add(excelOutputField);
+            }
+          }
+        } catch (HopTransformException e) {
+          // ignore any errors here.
+        }
       }
 
       // If we are supposed to create the file up front regardless of whether we receive input rows
@@ -351,8 +379,10 @@ public class ExcelWriterTransform
 
   private void closeOutputFile(ExcelWriterWorkbookDefinition file) throws HopException {
     OutputStream out = null;
+    CountingOutputStream countingOut = null;
     try {
-      out = new BufferedOutputStream(HopVfs.getOutputStream(file.getFile(), false));
+      countingOut = new CountingOutputStream(HopVfs.getOutputStream(file.getFile(), false));
+      out = new BufferedOutputStream(countingOut);
       // may have to write a footer here
       if (meta.isFooterEnabled()) {
         writeHeader(file, file.getSheet(), file.getPosX(), file.getPosY());
@@ -395,6 +425,9 @@ public class ExcelWriterTransform
       if (out != null) {
         try {
           out.flush();
+          if (countingOut != null) {
+            dataVolumeOut = (dataVolumeOut != null ? dataVolumeOut : 0L) + countingOut.getCount();
+          }
           out.close();
         } catch (Exception e) {
           throw new HopException("Error closing excel file " + file.getFile(), e);
@@ -597,15 +630,14 @@ public class ExcelWriterTransform
             setDataFormat(workbookDefinition, excelField.getFormat(), cell);
           }
 
-          if (!isTitle && excelField != null && Utils.isEmpty(excelField.getFormat())) {
-
-            if (vMeta.getType() == IValueMeta.TYPE_DATE
-                || vMeta.getType() == IValueMeta.TYPE_TIMESTAMP) {
-
-              String format = vMeta.getFormatMask();
-              if (!Utils.isEmpty(format)) {
-                setDataFormat(workbookDefinition, format, cell);
-              }
+          if (!isTitle
+              && excelField != null
+              && Utils.isEmpty(excelField.getFormat())
+              && (vMeta.getType() == IValueMeta.TYPE_DATE
+                  || vMeta.getType() == IValueMeta.TYPE_TIMESTAMP)) {
+            String format = vMeta.getFormatMask();
+            if (!Utils.isEmpty(format)) {
+              setDataFormat(workbookDefinition, format, cell);
             }
           }
           // cache it for later runs
@@ -832,10 +864,12 @@ public class ExcelWriterTransform
       FileObject file = getFileLocation(row);
 
       if (!file.getParent().exists() && meta.getFile().isCreateParentFolder()) {
-        logDebug(
-            "Create parent directory for "
-                + file.getName().toString()
-                + " because it does not exist.");
+        if (isDebug()) {
+          logDebug(
+              "Create parent directory for "
+                  + file.getName().toString()
+                  + " because it does not exist.");
+        }
         createParentFolder(file);
       }
 

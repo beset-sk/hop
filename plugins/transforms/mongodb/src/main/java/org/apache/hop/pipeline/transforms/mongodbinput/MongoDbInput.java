@@ -17,10 +17,8 @@
 
 package org.apache.hop.pipeline.transforms.mongodbinput;
 
-import com.mongodb.Cursor;
-import com.mongodb.DBObject;
 import com.mongodb.ServerAddress;
-import com.mongodb.util.JSON;
+import com.mongodb.client.AggregateIterable;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hop.core.exception.HopException;
@@ -34,6 +32,7 @@ import org.apache.hop.pipeline.Pipeline;
 import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.BaseTransform;
 import org.apache.hop.pipeline.transform.TransformMeta;
+import org.bson.Document;
 
 public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputData> {
   private static final Class<?> PKG = MongoDbInputMeta.class; // For i18n - Translator
@@ -54,7 +53,7 @@ public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputDa
   @Override
   public boolean processRow() throws HopException {
     try {
-      if (meta.getExecuteForEachIncomingRow() && currentInputRowDrivingQuery == null) {
+      if (meta.isExecuteForEachIncomingRow() && currentInputRowDrivingQuery == null) {
         currentInputRowDrivingQuery = getRow();
 
         if (currentInputRowDrivingQuery == null) {
@@ -85,31 +84,31 @@ public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputDa
       }
 
       boolean hasNext =
-          ((meta.isQueryIsPipeline() ? data.pipelineResult.hasNext() : data.cursor.hasNext())
+          ((meta.isAggPipeline() ? data.pipelineResult.hasNext() : data.cursor.hasNext())
               && !isStopped());
       if (hasNext) {
-        DBObject nextDoc = null;
+        Document nextDoc = null;
         Object[] row = null;
-        if (meta.isQueryIsPipeline()) {
+        if (meta.isAggPipeline()) {
           nextDoc = data.pipelineResult.next();
         } else {
           nextDoc = data.cursor.next();
         }
 
-        if (!meta.isQueryIsPipeline() && !serverDetermined) {
+        if (!meta.isAggPipeline() && !serverDetermined) {
           ServerAddress s = data.cursor.getServerAddress();
           if (s != null) {
             serverDetermined = true;
-            logBasic(
-                BaseMessages.getString(
-                    PKG, "MongoDbInput.Message.QueryPulledDataFrom", s.toString()));
+            if (isBasic()) {
+              logBasic(
+                  BaseMessages.getString(
+                      PKG, "MongoDbInput.Message.QueryPulledDataFrom", s.toString()));
+            }
           }
         }
 
-        if (meta.isOutputJson()
-            || meta.getMongoFields() == null
-            || meta.getMongoFields().isEmpty()) {
-          String json = JSON.serialize(nextDoc);
+        if (meta.isOutputJson() || meta.getFields() == null || meta.getFields().isEmpty()) {
+          String json = nextDoc.toJson();
           row = RowDataUtil.allocateRowData(data.outputRowMeta.size());
           int index = 0;
 
@@ -120,12 +119,12 @@ public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputDa
 
           // there may be more than one row if the paths contain an array
           // unwind
-          for (int i = 0; i < outputRows.length; i++) {
-            putRow(data.outputRowMeta, outputRows[i]);
+          for (Object[] outputRow : outputRows) {
+            putRow(data.outputRowMeta, outputRow);
           }
         }
       } else {
-        if (!meta.getExecuteForEachIncomingRow()) {
+        if (!meta.isExecuteForEachIncomingRow()) {
           setOutputDone();
 
           return false;
@@ -158,9 +157,9 @@ public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputDa
     }
 
     String query = resolve(meta.getJsonQuery());
-    String fields = resolve(meta.getFieldsName());
+    String fields = resolve(meta.getJsonField());
     if (StringUtils.isEmpty(query) && StringUtils.isEmpty(fields)) {
-      if (meta.isQueryIsPipeline()) {
+      if (meta.isAggPipeline()) {
         throw new HopException(
             BaseMessages.getString(
                 MongoDbInputMeta.PKG, "MongoDbInput.ErrorMessage.EmptyAggregationPipeline"));
@@ -169,48 +168,54 @@ public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputDa
       data.cursor = data.collection.find();
     } else {
 
-      if (meta.isQueryIsPipeline()) {
+      if (meta.isAggPipeline()) {
         if (StringUtils.isEmpty(query)) {
           throw new HopException(
               BaseMessages.getString(
                   MongoDbInputMeta.PKG, "MongoDbInput.ErrorMessage.EmptyAggregationPipeline"));
         }
 
-        if (meta.getExecuteForEachIncomingRow() && currentInputRowDrivingQuery != null) {
+        if (meta.isExecuteForEachIncomingRow() && currentInputRowDrivingQuery != null) {
           // do field value substitution
           query = resolve(query, getInputRowMeta(), currentInputRowDrivingQuery);
         }
 
-        logDetailed(BaseMessages.getString(PKG, "MongoDbInput.Message.QueryPulledDataFrom", query));
+        if (isDetailed()) {
+          logDetailed(
+              BaseMessages.getString(PKG, "MongoDbInput.Message.QueryPulledDataFrom", query));
+        }
 
-        List<DBObject> pipeline = MongodbInputDiscoverFieldsImpl.jsonPipelineToDBObjectList(query);
-        DBObject firstP = pipeline.get(0);
-        DBObject[] remainder = null;
+        List<Document> pipeline = MongodbInputDiscoverFieldsImpl.jsonPipelineToDocumentList(query);
+        Document firstP = pipeline.get(0);
+        Document[] remainder = null;
         if (pipeline.size() > 1) {
-          remainder = new DBObject[pipeline.size() - 1];
+          remainder = new Document[pipeline.size() - 1];
           for (int i = 1; i < pipeline.size(); i++) {
             remainder[i - 1] = pipeline.get(i);
           }
         } else {
-          remainder = new DBObject[0];
+          remainder = new Document[0];
         }
 
         // Utilize MongoDB cursor class
-        Cursor cursor = data.collection.aggregate(firstP, remainder);
-        data.pipelineResult = cursor;
+        AggregateIterable<Document> aggregateIterable =
+            data.collection.aggregate(firstP, remainder);
+        data.pipelineResult = aggregateIterable.iterator();
       } else {
-        if (meta.getExecuteForEachIncomingRow() && currentInputRowDrivingQuery != null) {
+        if (meta.isExecuteForEachIncomingRow() && currentInputRowDrivingQuery != null) {
           // do field value substitution
           query = resolve(query, getInputRowMeta(), currentInputRowDrivingQuery);
 
           fields = resolve(fields, getInputRowMeta(), currentInputRowDrivingQuery);
         }
 
-        logDetailed(BaseMessages.getString(PKG, "MongoDbInput.Message.ExecutingQuery", query));
+        if (isDetailed()) {
+          logDetailed(BaseMessages.getString(PKG, "MongoDbInput.Message.ExecutingQuery", query));
+        }
 
-        DBObject dbObject = (DBObject) JSON.parse(StringUtils.isEmpty(query) ? "{}" : query);
-        DBObject dbObject2 = (DBObject) JSON.parse(fields);
-        data.cursor = data.collection.find(dbObject, dbObject2);
+        Document queryDoc = Document.parse(StringUtils.isEmpty(query) ? "{}" : query);
+        Document fieldsDoc = StringUtils.isEmpty(fields) ? null : Document.parse(fields);
+        data.cursor = data.collection.find(queryDoc, fieldsDoc);
       }
     }
   }
@@ -249,15 +254,10 @@ public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputDa
 
         if (!StringUtils.isEmpty(data.connection.getAuthenticationUser())) {
           String authInfo =
-              (data.connection.isUsingKerberos()
-                  ? BaseMessages.getString(
-                      PKG,
-                      "MongoDbInput.Message.KerberosAuthentication",
-                      resolve(data.connection.getAuthenticationUser()))
-                  : BaseMessages.getString(
-                      PKG,
-                      "MongoDbInput.Message.NormalAuthentication",
-                      resolve(data.connection.getAuthenticationUser())));
+              BaseMessages.getString(
+                  PKG,
+                  "MongoDbInput.Message.NormalAuthentication",
+                  resolve(data.connection.getAuthenticationUser()));
           logBasic(authInfo);
         }
 
@@ -266,18 +266,21 @@ public class MongoDbInput extends BaseTransform<MongoDbInputMeta, MongoDbInputDa
         data.collection = data.clientWrapper.getCollection(databaseName, collection);
 
         if (!meta.isOutputJson()) {
-          data.setMongoFields(meta.getMongoFields());
+          data.setMongoFields(meta.getFields());
         }
 
         return true;
       } catch (Exception e) {
+        String hostname = data.connection != null ? data.connection.getHostname() : "unknown";
+        String port = data.connection != null ? data.connection.getPort() : "unknown";
+        String dbName = data.connection != null ? data.connection.getDbName() : "unknown";
         logError(
             BaseMessages.getString(
                 PKG,
                 "MongoDbInput.ErrorConnectingToMongoDb.Exception",
-                data.connection.getHostname(),
-                data.connection.getPort(),
-                data.connection.getDbName(),
+                hostname,
+                port,
+                dbName,
                 meta.getCollection()),
             e);
         return false;

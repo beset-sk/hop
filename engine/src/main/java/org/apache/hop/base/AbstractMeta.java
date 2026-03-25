@@ -728,6 +728,7 @@ public abstract class AbstractMeta
   public void addNote(int p, NotePadMeta ni) {
     notes.add(p, ni);
     changedNotes = true;
+    setChanged();
   }
 
   /**
@@ -738,6 +739,7 @@ public abstract class AbstractMeta
   public void addNote(NotePadMeta ni) {
     notes.add(ni);
     changedNotes = true;
+    setChanged();
   }
 
   /**
@@ -824,6 +826,7 @@ public abstract class AbstractMeta
       NotePadMeta note = notes.remove(p);
       notes.add(0, note);
       changedNotes = true;
+      setChanged();
     }
   }
 
@@ -848,6 +851,7 @@ public abstract class AbstractMeta
       NotePadMeta note = notes.remove(p);
       notes.add(note);
       changedNotes = true;
+      setChanged();
     }
   }
 
@@ -863,6 +867,7 @@ public abstract class AbstractMeta
     }
     notes.remove(i);
     changedNotes = true;
+    setChanged();
   }
 
   /**
@@ -1067,14 +1072,13 @@ public abstract class AbstractMeta
     maxUndo = Const.MAX_UNDO;
     clearUndo();
     clearChanged();
-    setChanged(false);
   }
 
   @Override
   public void clearChanged() {
     changedNotes = false;
-    for (int i = 0; i < nrNotes(); i++) {
-      getNote(i).setChanged(false);
+    for (NotePadMeta note : notes) {
+      note.setChanged(false);
     }
     changedFlag.clearChanged();
     fireContentChangedListeners(false);
@@ -1125,10 +1129,7 @@ public abstract class AbstractMeta
 
   @Override
   public boolean hasChanged() {
-    if (changedFlag.hasChanged()) {
-      return true;
-    }
-    return haveNotesChanged();
+    return changedFlag.hasChanged() || haveNotesChanged();
   }
 
   /**

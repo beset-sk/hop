@@ -56,7 +56,6 @@ import org.apache.hop.ui.core.widget.TableView;
 import org.apache.hop.ui.core.widget.TextVar;
 import org.apache.hop.ui.hopgui.HopGui;
 import org.apache.hop.ui.hopgui.file.pipeline.HopPipelineFileType;
-import org.apache.hop.ui.hopgui.perspective.dataorch.HopDataOrchestrationPerspective;
 import org.apache.hop.ui.pipeline.transform.BaseTransformDialog;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.eclipse.swt.SWT;
@@ -78,7 +77,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
 
 public class KafkaConsumerInputDialog extends BaseTransformDialog {
 
@@ -128,8 +126,6 @@ public class KafkaConsumerInputDialog extends BaseTransformDialog {
   private TableView optionsTable;
 
   private TextVar wBootstrapServers;
-  private final int middle = props.getMiddlePct();
-  private final int margin = PropsUi.getMargin();
 
   public KafkaConsumerInputDialog(
       Shell parent,
@@ -143,52 +139,12 @@ public class KafkaConsumerInputDialog extends BaseTransformDialog {
 
   @Override
   public String open() {
-    Shell parent = getParent();
+    createShell(getDialogTitle());
 
-    shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.MIN | SWT.MAX | SWT.RESIZE);
-    PropsUi.setLook(shell);
-    setShellImage(shell, meta);
-    shell.setMinimumSize(527, 622);
+    buildButtonBar().ok(e -> ok()).cancel(e -> cancel()).build();
 
     lsMod = e -> meta.setChanged();
     changed = meta.hasChanged();
-
-    FormLayout formLayout = new FormLayout();
-    formLayout.marginWidth = PropsUi.getMargin();
-    formLayout.marginHeight = PropsUi.getMargin();
-
-    shell.setLayout(formLayout);
-    shell.setText(getDialogTitle());
-
-    // Some buttons at the bottom...
-    //
-    wCancel = new Button(shell, SWT.PUSH);
-    wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
-    wCancel.addListener(SWT.Selection, e -> cancel());
-    wOk = new Button(shell, SWT.PUSH);
-    wOk.setText(BaseMessages.getString(PKG, "System.Button.OK"));
-    wOk.addListener(SWT.Selection, e -> ok());
-    positionBottomButtons(shell, new Button[] {wOk, wCancel}, margin, null);
-
-    wlTransformName = new Label(shell, SWT.RIGHT);
-    wlTransformName.setText(
-        BaseMessages.getString(PKG, "KafkaConsumerInputDialog.TransformName.Label"));
-    PropsUi.setLook(wlTransformName);
-    fdlTransformName = new FormData();
-    fdlTransformName.left = new FormAttachment(0, 0);
-    fdlTransformName.top = new FormAttachment(0, margin);
-    fdlTransformName.right = new FormAttachment(middle, -margin);
-    wlTransformName.setLayoutData(fdlTransformName);
-
-    wTransformName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-    wTransformName.setText(transformName);
-    PropsUi.setLook(wTransformName);
-    wTransformName.addModifyListener(lsMod);
-    fdTransformName = new FormData();
-    fdTransformName.left = new FormAttachment(wlTransformName, margin);
-    fdTransformName.right = new FormAttachment(100, 0);
-    fdTransformName.top = new FormAttachment(wlTransformName, 0, SWT.CENTER);
-    wTransformName.setLayoutData(fdTransformName);
 
     // The filename
     //
@@ -197,7 +153,7 @@ public class KafkaConsumerInputDialog extends BaseTransformDialog {
     wlFilename.setText(BaseMessages.getString(PKG, "KafkaConsumerInputDialog.Pipeline"));
     FormData fdlFilename = new FormData();
     fdlFilename.left = new FormAttachment(0, 0);
-    fdlFilename.top = new FormAttachment(wTransformName, margin * 2);
+    fdlFilename.top = new FormAttachment(wSpacer, margin);
     fdlFilename.right = new FormAttachment(middle, -margin);
     wlFilename.setLayoutData(fdlFilename);
 
@@ -290,8 +246,8 @@ public class KafkaConsumerInputDialog extends BaseTransformDialog {
 
     FormData fdTabFolder = new FormData();
     fdTabFolder.left = new FormAttachment(0, 0);
-    fdTabFolder.top = new FormAttachment(wProfile, 15);
-    fdTabFolder.bottom = new FormAttachment(wOk, -15);
+    fdTabFolder.top = new FormAttachment(wProfile, margin);
+    fdTabFolder.bottom = new FormAttachment(wOk, -margin);
     fdTabFolder.right = new FormAttachment(100, 0);
     wTabFolder.setLayoutData(fdTabFolder);
 
@@ -302,10 +258,7 @@ public class KafkaConsumerInputDialog extends BaseTransformDialog {
 
     getData();
     wTabFolder.setSelection(0);
-
-    wTransformName.selectAll();
-    wTransformName.setFocus();
-
+    focusTransformName();
     BaseDialog.defaultShellHandling(shell, c -> ok(), c -> cancel());
 
     return transformName;
@@ -367,7 +320,7 @@ public class KafkaConsumerInputDialog extends BaseTransformDialog {
   }
 
   private void buildOffsetManagement() {
-    Group wOffsetGroup = new Group(wBatchComp, SWT.SHADOW_ETCHED_IN);
+    Group wOffsetGroup = new Group(wBatchComp, SWT.SHADOW_NONE);
     wOffsetGroup.setText(BaseMessages.getString(PKG, "KafkaConsumerInputDialog.OffsetManagement"));
     FormLayout flOffsetGroup = new FormLayout();
     flOffsetGroup.marginHeight = 15;
@@ -937,15 +890,11 @@ public class KafkaConsumerInputDialog extends BaseTransformDialog {
   protected void createNewKafkaPipeline() {
     PipelineMeta kafkaPipelineMeta = createSubPipelineMeta();
 
-    HopDataOrchestrationPerspective doPerspective = HopGui.getDataOrchestrationPerspective();
-    if (doPerspective == null) {
-      return;
-    }
-
     try {
       // Add a new tab with a new pipeline in the background
       //
-      doPerspective.addPipeline(hopGui, kafkaPipelineMeta, new HopPipelineFileType());
+      HopGui.getExplorerPerspective().addPipeline(kafkaPipelineMeta);
+      HopGui.getExplorerPerspective().activate();
 
       // Ask the user to save the new pipeline
       //

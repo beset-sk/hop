@@ -63,8 +63,6 @@ import org.w3c.dom.Node;
  *
  * <p>For example, the "Text File Output" transform's TextFileOutputMeta class extends
  * BaseTransformMeta by adding fields for the output file name, compression, file format, etc...
- *
- * <p>
  */
 public class BaseTransformMeta<Main extends ITransform, Data extends ITransformData>
     implements ITransformMeta, Cloneable {
@@ -147,10 +145,8 @@ public class BaseTransformMeta<Main extends ITransform, Data extends ITransformD
   protected Type[] getGenericType(Class<?> clazz) {
     do {
       Type type = clazz.getGenericSuperclass();
-      if (type != null) {
-        if (type instanceof ParameterizedType) {
-          return new Type[] {type};
-        }
+      if (type != null && type instanceof ParameterizedType) {
+        return new Type[] {type};
       }
       // If the class is not parameterized, try parent class
       clazz = clazz.getSuperclass();
@@ -219,6 +215,7 @@ public class BaseTransformMeta<Main extends ITransform, Data extends ITransformD
    *
    * @param ch the new changed
    */
+  @Override
   public void setChanged(boolean ch) {
     changed = ch;
   }
@@ -243,13 +240,12 @@ public class BaseTransformMeta<Main extends ITransform, Data extends ITransformD
    * @return the table fields
    * @param variables
    */
-  public IRowMeta getTableFields(IVariables variables) {
+  public IRowMeta getTableFields(IVariables variables) throws HopDatabaseException {
     return null;
   }
 
   /**
-   * Produces the XML string that describes this transform's information.
-   *
+   * @deprecated Produces the XML string that describes this transform's information.
    * @return String containing the XML describing this transform.
    * @throws HopException in case there is an XML conversion or encoding error
    */
@@ -260,9 +256,8 @@ public class BaseTransformMeta<Main extends ITransform, Data extends ITransformD
   }
 
   /**
-   * Automatically load metadata from XML using @{@link
-   * org.apache.hop.metadata.api.HopMetadataProperty} annotations
-   *
+   * @deprecated Automatically load metadata from XML using @{@link
+   *     org.apache.hop.metadata.api.HopMetadataProperty} annotations
    * @param transformNode
    * @param metadataProvider
    * @throws HopXmlException
@@ -387,9 +382,9 @@ public class BaseTransformMeta<Main extends ITransform, Data extends ITransformD
     // Cancel all defined queries...
     //
     if (databases != null) {
-      for (int i = 0; i < databases.length; i++) {
-        if (databases[i] != null) {
-          databases[i].cancelQuery();
+      for (Database database : databases) {
+        if (database != null) {
+          database.cancelQuery();
         }
       }
     }
@@ -899,5 +894,10 @@ public class BaseTransformMeta<Main extends ITransform, Data extends ITransformD
   public IHasFilename loadReferencedObject(
       int index, IHopMetadataProvider metadataProvider, IVariables variables) throws HopException {
     return null;
+  }
+
+  @Override
+  public void convertLegacyXml(Node node) throws HopException {
+    // Nothing by default
   }
 }

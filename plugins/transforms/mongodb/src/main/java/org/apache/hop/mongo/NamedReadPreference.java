@@ -17,7 +17,6 @@
 
 package org.apache.hop.mongo;
 
-import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
 import com.mongodb.Tag;
 import com.mongodb.TagSet;
@@ -25,6 +24,7 @@ import com.mongodb.TaggableReadPreference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.bson.Document;
 
 public enum NamedReadPreference {
   PRIMARY(ReadPreference.primary()),
@@ -58,34 +58,31 @@ public enum NamedReadPreference {
   }
 
   public ReadPreference getTaggableReadPreference(
-      DBObject firstTagSet, DBObject... remainingTagSets) {
+      Document firstTagSet, Document... remainingTagSets) {
 
-    switch (this) {
-      case PRIMARY_PREFERRED:
-        return ReadPreference.primaryPreferred(toTagsList(firstTagSet, remainingTagSets));
-      case SECONDARY:
-        return ReadPreference.secondary(toTagsList(firstTagSet, remainingTagSets));
-      case SECONDARY_PREFERRED:
-        return ReadPreference.secondaryPreferred(toTagsList(firstTagSet, remainingTagSets));
-      case NEAREST:
-        return ReadPreference.nearest(toTagsList(firstTagSet, remainingTagSets));
-      default:
-        return (pref instanceof TaggableReadPreference) ? pref : null;
-    }
+    return switch (this) {
+      case PRIMARY_PREFERRED ->
+          ReadPreference.primaryPreferred(toTagsList(firstTagSet, remainingTagSets));
+      case SECONDARY -> ReadPreference.secondary(toTagsList(firstTagSet, remainingTagSets));
+      case SECONDARY_PREFERRED ->
+          ReadPreference.secondaryPreferred(toTagsList(firstTagSet, remainingTagSets));
+      case NEAREST -> ReadPreference.nearest(toTagsList(firstTagSet, remainingTagSets));
+      default -> (pref instanceof TaggableReadPreference) ? pref : null;
+    };
   }
 
-  private static List<TagSet> toTagsList(DBObject firstTagSet, DBObject[] remainingTagSets) {
-    List tagsList = new ArrayList(remainingTagSets.length + 1);
+  private static List<TagSet> toTagsList(Document firstTagSet, Document[] remainingTagSets) {
+    List<TagSet> tagsList = new ArrayList<>(remainingTagSets.length + 1);
     tagsList.add(toTags(firstTagSet));
-    for (DBObject cur : remainingTagSets) {
+    for (Document cur : remainingTagSets) {
       tagsList.add(toTags(cur));
     }
 
     return tagsList;
   }
 
-  private static TagSet toTags(DBObject tagsDocument) {
-    List tagList = new ArrayList();
+  private static TagSet toTags(Document tagsDocument) {
+    List<Tag> tagList = new ArrayList<>();
     for (String key : tagsDocument.keySet()) {
       tagList.add(new Tag(key, tagsDocument.get(key).toString()));
     }

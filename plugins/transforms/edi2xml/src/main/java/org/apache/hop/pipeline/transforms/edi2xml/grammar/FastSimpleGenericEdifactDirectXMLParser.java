@@ -111,7 +111,7 @@ public class FastSimpleGenericEdifactDirectXMLParser extends Parser {
     }
 
     public STAttrMap put(String attrName, int value) {
-      super.put(attrName, Integer.valueOf(value));
+      super.put(attrName, value);
       return this;
     }
   }
@@ -208,6 +208,8 @@ public class FastSimpleGenericEdifactDirectXMLParser extends Parser {
           pushFollow(FOLLOW_una_in_edifact64);
           una();
           state._fsp--;
+          break;
+        default:
           break;
       }
       buf = new StringBuilder(8192);
@@ -532,6 +534,8 @@ public class FastSimpleGenericEdifactDirectXMLParser extends Parser {
           break;
         case 2:
           break;
+        default:
+          break;
       }
       retval.stop = input.LT(-1);
 
@@ -712,6 +716,8 @@ public class FastSimpleGenericEdifactDirectXMLParser extends Parser {
           state._fsp--;
           break;
         case 2:
+          break;
+        default:
           break;
       }
       retval.stop = input.LT(-1);

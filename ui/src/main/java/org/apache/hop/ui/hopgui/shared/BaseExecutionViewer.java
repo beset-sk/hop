@@ -46,6 +46,7 @@ import org.apache.hop.ui.core.metadata.MetadataManager;
 import org.apache.hop.ui.hopgui.HopGui;
 import org.apache.hop.ui.hopgui.perspective.execution.DragViewZoomBase;
 import org.apache.hop.ui.hopgui.perspective.execution.ExecutionPerspective;
+import org.apache.hop.ui.util.EnvironmentUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
@@ -54,9 +55,9 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
 
 public abstract class BaseExecutionViewer extends DragViewZoomBase
     implements MouseListener, MouseMoveListener {
@@ -73,7 +74,7 @@ public abstract class BaseExecutionViewer extends DragViewZoomBase
   protected final Execution execution;
   protected ExecutionState executionState;
 
-  protected ToolBar toolBar;
+  protected Control toolBar;
   protected GuiToolbarWidgets toolBarWidgets;
   protected SashForm sash;
   protected CTabFolder tabFolder;
@@ -193,6 +194,15 @@ public abstract class BaseExecutionViewer extends DragViewZoomBase
       viewDrag = false;
       viewPortNavigation = false;
       viewPortStart = null;
+
+      // Clear pan mode and feedback data for web environment
+      if (EnvironmentUtils.getInstance().isWeb() && canvas != null) {
+        canvas.setData("mode", "null");
+        canvas.setData("panStartOffset", null);
+        canvas.setData("panCurrentOffset", null);
+        canvas.setData("panOffsetDelta", null);
+        canvas.setData("panBoundaries", null);
+      }
     }
 
     // Default cursor
@@ -345,7 +355,7 @@ public abstract class BaseExecutionViewer extends DragViewZoomBase
    *
    * @return value of toolBar
    */
-  public ToolBar getToolBar() {
+  public Control getToolBar() {
     return toolBar;
   }
 
@@ -354,7 +364,7 @@ public abstract class BaseExecutionViewer extends DragViewZoomBase
    *
    * @param toolBar value of toolBar
    */
-  public void setToolBar(ToolBar toolBar) {
+  public void setToolBar(Control toolBar) {
     this.toolBar = toolBar;
   }
 

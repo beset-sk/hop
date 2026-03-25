@@ -50,7 +50,6 @@ import org.apache.hop.core.row.value.ValueMetaNumber;
 import org.apache.hop.core.row.value.ValueMetaString;
 import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
 import org.apache.hop.pipeline.transform.RowAdapter;
-import org.apache.hop.pipeline.transforms.calculator.CalculatorMetaFunction.CalculationType;
 import org.apache.hop.pipeline.transforms.mock.TransformMockHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -142,14 +141,8 @@ class CalculatorUnitTest {
       inputRowSet =
           smh.getMockInputRowSet(
               new Object[][] {
-                {
-                  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2014-01-01 00:00:00"),
-                  Long.valueOf(10)
-                },
-                {
-                  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2014-10-31 23:59:50"),
-                  Long.valueOf(30)
-                }
+                {new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2014-01-01 00:00:00"), 10L},
+                {new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2014-10-31 23:59:50"), 30L}
               });
     } catch (ParseException pe) {
       pe.printStackTrace();
@@ -645,24 +638,18 @@ class CalculatorUnitTest {
     final List<Object> inputValues = new ArrayList<>(3);
 
     final String fieldValue = "Value";
-    final IValueMeta valueMeta;
-    switch (valueDataType) {
-      case IValueMeta.TYPE_BIGNUMBER:
-        valueMeta = new ValueMetaBigNumber(fieldValue);
-        break;
-      case IValueMeta.TYPE_NUMBER:
-        valueMeta = new ValueMetaNumber(fieldValue);
-        break;
-      case IValueMeta.TYPE_INTEGER:
-        valueMeta = new ValueMetaInteger(fieldValue);
-        break;
-      default:
-        throw new IllegalArgumentException(
-            msg
-                + "Unexpected value dataType: "
-                + value.getClass().getName()
-                + ". Long, Double or BigDecimal expected.");
-    }
+    final IValueMeta valueMeta =
+        switch (valueDataType) {
+          case IValueMeta.TYPE_BIGNUMBER -> new ValueMetaBigNumber(fieldValue);
+          case IValueMeta.TYPE_NUMBER -> new ValueMetaNumber(fieldValue);
+          case IValueMeta.TYPE_INTEGER -> new ValueMetaInteger(fieldValue);
+          default ->
+              throw new IllegalArgumentException(
+                  msg
+                      + "Unexpected value dataType: "
+                      + value.getClass().getName()
+                      + ". Long, Double or BigDecimal expected.");
+        };
     inputRowMeta.addValueMeta(valueMeta);
     inputValues.add(value);
 
@@ -863,30 +850,23 @@ class CalculatorUnitTest {
 
   public void assertRound2(final Number expectedResult, final Number value, final long precision)
       throws HopException {
-    assertRoundEveryDataType(
-        expectedResult, CalculatorMetaFunction.CalculationType.ROUND_2, value, precision, null);
+    assertRoundEveryDataType(expectedResult, CalculationType.ROUND_2, value, precision, null);
   }
 
   public void assertRoundStd1(final Number expectedResult, final Number value) throws HopException {
-    assertRoundEveryDataType(
-        expectedResult, CalculatorMetaFunction.CalculationType.ROUND_STD_1, value, null, null);
+    assertRoundEveryDataType(expectedResult, CalculationType.ROUND_STD_1, value, null, null);
   }
 
   public void assertRoundStd2(final Number expectedResult, final Number value, final long precision)
       throws HopException {
-    assertRoundEveryDataType(
-        expectedResult, CalculatorMetaFunction.CalculationType.ROUND_STD_2, value, precision, null);
+    assertRoundEveryDataType(expectedResult, CalculationType.ROUND_STD_2, value, precision, null);
   }
 
   public void assertRoundCustom1(
       final Number expectedResult, final Number value, final long roundingMode)
       throws HopException {
     assertRoundEveryDataType(
-        expectedResult,
-        CalculatorMetaFunction.CalculationType.ROUND_CUSTOM_1,
-        value,
-        null,
-        roundingMode);
+        expectedResult, CalculationType.ROUND_CUSTOM_1, value, null, roundingMode);
   }
 
   public void assertRoundCustom2(
@@ -896,11 +876,7 @@ class CalculatorUnitTest {
       final long roundingMode)
       throws HopException {
     assertRoundEveryDataType(
-        expectedResult,
-        CalculatorMetaFunction.CalculationType.ROUND_CUSTOM_2,
-        value,
-        precision,
-        roundingMode);
+        expectedResult, CalculationType.ROUND_CUSTOM_2, value, precision, roundingMode);
   }
 
   /**
@@ -934,20 +910,13 @@ class CalculatorUnitTest {
   }
 
   private String getHopTypeName(int kettleNumberDataType) {
-    final String kettleNumberDataTypeName;
-    switch (kettleNumberDataType) {
-      case IValueMeta.TYPE_BIGNUMBER:
-        kettleNumberDataTypeName = "BigNumber(" + kettleNumberDataType + ")";
-        break;
-      case IValueMeta.TYPE_NUMBER:
-        kettleNumberDataTypeName = "Number(" + kettleNumberDataType + ")";
-        break;
-      case IValueMeta.TYPE_INTEGER:
-        kettleNumberDataTypeName = "Integer(" + kettleNumberDataType + ")";
-        break;
-      default:
-        kettleNumberDataTypeName = "?(" + kettleNumberDataType + ")";
-    }
+    final String kettleNumberDataTypeName =
+        switch (kettleNumberDataType) {
+          case IValueMeta.TYPE_BIGNUMBER -> "BigNumber(" + kettleNumberDataType + ")";
+          case IValueMeta.TYPE_NUMBER -> "Number(" + kettleNumberDataType + ")";
+          case IValueMeta.TYPE_INTEGER -> "Integer(" + kettleNumberDataType + ")";
+          default -> "?(" + kettleNumberDataType + ")";
+        };
     return kettleNumberDataTypeName;
   }
 

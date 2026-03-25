@@ -47,17 +47,16 @@ import org.apache.hop.core.row.value.ValueMetaInteger;
 import org.apache.hop.core.row.value.ValueMetaString;
 import org.apache.hop.core.util.Utils;
 import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
-import org.apache.hop.pipeline.transforms.calculator.CalculatorMetaFunction.CalculationType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.stubbing.Answer;
 
 class CalculatorValueDataUtilTest {
+  private static final String YYYY_MM_DD = "yyyy-MM-dd";
+
   @RegisterExtension
   static RestoreHopEngineEnvironmentExtension env = new RestoreHopEngineEnvironmentExtension();
-
-  private static final String YYYY_MM_DD = "yyyy-MM-dd";
 
   @BeforeAll
   static void setUpBeforeClass() throws HopException {
@@ -74,11 +73,7 @@ class CalculatorValueDataUtilTest {
   @Test
   void testDateDiff_A_LT_B() {
     Object daysDiff =
-        calculate(
-            "2010-12-31",
-            "2011-02-10",
-            IValueMeta.TYPE_DATE,
-            CalculatorMetaFunction.CalculationType.DATE_DIFF);
+        calculate("2010-12-31", "2011-02-10", IValueMeta.TYPE_DATE, CalculationType.DATE_DIFF);
     assertEquals((long) -41, daysDiff);
   }
 
@@ -86,10 +81,7 @@ class CalculatorValueDataUtilTest {
   void testWorkingDaysDays_A_GT_B() {
     Object daysDiff =
         calculate(
-            "2010-05-12",
-            "2010-01-01",
-            IValueMeta.TYPE_DATE,
-            CalculatorMetaFunction.CalculationType.DATE_WORKING_DIFF);
+            "2010-05-12", "2010-01-01", IValueMeta.TYPE_DATE, CalculationType.DATE_WORKING_DIFF);
     assertEquals(94L, daysDiff);
   }
 
@@ -97,10 +89,7 @@ class CalculatorValueDataUtilTest {
   void testWorkingDaysDays_A_LT_B() {
     Object daysDiff =
         calculate(
-            "2010-12-31",
-            "2011-02-10",
-            IValueMeta.TYPE_DATE,
-            CalculatorMetaFunction.CalculationType.DATE_WORKING_DIFF);
+            "2010-12-31", "2011-02-10", IValueMeta.TYPE_DATE, CalculationType.DATE_WORKING_DIFF);
     assertEquals((long) -30, daysDiff);
   }
 
@@ -118,45 +107,42 @@ class CalculatorValueDataUtilTest {
   @Test
   void checksumTest() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    String checksum = ValueDataUtil.createChecksum(new ValueMetaString(), path, "MD5", true);
+    String checksum = ValueDataUtil.createChecksum(path, "MD5", true);
     assertEquals("098f6bcd4621d373cade4e832627b4f6", checksum);
   }
 
   @Test
   void checksumMissingFileTest() throws Exception {
     String nonExistingFile = "nonExistingFile";
-    String checksum =
-        ValueDataUtil.createChecksum(new ValueMetaString(), nonExistingFile, "MD5", false);
+    String checksum = ValueDataUtil.createChecksum(nonExistingFile, "MD5", false);
     assertNull(checksum);
   }
 
   @Test
   void checksumNullPathTest() throws Exception {
     String nonExistingFile = "nonExistingFile";
-    String checksum =
-        ValueDataUtil.createChecksum(new ValueMetaString(), nonExistingFile, "MD5", false);
+    String checksum = ValueDataUtil.createChecksum(nonExistingFile, "MD5", false);
     assertNull(checksum);
   }
 
   @Test
   void checksumWithFailIfNoFileTest() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    String checksum = ValueDataUtil.createChecksum(new ValueMetaString(), path, "MD5", true);
+    String checksum = ValueDataUtil.createChecksum(path, "MD5", true);
     assertEquals("098f6bcd4621d373cade4e832627b4f6", checksum);
   }
 
   @Test
   void checksumWithoutFailIfNoFileTest() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    String checksum = ValueDataUtil.createChecksum(new ValueMetaString(), path, "MD5", false);
+    String checksum = ValueDataUtil.createChecksum(path, "MD5", false);
     assertEquals("098f6bcd4621d373cade4e832627b4f6", checksum);
   }
 
   @Test
   void checksumNoFailIfNoFileTest() throws HopFileNotFoundException {
     String nonExistingFile = "nonExistingFile";
-    String checksum =
-        ValueDataUtil.createChecksum(new ValueMetaString(), nonExistingFile, "MD5", false);
+    String checksum = ValueDataUtil.createChecksum(nonExistingFile, "MD5", false);
     assertNull(checksum);
   }
 
@@ -166,52 +152,52 @@ class CalculatorValueDataUtilTest {
     assertThrows(
         HopFileNotFoundException.class,
         () -> {
-          ValueDataUtil.createChecksum(new ValueMetaString(), nonExistingPath, "MD5", true);
+          ValueDataUtil.createChecksum(nonExistingPath, "MD5", true);
         });
   }
 
   @Test
   void checksumNullPathNoFailTest() throws HopFileNotFoundException {
-    assertNull(ValueDataUtil.createChecksum(new ValueMetaString(), null, "MD5", false));
+    assertNull(ValueDataUtil.createChecksum(null, "MD5", false));
   }
 
   @Test
   void checksumNullPathFailTest() throws HopFileNotFoundException {
-    assertNull(ValueDataUtil.createChecksum(new ValueMetaString(), null, "MD5", true));
+    assertNull(ValueDataUtil.createChecksum(null, "MD5", true));
   }
 
   @Test
   void checksumCRC32Test() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    long checksum = ValueDataUtil.checksumCRC32(new ValueMetaString(), path, false);
+    long checksum = ValueDataUtil.checksumCRC32(path, false);
     assertEquals(3632233996L, checksum);
   }
 
   @Test
   void checksumCRC32MissingFileTest() throws Exception {
     String nonExistingFile = "nonExistingFile";
-    long checksum = ValueDataUtil.checksumCRC32(new ValueMetaString(), nonExistingFile, false);
+    long checksum = ValueDataUtil.checksumCRC32(nonExistingFile, false);
     assertEquals(0, checksum);
   }
 
   @Test
   void checksumCRC32NullPathTest() throws Exception {
     String nonExistingFile = "nonExistingFile";
-    long checksum = ValueDataUtil.checksumCRC32(new ValueMetaString(), nonExistingFile, false);
+    long checksum = ValueDataUtil.checksumCRC32(nonExistingFile, false);
     assertEquals(0, checksum);
   }
 
   @Test
   void checksumCRC32WithoutFailIfNoFileTest() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    long checksum = ValueDataUtil.checksumCRC32(new ValueMetaString(), path, false);
+    long checksum = ValueDataUtil.checksumCRC32(path, false);
     assertEquals(3632233996L, checksum);
   }
 
   @Test
   void checksumCRC32NoFailIfNoFileTest() throws HopFileNotFoundException {
     String nonExistingPath = "nonExistingPath";
-    long checksum = ValueDataUtil.checksumCRC32(new ValueMetaString(), nonExistingPath, false);
+    long checksum = ValueDataUtil.checksumCRC32(nonExistingPath, false);
     assertEquals(0, checksum);
   }
 
@@ -219,40 +205,39 @@ class CalculatorValueDataUtilTest {
   void checksumCRC32FailIfNoFileTest() {
     String nonExistingPath = "nonExistingPath";
     assertThrows(
-        HopFileNotFoundException.class,
-        () -> ValueDataUtil.checksumCRC32(new ValueMetaString(), nonExistingPath, true));
+        HopFileNotFoundException.class, () -> ValueDataUtil.checksumCRC32(nonExistingPath, true));
   }
 
   @Test
   void checksumCRC32NullPathNoFailTest() throws HopFileNotFoundException {
-    long checksum = ValueDataUtil.checksumCRC32(new ValueMetaString(), null, false);
+    long checksum = ValueDataUtil.checksumCRC32(null, false);
     assertEquals(0, checksum);
   }
 
   @Test
   void checksumCRC32NullPathFailTest() throws HopFileNotFoundException {
-    long checksum = ValueDataUtil.checksumCRC32(new ValueMetaString(), null, true);
+    long checksum = ValueDataUtil.checksumCRC32(null, true);
     assertEquals(0, checksum);
   }
 
   @Test
   void checksumAdlerWithFailIfNoFileTest() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    long checksum = ValueDataUtil.checksumAdler32(new ValueMetaString(), path, true);
+    long checksum = ValueDataUtil.checksumAdler32(path, true);
     assertEquals(73204161L, checksum);
   }
 
   @Test
   void checksumAdlerWithoutFailIfNoFileTest() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    long checksum = ValueDataUtil.checksumAdler32(new ValueMetaString(), path, false);
+    long checksum = ValueDataUtil.checksumAdler32(path, false);
     assertEquals(73204161L, checksum);
   }
 
   @Test
   void checksumAdlerNoFailIfNoFileTest() throws HopFileNotFoundException {
     String nonExistingPath = "nonExistingPath";
-    long checksum = ValueDataUtil.checksumAdler32(new ValueMetaString(), nonExistingPath, false);
+    long checksum = ValueDataUtil.checksumAdler32(nonExistingPath, false);
     assertEquals(0, checksum);
   }
 
@@ -260,75 +245,67 @@ class CalculatorValueDataUtilTest {
   void checksumAdlerFailIfNoFileTest() {
     String nonExistingPath = "nonExistingPath";
     assertThrows(
-        HopFileNotFoundException.class,
-        () -> ValueDataUtil.checksumAdler32(new ValueMetaString(), nonExistingPath, true));
+        HopFileNotFoundException.class, () -> ValueDataUtil.checksumAdler32(nonExistingPath, true));
   }
 
   @Test
   void checksumAdlerNullPathNoFailTest() throws HopFileNotFoundException {
-    long checksum = ValueDataUtil.checksumAdler32(new ValueMetaString(), null, false);
+    long checksum = ValueDataUtil.checksumAdler32(null, false);
     assertEquals(0, checksum);
   }
 
   @Test
   void checksumAdlerNullPathFailTest() throws HopFileNotFoundException {
-    long checksum = ValueDataUtil.checksumAdler32(new ValueMetaString(), null, true);
+    long checksum = ValueDataUtil.checksumAdler32(null, true);
     assertEquals(0, checksum);
   }
 
   @Test
   void xmlFileWellFormedTest() throws HopFileNotFoundException {
     String xmlFilePath = getClass().getResource("xml-sample.xml").getPath();
-    boolean wellFormed =
-        ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), xmlFilePath, true);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(xmlFilePath, true);
     assertTrue(wellFormed);
   }
 
   @Test
   void xmlFileBadlyFormedTest() throws HopFileNotFoundException {
     String invalidXmlFilePath = getClass().getResource("invalid-xml-sample.xml").getPath();
-    boolean wellFormed =
-        ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), invalidXmlFilePath, true);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(invalidXmlFilePath, true);
     assertFalse(wellFormed);
   }
 
   @Test
   void xmlFileWellFormedWithFailIfNoFileTest() throws HopFileNotFoundException {
     String xmlFilePath = getClass().getResource("xml-sample.xml").getPath();
-    boolean wellFormed =
-        ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), xmlFilePath, true);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(xmlFilePath, true);
     assertTrue(wellFormed);
   }
 
   @Test
   void xmlFileWellFormedWithoutFailIfNoFileTest() throws HopFileNotFoundException {
     String xmlFilePath = getClass().getResource("xml-sample.xml").getPath();
-    boolean wellFormed =
-        ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), xmlFilePath, false);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(xmlFilePath, false);
     assertTrue(wellFormed);
   }
 
   @Test
   void xmlFileBadlyFormedWithFailIfNoFileTest() throws HopFileNotFoundException {
     String invalidXmlFilePath = getClass().getResource("invalid-xml-sample.xml").getPath();
-    boolean wellFormed =
-        ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), invalidXmlFilePath, true);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(invalidXmlFilePath, true);
     assertFalse(wellFormed);
   }
 
   @Test
   void xmlFileBadlyFormedWithNoFailIfNoFileTest() throws HopFileNotFoundException {
     String invalidXmlFilePath = getClass().getResource("invalid-xml-sample.xml").getPath();
-    boolean wellFormed =
-        ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), invalidXmlFilePath, false);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(invalidXmlFilePath, false);
     assertFalse(wellFormed);
   }
 
   @Test
   void xmlFileWellFormedNoFailIfNoFileTest() throws HopFileNotFoundException {
     String nonExistingPath = "nonExistingPath";
-    boolean wellFormed =
-        ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), nonExistingPath, false);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(nonExistingPath, false);
     assertFalse(wellFormed);
   }
 
@@ -337,33 +314,32 @@ class CalculatorValueDataUtilTest {
     String nonExistingPath = "nonExistingPath";
     assertThrows(
         HopFileNotFoundException.class,
-        () -> ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), nonExistingPath, true));
+        () -> ValueDataUtil.isXmlFileWellFormed(nonExistingPath, true));
   }
 
   @Test
   void xmlFileWellFormedNullPathNoFailTest() throws HopFileNotFoundException {
-    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), null, false);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(null, false);
     assertFalse(wellFormed);
   }
 
   @Test
   void xmlFileWellFormedNullPathFailTest() throws HopFileNotFoundException {
-    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(new ValueMetaString(), null, true);
+    boolean wellFormed = ValueDataUtil.isXmlFileWellFormed(null, true);
     assertFalse(wellFormed);
   }
 
   @Test
   void loadFileContentInBinary() throws Exception {
     String path = getClass().getResource("txt-sample.txt").getPath();
-    byte[] content = ValueDataUtil.loadFileContentInBinary(new ValueMetaString(), path, true);
+    byte[] content = ValueDataUtil.loadFileContentInBinary(path, true);
     assertArrayEquals("test".getBytes(), content);
   }
 
   @Test
   void loadFileContentInBinaryNoFailIfNoFileTest() throws Exception {
     String nonExistingPath = "nonExistingPath";
-    assertNull(
-        ValueDataUtil.loadFileContentInBinary(new ValueMetaString(), nonExistingPath, false));
+    assertNull(ValueDataUtil.loadFileContentInBinary(nonExistingPath, false));
   }
 
   @Test
@@ -371,18 +347,18 @@ class CalculatorValueDataUtilTest {
     String nonExistingPath = "nonExistingPath";
     assertThrows(
         HopFileNotFoundException.class,
-        () -> ValueDataUtil.loadFileContentInBinary(new ValueMetaString(), nonExistingPath, true));
+        () -> ValueDataUtil.loadFileContentInBinary(nonExistingPath, true));
   }
 
   @Test
   void loadFileContentInBinaryNullPathNoFailTest() throws Exception {
-    assertNull(ValueDataUtil.loadFileContentInBinary(new ValueMetaString(), null, false));
+    assertNull(ValueDataUtil.loadFileContentInBinary(null, false));
   }
 
   @Test
   void loadFileContentInBinaryNullPathFailTest()
       throws HopFileNotFoundException, HopValueException {
-    assertNull(ValueDataUtil.loadFileContentInBinary(new ValueMetaString(), null, true));
+    assertNull(ValueDataUtil.loadFileContentInBinary(null, true));
   }
 
   @Test
@@ -431,75 +407,48 @@ class CalculatorValueDataUtilTest {
 
     // Test Hop number types
     assertEquals(
-        Double.valueOf("3.0"),
-        calculate("1", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ADD));
+        Double.valueOf("3.0"), calculate("1", "2", IValueMeta.TYPE_NUMBER, CalculationType.ADD));
     assertEquals(
-        Double.valueOf("0.0"),
-        calculate("2", "-2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ADD));
+        Double.valueOf("0.0"), calculate("2", "-2", IValueMeta.TYPE_NUMBER, CalculationType.ADD));
     assertEquals(
-        Double.valueOf("30.0"),
-        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ADD));
+        Double.valueOf("30.0"), calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.ADD));
     assertEquals(
         Double.valueOf("-50.0"),
-        calculate(
-            "-100", "50", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ADD));
+        calculate("-100", "50", IValueMeta.TYPE_NUMBER, CalculationType.ADD));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("3"),
-        calculate("1", "2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ADD));
+        Long.valueOf("3"), calculate("1", "2", IValueMeta.TYPE_INTEGER, CalculationType.ADD));
     assertEquals(
-        Long.valueOf("0"),
-        calculate("2", "-2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ADD));
+        Long.valueOf("0"), calculate("2", "-2", IValueMeta.TYPE_INTEGER, CalculationType.ADD));
     assertEquals(
-        Long.valueOf("30"),
-        calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ADD));
+        Long.valueOf("30"), calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.ADD));
     assertEquals(
-        Long.valueOf("-50"),
-        calculate(
-            "-100", "50", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ADD));
+        Long.valueOf("-50"), calculate("-100", "50", IValueMeta.TYPE_INTEGER, CalculationType.ADD));
 
     // Test Hop big Number types
     assertEquals(
         0,
         new BigDecimal("2.0")
             .compareTo(
-                (BigDecimal)
-                    calculate(
-                        "1",
-                        "1",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD)));
+                (BigDecimal) calculate("1", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD)));
     assertEquals(
         0,
         new BigDecimal("0.0")
             .compareTo(
-                (BigDecimal)
-                    calculate(
-                        "2",
-                        "-2",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD)));
+                (BigDecimal) calculate("2", "-2", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD)));
     assertEquals(
         0,
         new BigDecimal("30.0")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "10",
-                        "20",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD)));
+                    calculate("10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD)));
     assertEquals(
         0,
         new BigDecimal("-50.0")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "-100",
-                        "50",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD)));
+                    calculate("-100", "50", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD)));
   }
 
   @Test
@@ -508,50 +457,29 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("6.0"),
-        calculate(
-            "1", "2", "3", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ADD3));
+        calculate("1", "2", "3", IValueMeta.TYPE_NUMBER, CalculationType.ADD3));
     assertEquals(
         Double.valueOf("10.0"),
-        calculate(
-            "2", "-2", "10", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ADD3));
+        calculate("2", "-2", "10", IValueMeta.TYPE_NUMBER, CalculationType.ADD3));
     assertEquals(
         Double.valueOf("27.0"),
-        calculate(
-            "10", "20", "-3", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ADD3));
+        calculate("10", "20", "-3", IValueMeta.TYPE_NUMBER, CalculationType.ADD3));
     assertEquals(
         Double.valueOf("-55.0"),
-        calculate(
-            "-100",
-            "50",
-            "-5",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.ADD3));
+        calculate("-100", "50", "-5", IValueMeta.TYPE_NUMBER, CalculationType.ADD3));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("3"),
-        calculate(
-            "1", "1", "1", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ADD3));
+        Long.valueOf("3"), calculate("1", "1", "1", IValueMeta.TYPE_INTEGER, CalculationType.ADD3));
     assertEquals(
         Long.valueOf("10"),
-        calculate(
-            "2", "-2", "10", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ADD3));
+        calculate("2", "-2", "10", IValueMeta.TYPE_INTEGER, CalculationType.ADD3));
     assertEquals(
         Long.valueOf("27"),
-        calculate(
-            "10",
-            "20",
-            "-3",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.ADD3));
+        calculate("10", "20", "-3", IValueMeta.TYPE_INTEGER, CalculationType.ADD3));
     assertEquals(
         Long.valueOf("-55"),
-        calculate(
-            "-100",
-            "50",
-            "-5",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.ADD3));
+        calculate("-100", "50", "-5", IValueMeta.TYPE_INTEGER, CalculationType.ADD3));
 
     // Test Hop big Number types
     assertEquals(
@@ -559,45 +487,26 @@ class CalculatorValueDataUtilTest {
         new BigDecimal("6.0")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "1",
-                        "2",
-                        "3",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD3)));
+                    calculate("1", "2", "3", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD3)));
     assertEquals(
         0,
         new BigDecimal("10.0")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "2",
-                        "-2",
-                        "10",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD3)));
+                    calculate("2", "-2", "10", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD3)));
     assertEquals(
         0,
         new BigDecimal("27.0")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "10",
-                        "20",
-                        "-3",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD3)));
+                    calculate("10", "20", "-3", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD3)));
     assertEquals(
         0,
         new BigDecimal("-55.0")
             .compareTo(
                 (BigDecimal)
                     calculate(
-                        "-100",
-                        "50",
-                        "-5",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.ADD3)));
+                        "-100", "50", "-5", IValueMeta.TYPE_BIGNUMBER, CalculationType.ADD3)));
   }
 
   @Test
@@ -606,22 +515,18 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("10.0"),
-        calculate(
-            "20", "10", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.SUBTRACT));
+        calculate("20", "10", IValueMeta.TYPE_NUMBER, CalculationType.SUBTRACT));
     assertEquals(
         Double.valueOf("-10.0"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.SUBTRACT));
+        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.SUBTRACT));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
         Long.valueOf("10"),
-        calculate(
-            "20", "10", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.SUBTRACT));
+        calculate("20", "10", IValueMeta.TYPE_INTEGER, CalculationType.SUBTRACT));
     assertEquals(
         Long.valueOf("-10"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.SUBTRACT));
+        calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.SUBTRACT));
 
     // Test Hop big Number types
     assertEquals(
@@ -629,21 +534,13 @@ class CalculatorValueDataUtilTest {
         new BigDecimal("10")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "20",
-                        "10",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.SUBTRACT)));
+                    calculate("20", "10", IValueMeta.TYPE_BIGNUMBER, CalculationType.SUBTRACT)));
     assertEquals(
         0,
         new BigDecimal("-10")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "10",
-                        "20",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.SUBTRACT)));
+                    calculate("10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.SUBTRACT)));
   }
 
   @Test
@@ -651,55 +548,39 @@ class CalculatorValueDataUtilTest {
 
     // Test Hop number types
     assertEquals(
-        Double.valueOf("2.0"),
-        calculate("2", "1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        Double.valueOf("2.0"), calculate("2", "1", IValueMeta.TYPE_NUMBER, CalculationType.DIVIDE));
     assertEquals(
-        Double.valueOf("2.0"),
-        calculate("4", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        Double.valueOf("2.0"), calculate("4", "2", IValueMeta.TYPE_NUMBER, CalculationType.DIVIDE));
     assertEquals(
         Double.valueOf("0.5"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.DIVIDE));
     assertEquals(
         Double.valueOf("2.0"),
-        calculate(
-            "100", "50", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        calculate("100", "50", IValueMeta.TYPE_NUMBER, CalculationType.DIVIDE));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("2"),
-        calculate(
-            "2", "1", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        Long.valueOf("2"), calculate("2", "1", IValueMeta.TYPE_INTEGER, CalculationType.DIVIDE));
     assertEquals(
-        Long.valueOf("2"),
-        calculate(
-            "4", "2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        Long.valueOf("2"), calculate("4", "2", IValueMeta.TYPE_INTEGER, CalculationType.DIVIDE));
     assertEquals(
-        Long.valueOf("0"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        Long.valueOf("0"), calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.DIVIDE));
     assertEquals(
-        Long.valueOf("2"),
-        calculate(
-            "100", "50", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        Long.valueOf("2"), calculate("100", "50", IValueMeta.TYPE_INTEGER, CalculationType.DIVIDE));
 
     // Test Hop big Number types
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("2")),
-        calculate(
-            "2", "1", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        calculate("2", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.DIVIDE));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("2")),
-        calculate(
-            "4", "2", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        calculate("4", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.DIVIDE));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("0.5")),
-        calculate(
-            "10", "20", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        calculate("10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.DIVIDE));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("2")),
-        calculate(
-            "100", "50", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.DIVIDE));
+        calculate("100", "50", IValueMeta.TYPE_BIGNUMBER, CalculationType.DIVIDE));
   }
 
   @Test
@@ -767,71 +648,44 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("10.0"),
-        calculate(
-            "10", "100", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("10", "100", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_1));
     assertEquals(
         Double.valueOf("100.0"),
-        calculate(
-            "2", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("2", "2", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_1));
     assertEquals(
         Double.valueOf("50.0"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_1));
     assertEquals(
         Double.valueOf("200.0"),
-        calculate(
-            "100", "50", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("100", "50", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_1));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
         Long.valueOf("10"),
-        calculate(
-            "10",
-            "100",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("10", "100", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_1));
     assertEquals(
         Long.valueOf("100"),
-        calculate(
-            "2", "2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("2", "2", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_1));
     assertEquals(
         Long.valueOf("50"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_1));
     assertEquals(
         Long.valueOf("200"),
-        calculate(
-            "100",
-            "50",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("100", "50", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_1));
 
     // Test Hop big Number types
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("10")),
-        calculate(
-            "10",
-            "100",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("10", "100", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("100")),
-        calculate(
-            "2", "2", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("2", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("50")),
-        calculate(
-            "10",
-            "20",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("200")),
-        calculate(
-            "100",
-            "50",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.PERCENT_1));
+        calculate("100", "50", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_1));
   }
 
   @Test
@@ -840,65 +694,42 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("0.99"),
-        calculate(
-            "1", "1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("1", "1", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_2));
     assertEquals(
         Double.valueOf("1.96"),
-        calculate(
-            "2", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("2", "2", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_2));
     assertEquals(
         Double.valueOf("8.0"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_2));
     assertEquals(
         Double.valueOf("50.0"),
-        calculate(
-            "100", "50", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("100", "50", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_2));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("1"),
-        calculate(
-            "1", "1", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        Long.valueOf("1"), calculate("1", "1", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_2));
     assertEquals(
-        Long.valueOf("2"),
-        calculate(
-            "2", "2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        Long.valueOf("2"), calculate("2", "2", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_2));
     assertEquals(
         Long.valueOf("8"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_2));
     assertEquals(
         Long.valueOf("50"),
-        calculate(
-            "100",
-            "50",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("100", "50", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_2));
 
     // Test Hop big Number types
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("0.99")),
-        calculate(
-            "1", "1", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("1", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_2));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("1.96")),
-        calculate(
-            "2", "2", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("2", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_2));
     assertEquals(
         new BigDecimal("8.0"),
-        calculate(
-            "10",
-            "20",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_2));
     assertEquals(
         new BigDecimal("50.0"),
-        calculate(
-            "100",
-            "50",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.PERCENT_2));
+        calculate("100", "50", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_2));
   }
 
   @Test
@@ -907,41 +738,28 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("1.01"),
-        calculate(
-            "1", "1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_3));
+        calculate("1", "1", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_3));
     assertEquals(
         Double.valueOf("2.04"),
-        calculate(
-            "2", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_3));
+        calculate("2", "2", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_3));
     assertEquals(
         Double.valueOf("12.0"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_3));
+        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_3));
     assertEquals(
         Double.valueOf("150.0"),
-        calculate(
-            "100", "50", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.PERCENT_3));
+        calculate("100", "50", IValueMeta.TYPE_NUMBER, CalculationType.PERCENT_3));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("1"),
-        calculate(
-            "1", "1", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_3));
+        Long.valueOf("1"), calculate("1", "1", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_3));
     assertEquals(
-        Long.valueOf("2"),
-        calculate(
-            "2", "2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_3));
+        Long.valueOf("2"), calculate("2", "2", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_3));
     assertEquals(
         Long.valueOf("12"),
-        calculate(
-            "10", "20", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.PERCENT_3));
+        calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_3));
     assertEquals(
         Long.valueOf("150"),
-        calculate(
-            "100",
-            "50",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.PERCENT_3));
+        calculate("100", "50", IValueMeta.TYPE_INTEGER, CalculationType.PERCENT_3));
 
     // Test Hop big Number types
     assertEquals(
@@ -949,41 +767,25 @@ class CalculatorValueDataUtilTest {
         new BigDecimal("1.01")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "1",
-                        "1",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.PERCENT_3)));
+                    calculate("1", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_3)));
     assertEquals(
         0,
         new BigDecimal("2.04")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "2",
-                        "2",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.PERCENT_3)));
+                    calculate("2", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_3)));
     assertEquals(
         0,
         new BigDecimal("12")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "10",
-                        "20",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.PERCENT_3)));
+                    calculate("10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_3)));
     assertEquals(
         0,
         new BigDecimal("150")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "100",
-                        "50",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.PERCENT_3)));
+                    calculate("100", "50", IValueMeta.TYPE_BIGNUMBER, CalculationType.PERCENT_3)));
   }
 
   @Test
@@ -992,70 +794,30 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("2.0"),
-        calculate(
-            "1",
-            "1",
-            "1",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("1", "1", "1", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_1));
     assertEquals(
         Double.valueOf("22.0"),
-        calculate(
-            "2",
-            "2",
-            "10",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("2", "2", "10", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_1));
     assertEquals(
         Double.valueOf("70.0"),
-        calculate(
-            "10",
-            "20",
-            "3",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("10", "20", "3", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_1));
     assertEquals(
         Double.valueOf("350"),
-        calculate(
-            "100",
-            "50",
-            "5",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("100", "50", "5", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_1));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
         Long.valueOf("2"),
-        calculate(
-            "1",
-            "1",
-            "1",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("1", "1", "1", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_1));
     assertEquals(
         Long.valueOf("22"),
-        calculate(
-            "2",
-            "2",
-            "10",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("2", "2", "10", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_1));
     assertEquals(
         Long.valueOf("70"),
-        calculate(
-            "10",
-            "20",
-            "3",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("10", "20", "3", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_1));
     assertEquals(
         Long.valueOf("350"),
-        calculate(
-            "100",
-            "50",
-            "5",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_1));
+        calculate("100", "50", "5", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_1));
 
     // Test Hop big Number types
     assertEquals(
@@ -1064,22 +826,14 @@ class CalculatorValueDataUtilTest {
             .compareTo(
                 (BigDecimal)
                     calculate(
-                        "1",
-                        "1",
-                        "1",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_1)));
+                        "1", "1", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.COMBINATION_1)));
     assertEquals(
         0,
         new BigDecimal("22.0")
             .compareTo(
                 (BigDecimal)
                     calculate(
-                        "2",
-                        "2",
-                        "10",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_1)));
+                        "2", "2", "10", IValueMeta.TYPE_BIGNUMBER, CalculationType.COMBINATION_1)));
     assertEquals(
         0,
         new BigDecimal("70.0")
@@ -1090,7 +844,7 @@ class CalculatorValueDataUtilTest {
                         "20",
                         "3",
                         IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_1)));
+                        CalculationType.COMBINATION_1)));
     assertEquals(
         0,
         new BigDecimal("350.0")
@@ -1101,7 +855,7 @@ class CalculatorValueDataUtilTest {
                         "50",
                         "5",
                         IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_1)));
+                        CalculationType.COMBINATION_1)));
   }
 
   @Test
@@ -1110,62 +864,30 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("1.4142135623730951"),
-        calculate(
-            "1",
-            "1",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("1", "1", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_2));
     assertEquals(
         Double.valueOf("2.8284271247461903"),
-        calculate(
-            "2",
-            "2",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("2", "2", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_2));
     assertEquals(
         Double.valueOf("22.360679774997898"),
-        calculate(
-            "10",
-            "20",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_2));
     assertEquals(
         Double.valueOf("111.80339887498948"),
-        calculate(
-            "100",
-            "50",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("100", "50", IValueMeta.TYPE_NUMBER, CalculationType.COMBINATION_2));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
         Long.valueOf("1"),
-        calculate(
-            "1",
-            "1",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("1", "1", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_2));
     assertEquals(
         Long.valueOf("2"),
-        calculate(
-            "2",
-            "2",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("2", "2", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_2));
     assertEquals(
         Long.valueOf("10"),
-        calculate(
-            "10",
-            "20",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_2));
     assertEquals(
         Long.valueOf("100"),
-        calculate(
-            "100",
-            "50",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.COMBINATION_2));
+        calculate("100", "50", IValueMeta.TYPE_INTEGER, CalculationType.COMBINATION_2));
 
     // Test Hop big Number types
     assertEquals(
@@ -1173,41 +895,27 @@ class CalculatorValueDataUtilTest {
         new BigDecimal("1.4142135623730951")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "1",
-                        "1",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_2)));
+                    calculate("1", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.COMBINATION_2)));
     assertEquals(
         0,
         new BigDecimal("2.8284271247461903")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "2",
-                        "2",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_2)));
+                    calculate("2", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.COMBINATION_2)));
     assertEquals(
         0,
         new BigDecimal("22.360679774997898")
             .compareTo(
                 (BigDecimal)
                     calculate(
-                        "10",
-                        "20",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_2)));
+                        "10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.COMBINATION_2)));
     assertEquals(
         0,
         new BigDecimal("111.80339887498948")
             .compareTo(
                 (BigDecimal)
                     calculate(
-                        "100",
-                        "50",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.COMBINATION_2)));
+                        "100", "50", IValueMeta.TYPE_BIGNUMBER, CalculationType.COMBINATION_2)));
   }
 
   @Test
@@ -1215,74 +923,57 @@ class CalculatorValueDataUtilTest {
 
     // Test Hop number types
     assertEquals(
-        Double.valueOf("1.0"),
-        calculate("1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        Double.valueOf("1.0"), calculate("1", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_1));
     assertEquals(
         Double.valueOf("103.0"),
-        calculate(
-            "103.01", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("103.01", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_1));
     assertEquals(
         Double.valueOf("1235.0"),
-        calculate(
-            "1234.6", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("1234.6", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_1));
     // half
     assertEquals(
         Double.valueOf("1235.0"),
-        calculate(
-            "1234.5", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("1234.5", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_1));
     assertEquals(
         Double.valueOf("1236.0"),
-        calculate(
-            "1235.5", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("1235.5", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_1));
     assertEquals(
         Double.valueOf("-1234.0"),
-        calculate(
-            "-1234.5", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("-1234.5", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_1));
     assertEquals(
         Double.valueOf("-1235.0"),
-        calculate(
-            "-1235.5", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("-1235.5", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_1));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("1"),
-        calculate("1", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        Long.valueOf("1"), calculate("1", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_1));
     assertEquals(
-        Long.valueOf("2"),
-        calculate("2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        Long.valueOf("2"), calculate("2", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_1));
     assertEquals(
-        Long.valueOf("-103"),
-        calculate("-103", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        Long.valueOf("-103"), calculate("-103", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_1));
 
     // Test Hop big Number types
     assertEquals(
-        BigDecimal.ONE,
-        calculate("1", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        BigDecimal.ONE, calculate("1", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("103")),
-        calculate(
-            "103.01", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("103.01", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("1235")),
-        calculate(
-            "1234.6", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("1234.6", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_1));
     // half
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("1235")),
-        calculate(
-            "1234.5", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("1234.5", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("1236")),
-        calculate(
-            "1235.5", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("1235.5", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("-1234")),
-        calculate(
-            "-1234.5", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("-1234.5", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_1));
     assertEquals(
         BigDecimal.valueOf(Long.parseLong("-1235")),
-        calculate(
-            "-1235.5", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_1));
+        calculate("-1235.5", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_1));
   }
 
   @Test
@@ -1291,164 +982,92 @@ class CalculatorValueDataUtilTest {
     // Test Hop number types
     assertEquals(
         Double.valueOf("1.0"),
-        calculate(
-            "1", "1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("1", "1", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     assertEquals(
         Double.valueOf("2.1"),
-        calculate(
-            "2.06", "1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("2.06", "1", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     assertEquals(
         Double.valueOf("103.0"),
-        calculate(
-            "103.01", "1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("103.01", "1", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     assertEquals(
         Double.valueOf("12.35"),
-        calculate(
-            "12.346", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.346", "2", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     // scale < 0
     assertEquals(
         Double.valueOf("10.0"),
-        calculate(
-            "12.0", "-1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.0", "-1", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     // half
     assertEquals(
         Double.valueOf("12.35"),
-        calculate(
-            "12.345", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.345", "2", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     assertEquals(
         Double.valueOf("12.36"),
-        calculate(
-            "12.355", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.355", "2", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     assertEquals(
         Double.valueOf("-12.34"),
-        calculate(
-            "-12.345",
-            "2",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("-12.345", "2", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
     assertEquals(
         Double.valueOf("-12.35"),
-        calculate(
-            "-12.355",
-            "2",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("-12.355", "2", IValueMeta.TYPE_NUMBER, CalculationType.ROUND_2));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("1"),
-        calculate(
-            "1", "1", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        Long.valueOf("1"), calculate("1", "1", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     assertEquals(
-        Long.valueOf("2"),
-        calculate(
-            "2", "2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        Long.valueOf("2"), calculate("2", "2", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     assertEquals(
         Long.valueOf("103"),
-        calculate(
-            "103", "3", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("103", "3", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     assertEquals(
-        Long.valueOf("12"),
-        calculate(
-            "12", "4", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        Long.valueOf("12"), calculate("12", "4", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     // scale < 0
     assertEquals(
         Long.valueOf("100"),
-        calculate(
-            "120", "-2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("120", "-2", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     // half
     assertEquals(
         Long.valueOf("12350"),
-        calculate(
-            "12345",
-            "-1",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12345", "-1", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     assertEquals(
         Long.valueOf("12360"),
-        calculate(
-            "12355",
-            "-1",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12355", "-1", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     assertEquals(
         Long.valueOf("-12340"),
-        calculate(
-            "-12345",
-            "-1",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("-12345", "-1", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
     assertEquals(
         Long.valueOf("-12350"),
-        calculate(
-            "-12355",
-            "-1",
-            IValueMeta.TYPE_INTEGER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("-12355", "-1", IValueMeta.TYPE_INTEGER, CalculationType.ROUND_2));
 
     // Test Hop big Number types
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("1.0")),
-        calculate(
-            "1", "1", IValueMeta.TYPE_BIGNUMBER, CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("1", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("2.1")),
-        calculate(
-            "2.06",
-            "1",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("2.06", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("103.0")),
-        calculate(
-            "103.01",
-            "1",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("103.01", "1", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("12.35")),
-        calculate(
-            "12.346",
-            "2",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.346", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     // scale < 0
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("10.0")).setScale(-1),
-        calculate(
-            "12.0",
-            "-1",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.0", "-1", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     // half
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("12.35")),
-        calculate(
-            "12.345",
-            "2",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.345", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("12.36")),
-        calculate(
-            "12.355",
-            "2",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("12.355", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("-12.34")),
-        calculate(
-            "-12.345",
-            "2",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("-12.345", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
     assertEquals(
         BigDecimal.valueOf(Double.parseDouble("-12.35")),
-        calculate(
-            "-12.355",
-            "2",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.ROUND_2));
+        calculate("-12.355", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.ROUND_2));
   }
 
   @Test
@@ -1456,38 +1075,26 @@ class CalculatorValueDataUtilTest {
 
     // Test Hop number types
     assertEquals(
-        Double.valueOf("1.0"),
-        calculate("1", "", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.NVL));
+        Double.valueOf("1.0"), calculate("1", "", IValueMeta.TYPE_NUMBER, CalculationType.NVL));
     assertEquals(
-        Double.valueOf("2.0"),
-        calculate("", "2", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.NVL));
+        Double.valueOf("2.0"), calculate("", "2", IValueMeta.TYPE_NUMBER, CalculationType.NVL));
     assertEquals(
-        Double.valueOf("10.0"),
-        calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.NVL));
+        Double.valueOf("10.0"), calculate("10", "20", IValueMeta.TYPE_NUMBER, CalculationType.NVL));
     assertNull(calculate("", "", IValueMeta.TYPE_NUMBER, CalculationType.NVL));
 
     // Test Hop string types
-    assertEquals(
-        "1",
-        calculate("1", "", IValueMeta.TYPE_STRING, CalculatorMetaFunction.CalculationType.NVL));
-    assertEquals(
-        "2",
-        calculate("", "2", IValueMeta.TYPE_STRING, CalculatorMetaFunction.CalculationType.NVL));
-    assertEquals(
-        "10",
-        calculate("10", "20", IValueMeta.TYPE_STRING, CalculatorMetaFunction.CalculationType.NVL));
+    assertEquals("1", calculate("1", "", IValueMeta.TYPE_STRING, CalculationType.NVL));
+    assertEquals("2", calculate("", "2", IValueMeta.TYPE_STRING, CalculationType.NVL));
+    assertEquals("10", calculate("10", "20", IValueMeta.TYPE_STRING, CalculationType.NVL));
     assertNull(calculate("", "", IValueMeta.TYPE_STRING, CalculationType.NVL));
 
     // Test Hop Integer (Java Long) types
     assertEquals(
-        Long.valueOf("1"),
-        calculate("1", "", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.NVL));
+        Long.valueOf("1"), calculate("1", "", IValueMeta.TYPE_INTEGER, CalculationType.NVL));
     assertEquals(
-        Long.valueOf("2"),
-        calculate("", "2", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.NVL));
+        Long.valueOf("2"), calculate("", "2", IValueMeta.TYPE_INTEGER, CalculationType.NVL));
     assertEquals(
-        Long.valueOf("10"),
-        calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.NVL));
+        Long.valueOf("10"), calculate("10", "20", IValueMeta.TYPE_INTEGER, CalculationType.NVL));
     assertNull(calculate("", "", IValueMeta.TYPE_INTEGER, CalculationType.NVL));
 
     // Test Hop big Number types
@@ -1495,46 +1102,24 @@ class CalculatorValueDataUtilTest {
         0,
         new BigDecimal("1")
             .compareTo(
-                (BigDecimal)
-                    calculate(
-                        "1",
-                        "",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.NVL)));
+                (BigDecimal) calculate("1", "", IValueMeta.TYPE_BIGNUMBER, CalculationType.NVL)));
     assertEquals(
         0,
         new BigDecimal("2")
             .compareTo(
-                (BigDecimal)
-                    calculate(
-                        "",
-                        "2",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.NVL)));
+                (BigDecimal) calculate("", "2", IValueMeta.TYPE_BIGNUMBER, CalculationType.NVL)));
     assertEquals(
         0,
         new BigDecimal("10")
             .compareTo(
                 (BigDecimal)
-                    calculate(
-                        "10",
-                        "20",
-                        IValueMeta.TYPE_BIGNUMBER,
-                        CalculatorMetaFunction.CalculationType.NVL)));
+                    calculate("10", "20", IValueMeta.TYPE_BIGNUMBER, CalculationType.NVL)));
     assertNull(calculate("", "", IValueMeta.TYPE_BIGNUMBER, CalculationType.NVL));
 
     // boolean
-    assertEquals(
-        true,
-        calculate("true", "", IValueMeta.TYPE_BOOLEAN, CalculatorMetaFunction.CalculationType.NVL));
-    assertEquals(
-        false,
-        calculate(
-            "", "false", IValueMeta.TYPE_BOOLEAN, CalculatorMetaFunction.CalculationType.NVL));
-    assertEquals(
-        false,
-        calculate(
-            "false", "true", IValueMeta.TYPE_BOOLEAN, CalculatorMetaFunction.CalculationType.NVL));
+    assertEquals(true, calculate("true", "", IValueMeta.TYPE_BOOLEAN, CalculationType.NVL));
+    assertEquals(false, calculate("", "false", IValueMeta.TYPE_BOOLEAN, CalculationType.NVL));
+    assertEquals(false, calculate("false", "true", IValueMeta.TYPE_BOOLEAN, CalculationType.NVL));
     assertNull(calculate("", "", IValueMeta.TYPE_BOOLEAN, CalculationType.NVL));
 
     // Test Hop date
@@ -1543,21 +1128,14 @@ class CalculatorValueDataUtilTest {
     try {
       assertEquals(
           simpleDateFormat.parse("2012-04-11"),
-          calculate(
-              "2012-04-11", "", IValueMeta.TYPE_DATE, CalculatorMetaFunction.CalculationType.NVL));
+          calculate("2012-04-11", "", IValueMeta.TYPE_DATE, CalculationType.NVL));
       assertEquals(
           simpleDateFormat.parse("2012-11-04"),
-          calculate(
-              "", "2012-11-04", IValueMeta.TYPE_DATE, CalculatorMetaFunction.CalculationType.NVL));
+          calculate("", "2012-11-04", IValueMeta.TYPE_DATE, CalculationType.NVL));
       assertEquals(
           simpleDateFormat.parse("1965-07-01"),
-          calculate(
-              "1965-07-01",
-              "1967-04-11",
-              IValueMeta.TYPE_DATE,
-              CalculatorMetaFunction.CalculationType.NVL));
-      assertNull(
-          calculate("", "", IValueMeta.TYPE_DATE, CalculatorMetaFunction.CalculationType.NVL));
+          calculate("1965-07-01", "1967-04-11", IValueMeta.TYPE_DATE, CalculationType.NVL));
+      assertNull(calculate("", "", IValueMeta.TYPE_DATE, CalculationType.NVL));
 
     } catch (ParseException pe) {
       fail(pe.getMessage());
@@ -1568,28 +1146,18 @@ class CalculatorValueDataUtilTest {
     try {
       byte[] data = stringValueMeta.getBinary("101");
       byte[] calculated =
-          (byte[])
-              calculate(
-                  "101", "", IValueMeta.TYPE_BINARY, CalculatorMetaFunction.CalculationType.NVL);
+          (byte[]) calculate("101", "", IValueMeta.TYPE_BINARY, CalculationType.NVL);
       assertArrayEquals(data, calculated);
 
       data = stringValueMeta.getBinary("011");
-      calculated =
-          (byte[])
-              calculate(
-                  "", "011", IValueMeta.TYPE_BINARY, CalculatorMetaFunction.CalculationType.NVL);
+      calculated = (byte[]) calculate("", "011", IValueMeta.TYPE_BINARY, CalculationType.NVL);
       assertArrayEquals(data, calculated);
 
       data = stringValueMeta.getBinary("110");
-      calculated =
-          (byte[])
-              calculate(
-                  "110", "011", IValueMeta.TYPE_BINARY, CalculatorMetaFunction.CalculationType.NVL);
+      calculated = (byte[]) calculate("110", "011", IValueMeta.TYPE_BINARY, CalculationType.NVL);
       assertArrayEquals(data, calculated);
 
-      calculated =
-          (byte[])
-              calculate("", "", IValueMeta.TYPE_BINARY, CalculatorMetaFunction.CalculationType.NVL);
+      calculated = (byte[]) calculate("", "", IValueMeta.TYPE_BINARY, CalculationType.NVL);
       assertNull(calculated);
 
     } catch (HopValueException kve) {
@@ -1599,37 +1167,20 @@ class CalculatorValueDataUtilTest {
 
   @Test
   void testRemainder() {
-    assertNull(
-        calculate(
-            null, null, IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.REMAINDER));
-    assertNull(
-        calculate(
-            null, "3", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.REMAINDER));
-    assertNull(
-        calculate(
-            "10", null, IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.REMAINDER));
+    assertNull(calculate(null, null, IValueMeta.TYPE_INTEGER, CalculationType.REMAINDER));
+    assertNull(calculate(null, "3", IValueMeta.TYPE_INTEGER, CalculationType.REMAINDER));
+    assertNull(calculate("10", null, IValueMeta.TYPE_INTEGER, CalculationType.REMAINDER));
     assertEquals(
         Long.valueOf("1"),
-        calculate(
-            "10", "3", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.REMAINDER));
+        calculate("10", "3", IValueMeta.TYPE_INTEGER, CalculationType.REMAINDER));
     assertEquals(
         Long.valueOf("-1"),
-        calculate(
-            "-10", "3", IValueMeta.TYPE_INTEGER, CalculatorMetaFunction.CalculationType.REMAINDER));
+        calculate("-10", "3", IValueMeta.TYPE_INTEGER, CalculationType.REMAINDER));
 
     Double comparisonDelta = Double.valueOf("0.0000000000001");
-    assertNull(
-        calculate(
-            null, null, IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.REMAINDER));
-    assertNull(
-        calculate(
-            null, "4.1", IValueMeta.TYPE_NUMBER, CalculatorMetaFunction.CalculationType.REMAINDER));
-    assertNull(
-        calculate(
-            "17.8",
-            null,
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
+    assertNull(calculate(null, null, IValueMeta.TYPE_NUMBER, CalculationType.REMAINDER));
+    assertNull(calculate(null, "4.1", IValueMeta.TYPE_NUMBER, CalculationType.REMAINDER));
+    assertNull(calculate("17.8", null, IValueMeta.TYPE_NUMBER, CalculationType.REMAINDER));
     assertEquals(
         Double.parseDouble("1.4"),
         (Double) calculate("17.8", "4.1", IValueMeta.TYPE_NUMBER, CalculationType.REMAINDER),
@@ -1644,46 +1195,19 @@ class CalculatorValueDataUtilTest {
         (Double) calculate("-17.8", "-4.1", IValueMeta.TYPE_NUMBER, CalculationType.REMAINDER),
         comparisonDelta);
 
-    assertNull(
-        calculate(
-            null,
-            null,
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
-    assertNull(
-        calculate(
-            null,
-            "16.12",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
-    assertNull(
-        calculate(
-            "-144.144",
-            null,
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
+    assertNull(calculate(null, null, IValueMeta.TYPE_BIGNUMBER, CalculationType.REMAINDER));
+    assertNull(calculate(null, "16.12", IValueMeta.TYPE_BIGNUMBER, CalculationType.REMAINDER));
+    assertNull(calculate("-144.144", null, IValueMeta.TYPE_BIGNUMBER, CalculationType.REMAINDER));
 
     assertEquals(
         new BigDecimal("-15.184"),
-        calculate(
-            "-144.144",
-            "16.12",
-            IValueMeta.TYPE_BIGNUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
+        calculate("-144.144", "16.12", IValueMeta.TYPE_BIGNUMBER, CalculationType.REMAINDER));
     assertEquals(
         Double.valueOf("2.6000000000000005"),
-        calculate(
-            "12.5",
-            "3.3",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
+        calculate("12.5", "3.3", IValueMeta.TYPE_NUMBER, CalculationType.REMAINDER));
     assertEquals(
         Double.valueOf("4.0"),
-        calculate(
-            "12.5",
-            "4.25",
-            IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
+        calculate("12.5", "4.25", IValueMeta.TYPE_NUMBER, CalculationType.REMAINDER));
     assertEquals(
         Long.valueOf("1"),
         calculate(
@@ -1693,7 +1217,7 @@ class CalculatorValueDataUtilTest {
             IValueMeta.TYPE_INTEGER,
             IValueMeta.TYPE_NUMBER,
             IValueMeta.TYPE_NUMBER,
-            CalculatorMetaFunction.CalculationType.REMAINDER));
+            CalculationType.REMAINDER));
   }
 
   @Test
@@ -1730,30 +1254,20 @@ class CalculatorValueDataUtilTest {
   void testJaro() {
     assertEquals(
         Double.valueOf("0.0"),
-        calculate(
-            "abcd", "defg", IValueMeta.TYPE_STRING, CalculatorMetaFunction.CalculationType.JARO));
+        calculate("abcd", "defg", IValueMeta.TYPE_STRING, CalculationType.JARO));
     assertEquals(
         Double.valueOf("0.44166666666666665"),
-        calculate(
-            "elephant",
-            "hippo",
-            IValueMeta.TYPE_STRING,
-            CalculatorMetaFunction.CalculationType.JARO));
+        calculate("elephant", "hippo", IValueMeta.TYPE_STRING, CalculationType.JARO));
     assertEquals(
         Double.valueOf("0.8666666666666667"),
-        calculate(
-            "hello", "hallo", IValueMeta.TYPE_STRING, CalculatorMetaFunction.CalculationType.JARO));
+        calculate("hello", "hallo", IValueMeta.TYPE_STRING, CalculationType.JARO));
   }
 
   @Test
   void testJaroWinkler() {
     assertEquals(
         Double.valueOf("0.0"),
-        calculate(
-            "abcd",
-            "defg",
-            IValueMeta.TYPE_STRING,
-            CalculatorMetaFunction.CalculationType.JARO_WINKLER));
+        calculate("abcd", "defg", IValueMeta.TYPE_STRING, CalculationType.JARO_WINKLER));
   }
 
   private Object calculate(
@@ -1847,44 +1361,43 @@ class CalculatorValueDataUtilTest {
       Object dataB = createObject(stringDataB, valueMetaInterfaceTypeB, parameterValueMeta);
       Object dataC = createObject(stringDataC, valueMetaInterfaceTypeC, parameterValueMeta);
 
-      if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.ADD) {
+      if (calculatorMetaFunction == CalculationType.ADD) {
         return ValueDataUtil.plus(valueMetaA, dataA, valueMetaB, dataB);
       }
-      if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.ADD3) {
+      if (calculatorMetaFunction == CalculationType.ADD3) {
         return ValueDataUtil.plus3(valueMetaA, dataA, valueMetaB, dataB, valueMetaC, dataC);
       }
-      if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.SUBTRACT) {
+      if (calculatorMetaFunction == CalculationType.SUBTRACT) {
         return ValueDataUtil.minus(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.DIVIDE) {
+      } else if (calculatorMetaFunction == CalculationType.DIVIDE) {
         return ValueDataUtil.divide(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.PERCENT_1) {
+      } else if (calculatorMetaFunction == CalculationType.PERCENT_1) {
         return ValueDataUtil.percent1(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.PERCENT_2) {
+      } else if (calculatorMetaFunction == CalculationType.PERCENT_2) {
         return ValueDataUtil.percent2(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.PERCENT_3) {
+      } else if (calculatorMetaFunction == CalculationType.PERCENT_3) {
         return ValueDataUtil.percent3(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.COMBINATION_1) {
+      } else if (calculatorMetaFunction == CalculationType.COMBINATION_1) {
         return ValueDataUtil.combination1(valueMetaA, dataA, valueMetaB, dataB, valueMetaC, dataC);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.COMBINATION_2) {
+      } else if (calculatorMetaFunction == CalculationType.COMBINATION_2) {
         return ValueDataUtil.combination2(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.ROUND_1) {
+      } else if (calculatorMetaFunction == CalculationType.ROUND_1) {
         return ValueDataUtil.round(valueMetaA, dataA);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.ROUND_2) {
+      } else if (calculatorMetaFunction == CalculationType.ROUND_2) {
         return ValueDataUtil.round(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.NVL) {
+      } else if (calculatorMetaFunction == CalculationType.NVL) {
         return ValueDataUtil.nvl(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.DATE_DIFF) {
-        return ValueDataUtil.DateDiff(valueMetaA, dataA, valueMetaB, dataB, "");
-      } else if (calculatorMetaFunction
-          == CalculatorMetaFunction.CalculationType.DATE_WORKING_DIFF) {
-        return ValueDataUtil.DateWorkingDiff(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.REMAINDER) {
+      } else if (calculatorMetaFunction == CalculationType.DATE_DIFF) {
+        return ValueDataUtil.dateDiff(valueMetaA, dataA, valueMetaB, dataB, "");
+      } else if (calculatorMetaFunction == CalculationType.DATE_WORKING_DIFF) {
+        return ValueDataUtil.dateWorkingDiff(valueMetaA, dataA, valueMetaB, dataB);
+      } else if (calculatorMetaFunction == CalculationType.REMAINDER) {
         return ValueDataUtil.remainder(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.JARO) {
-        return ValueDataUtil.getJaro_Similitude(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.JARO_WINKLER) {
-        return ValueDataUtil.getJaroWinkler_Similitude(valueMetaA, dataA, valueMetaB, dataB);
-      } else if (calculatorMetaFunction == CalculatorMetaFunction.CalculationType.MULTIPLY) {
+      } else if (calculatorMetaFunction == CalculationType.JARO) {
+        return ValueDataUtil.getJaroSimilitude(dataA, dataB);
+      } else if (calculatorMetaFunction == CalculationType.JARO_WINKLER) {
+        return ValueDataUtil.getJaroWinklerSimilitude(dataA, dataB);
+      } else if (calculatorMetaFunction == CalculationType.MULTIPLY) {
         return ValueDataUtil.multiply(valueMetaA, dataA, valueMetaB, dataB);
       } else {
         fail("Invalid CalculatorMetaFunction specified.");

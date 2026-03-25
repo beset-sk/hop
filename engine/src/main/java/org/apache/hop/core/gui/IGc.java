@@ -50,6 +50,7 @@ public interface IGc {
     NOTE,
     GRAPH,
     SMALL,
+    TINY,
   }
 
   enum ELineStyle {
@@ -63,7 +64,6 @@ public interface IGc {
   enum EImage {
     LOCK,
     EDIT,
-    CONTEXT_MENU,
     TRUE,
     TRUE_DISABLED,
     FALSE,
@@ -78,7 +78,6 @@ public interface IGc {
     TARGET_DISABLED,
     INPUT,
     OUTPUT,
-    ARROW,
     COPY_ROWS,
     COPY_ROWS_DISABLED,
     UNCONDITIONAL,

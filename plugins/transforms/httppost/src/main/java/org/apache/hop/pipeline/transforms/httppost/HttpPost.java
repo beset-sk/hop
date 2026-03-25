@@ -21,18 +21,22 @@ import static org.apache.hop.pipeline.transforms.httppost.HttpPostMeta.DEFAULT_E
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.exception.HopException;
+import org.apache.hop.core.exception.HopFileException;
 import org.apache.hop.core.exception.HopTransformException;
+import org.apache.hop.core.exception.HopValueException;
+import org.apache.hop.core.io.CountingOutputStream;
 import org.apache.hop.core.row.RowDataUtil;
 import org.apache.hop.core.util.HttpClientManager;
 import org.apache.hop.core.util.StringUtil;
@@ -53,6 +57,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -84,7 +89,8 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
     super(transformMeta, meta, data, copyNr, pipelineMeta, pipeline);
   }
 
-  private Object[] callHttpPOST(Object[] rowData) throws HopException {
+  @VisibleForTesting
+  Object[] callHttpPOST(Object[] rowData) throws HopException {
     HttpClientManager.HttpClientBuilderFacade clientBuilder =
         HttpClientManager.getInstance().createBuilder();
 
@@ -119,120 +125,23 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
       URI uri = uriBuilder.build();
       org.apache.http.client.methods.HttpPost post =
           new org.apache.http.client.methods.HttpPost(uri);
-      String bodyParams = null;
 
-      // Specify content type and encoding
-      // If content encoding is not explicitly specified
-      // ISO-8859-1 is assumed by the POSTMethod
-      if (!data.contentTypeHeaderOverwrite && !meta.isPostAFile()) {
-        // can be overwritten now
-        if (Utils.isEmpty(data.realEncoding)) {
-          post.setHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_XML);
-          if (isDebug()) {
-            logDebug(
-                BaseMessages.getString(PKG, PKG_HEADER_VALUE, CONTENT_TYPE, CONTENT_TYPE_TEXT_XML));
-          }
-        } else {
-          post.setHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_XML + "; " + data.realEncoding);
-          if (isDebug()) {
-            logDebug(
-                BaseMessages.getString(
-                    PKG,
-                    PKG_HEADER_VALUE,
-                    CONTENT_TYPE,
-                    CONTENT_TYPE_TEXT_XML + "; " + data.realEncoding));
-          }
-        }
+      MultipartEntityBuilder multipart = null;
+      boolean useMultipart = meta.isPostAFile() || meta.isMultipartupload();
+
+      if (useMultipart) {
+        multipart = MultipartEntityBuilder.create();
       }
-
-      // HEADER PARAMETERS
-      if (data.useHeaderParameters) {
-        // set header parameters that we want to send
-        for (int i = 0; i < data.header_parameters_nrs.length; i++) {
-          post.addHeader(
-              data.headerParameters[i].getName(),
-              data.inputRowMeta.getString(rowData, data.header_parameters_nrs[i]));
-          if (isDebug()) {
-            logDebug(
-                BaseMessages.getString(
-                    PKG,
-                    PKG_HEADER_VALUE,
-                    data.headerParameters[i].getName(),
-                    data.inputRowMeta.getString(rowData, data.header_parameters_nrs[i])));
-          }
-        }
-      }
-
-      // BODY PARAMETERS
-      if (data.useBodyParameters) {
-        // set body parameters that we want to send
-        for (int i = 0; i < data.body_parameters_nrs.length; i++) {
-          String bodyParameterName = data.bodyParameters[i].getName();
-          String bodyParameterValue =
-              data.inputRowMeta.getString(rowData, data.body_parameters_nrs[i]);
-          data.bodyParameters[i] = new BasicNameValuePair(bodyParameterName, bodyParameterValue);
-          if (isDebug()) {
-            logDebug(
-                BaseMessages.getString(
-                    PKG, "HTTPPOST.Log.BodyValue", bodyParameterName, bodyParameterValue));
-          }
-        }
-        bodyParams = getRequestBodyParamsAsStr(data.bodyParameters, data.realEncoding);
-        post.setEntity(
-            (new StringEntity(bodyParams, ContentType.TEXT_XML.withCharset("US-ASCII"))));
-      }
-
+      // add HttpPost headers
+      addHttpHeaders(post, rowData);
       // QUERY PARAMETERS
-      if (data.useQueryParameters) {
-        for (int i = 0; i < data.query_parameters_nrs.length; i++) {
-          String queryParameterName = data.queryParameters[i].getName();
-          String queryParameterValue =
-              data.inputRowMeta.getString(rowData, data.query_parameters_nrs[i]);
-          data.queryParameters[i] = new BasicNameValuePair(queryParameterName, queryParameterValue);
-          if (isDebug()) {
-            logDebug(
-                BaseMessages.getString(
-                    PKG, "HTTPPOST.Log.QueryValue", queryParameterName, queryParameterValue));
-          }
-        }
-        post.setEntity(new UrlEncodedFormEntity(Arrays.asList(data.queryParameters)));
-      }
-
+      addQueryParams(post, rowData);
+      // BODY PARAMETERS
+      addBodyParams(post, rowData, multipart);
       // Set request entity?
-      if (data.indexOfRequestEntity >= 0) {
-        MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-        String tmp = data.inputRowMeta.getString(rowData, data.indexOfRequestEntity);
-        HttpEntity entity = null;
-        byte[] bytes = null;
-        // Request content will be retrieved directly
-        // from the input stream
-        // Per default, the request content needs to be buffered
-        // in order to determine its length.
-        // Request body buffering can be avoided when
-        // content length is explicitly specified
-
-        if (meta.isPostAFile()) {
-          if (!tmp.isEmpty()) {
-            multipartEntityBuilder.addBinaryBody(
-                "file", HopVfs.getFileObject(resolve(tmp)).getPath().toFile());
-            entity = multipartEntityBuilder.build();
-            post.setEntity(entity);
-          }
-        } else {
-          if ((data.realEncoding != null) && (!data.realEncoding.isEmpty())) {
-            bytes = tmp.getBytes(data.realEncoding);
-          } else {
-            bytes = tmp.getBytes();
-          }
-          if (meta.isMultipartupload()) {
-            multipartEntityBuilder.addBinaryBody("file", bytes);
-            entity = multipartEntityBuilder.build();
-            post.setEntity(entity);
-          } else {
-            post.setEntity(new ByteArrayEntity(bytes));
-          }
-        }
-      }
+      addBodyFileParam(post, rowData, multipart);
+      addBodyParamsAfter(post, multipart);
+      collectRequestBytes(post.getEntity());
 
       // Execute request
       Object[] newRow = null;
@@ -263,7 +172,6 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
         httpResponse = httpClient.execute(target, post, localContext);
 
         int statusCode = requestStatusCode(httpResponse);
-
         // calculate the responseTime
         long responseTime = System.currentTimeMillis() - startTime;
 
@@ -293,7 +201,7 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
           default:
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
-              body = EntityUtils.toString(entity);
+              body = readResponseBody(entity);
             } else {
               body = "";
             }
@@ -329,11 +237,11 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
         }
 
         if (!Utils.isEmpty(meta.getResultFields().get(0).getCode())) {
-          newRow = RowDataUtil.addValueData(newRow, returnFieldsOffset, Long.valueOf(statusCode));
+          newRow = RowDataUtil.addValueData(newRow, returnFieldsOffset, (long) statusCode);
           returnFieldsOffset++;
         }
         if (!Utils.isEmpty(meta.getResultFields().get(0).getResponseTimeFieldName())) {
-          newRow = RowDataUtil.addValueData(newRow, returnFieldsOffset, Long.valueOf(responseTime));
+          newRow = RowDataUtil.addValueData(newRow, returnFieldsOffset, responseTime);
           returnFieldsOffset++;
         }
         if (!Utils.isEmpty(meta.getResultFields().get(0).getResponseHeaderFieldName())) {
@@ -354,6 +262,45 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
       throw new HopException(
           BaseMessages.getString(PKG, "HTTPPOST.Error.CanNotReadURL", data.realUrl), e);
     }
+  }
+
+  void collectRequestBytes(HttpEntity entity) {
+    if (entity == null) {
+      return;
+    }
+
+    long contentLength = entity.getContentLength();
+    if (contentLength < 0) {
+      try (CountingOutputStream counting =
+          new CountingOutputStream(OutputStream.nullOutputStream())) {
+        entity.writeTo(counting);
+        contentLength = counting.getCount();
+      } catch (Exception e) {
+        if (isDebug()) {
+          logDebug("Unable to determine HTTP POST request size", e);
+        }
+        return;
+      }
+    }
+
+    if (contentLength > 0) {
+      dataVolumeOut = (dataVolumeOut != null ? dataVolumeOut : 0L) + contentLength;
+    }
+  }
+
+  private String readResponseBody(HttpEntity entity) throws Exception {
+    byte[] bodyBytes = EntityUtils.toByteArray(entity);
+    dataVolumeIn = (dataVolumeIn != null ? dataVolumeIn : 0L) + bodyBytes.length;
+
+    ByteArrayEntity countedEntity = new ByteArrayEntity(bodyBytes);
+    if (entity.getContentType() != null) {
+      countedEntity.setContentType(entity.getContentType());
+    }
+    if (entity.getContentEncoding() != null) {
+      countedEntity.setContentEncoding(entity.getContentEncoding());
+    }
+
+    return EntityUtils.toString(countedEntity);
   }
 
   protected int requestStatusCode(HttpResponse httpResponse) {
@@ -511,17 +458,16 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
 
     try {
       Object[] outputRowData = callHttpPOST(r);
-      putRow(data.outputRowMeta, outputRowData); // copy row to output rowset(s)
+      // copy row to output rowset(s)
+      putRow(data.outputRowMeta, outputRowData);
 
       if (checkFeedback(getLinesRead()) && isDetailed()) {
         logDetailed(BaseMessages.getString(PKG, "HTTPPOST.LineNumber") + getLinesRead());
       }
     } catch (HopException e) {
-      boolean sendToErrorRow = false;
-      String errorMessage = null;
+      String errorMessage;
 
       if (getTransformMeta().isDoingErrorHandling()) {
-        sendToErrorRow = true;
         errorMessage = e.toString();
       } else {
         logError(BaseMessages.getString(PKG, "HTTPPOST.ErrorInTransformRunning") + e.getMessage());
@@ -532,46 +478,25 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
         return false;
       }
 
-      if (sendToErrorRow) {
-        // Simply add this row to the error row
-        putError(getInputRowMeta(), r, 1, errorMessage, null, "HTTPPOST001");
-      }
+      // Simply add this row to the error row
+      putError(getInputRowMeta(), r, 1, errorMessage, null, "HTTPPOST001");
     }
 
     return true;
   }
 
   @VisibleForTesting
-  String getRequestBodyParamsAsStr(NameValuePair[] pairs, String charset) throws HopException {
-    StringBuilder buf = new StringBuilder();
-    try {
-      for (int i = 0; i < pairs.length; ++i) {
-        NameValuePair pair = pairs[i];
-        if (pair.getName() != null) {
-          if (i > 0) {
-            buf.append("&");
-          }
-
-          buf.append(
-              URLEncoder.encode(
-                  pair.getName(), !StringUtil.isEmpty(charset) ? charset : DEFAULT_ENCODING));
-          buf.append("=");
-          if (pair.getValue() != null) {
-            buf.append(
-                URLEncoder.encode(
-                    pair.getValue(), !StringUtil.isEmpty(charset) ? charset : DEFAULT_ENCODING));
-          }
-        }
-      }
-      return buf.toString();
-    } catch (UnsupportedEncodingException e) {
-      throw new HopException(e.getMessage(), e.getCause());
+  String getRequestBodyParamsAsStr(NameValuePair[] pairs, String charset) {
+    if (pairs == null || pairs.length == 0) {
+      return "";
     }
+
+    Charset cs = Charset.forName(!StringUtil.isEmpty(charset) ? charset : DEFAULT_ENCODING);
+    return URLEncodedUtils.format(Arrays.asList(pairs), cs);
   }
 
   @Override
   public boolean init() {
-
     if (super.init()) {
       // get authentication settings once
       data.realProxyHost = resolve(meta.getProxyHost());
@@ -587,5 +512,206 @@ public class HttpPost extends BaseTransform<HttpPostMeta, HttpPostData> {
       return true;
     }
     return false;
+  }
+
+  /**
+   * add http headers
+   *
+   * @param post the HTTP POST request to which the multipart entity will be attached
+   */
+  private void addHttpHeaders(org.apache.http.client.methods.HttpPost post, Object[] rowData)
+      throws HopValueException {
+    // add HttpPost header ContentType
+    addHeadersContentType(post);
+
+    // HEADER PARAMETERS
+    if (data.useHeaderParameters) {
+      // set header parameters that we want to send
+      for (int i = 0; i < data.header_parameters_nrs.length; i++) {
+        post.addHeader(
+            data.headerParameters[i].getName(),
+            data.inputRowMeta.getString(rowData, data.header_parameters_nrs[i]));
+
+        if (isDebug()) {
+          logDebug(
+              BaseMessages.getString(
+                  PKG,
+                  PKG_HEADER_VALUE,
+                  data.headerParameters[i].getName(),
+                  data.inputRowMeta.getString(rowData, data.header_parameters_nrs[i])));
+        }
+      }
+    }
+  }
+
+  /**
+   * add HttpPost header ContentType
+   *
+   * @param post the HTTP POST request to which the multipart entity will be attached
+   */
+  private void addHeadersContentType(org.apache.http.client.methods.HttpPost post) {
+    // Specify content type and encoding
+    // If content encoding is not explicitly specified
+    // ISO-8859-1 is assumed by the POSTMethod
+    if (!data.contentTypeHeaderOverwrite && !meta.isPostAFile()) {
+      // can be overwritten now
+      if (Utils.isEmpty(data.realEncoding)) {
+        post.setHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_XML);
+        if (isDebug()) {
+          logDebug(
+              BaseMessages.getString(PKG, PKG_HEADER_VALUE, CONTENT_TYPE, CONTENT_TYPE_TEXT_XML));
+        }
+      } else {
+        post.setHeader(CONTENT_TYPE, CONTENT_TYPE_TEXT_XML + "; " + data.realEncoding);
+        if (isDebug()) {
+          logDebug(
+              BaseMessages.getString(
+                  PKG,
+                  PKG_HEADER_VALUE,
+                  CONTENT_TYPE,
+                  CONTENT_TYPE_TEXT_XML + "; " + data.realEncoding));
+        }
+      }
+    }
+  }
+
+  /**
+   * add http query params
+   *
+   * @param post the HTTP POST request to which the multipart entity will be attached
+   * @param rowData row data
+   */
+  private void addQueryParams(org.apache.http.client.methods.HttpPost post, Object[] rowData)
+      throws HopValueException, UnsupportedEncodingException {
+    if (!data.useQueryParameters) {
+      return;
+    }
+
+    // QUERY PARAMETERS
+    for (int i = 0; i < data.query_parameters_nrs.length; i++) {
+      String name = data.queryParameters[i].getName();
+      String value = data.inputRowMeta.getString(rowData, data.query_parameters_nrs[i]);
+      data.queryParameters[i] = new BasicNameValuePair(name, value);
+
+      if (isDebug()) {
+        logDebug(BaseMessages.getString(PKG, "HTTPPOST.Log.QueryValue", name, value));
+      }
+    }
+
+    post.setEntity(new UrlEncodedFormEntity(Arrays.asList(data.queryParameters)));
+  }
+
+  /**
+   * set body parameters that we want to send
+   *
+   * @param post the HTTP POST request to which the multipart entity will be attached
+   * @param rowData row data
+   */
+  private void addBodyParams(
+      org.apache.http.client.methods.HttpPost post,
+      Object[] rowData,
+      MultipartEntityBuilder multipart)
+      throws HopException {
+    if (!data.useBodyParameters) {
+      return;
+    }
+
+    // set body parameters that we want to send
+    for (int i = 0; i < data.body_parameters_nrs.length; i++) {
+      String name = data.bodyParameters[i].getName();
+      String value = data.inputRowMeta.getString(rowData, data.body_parameters_nrs[i]);
+
+      if (multipart != null) {
+        multipart.addTextBody(
+            name,
+            value,
+            ContentType.TEXT_PLAIN.withCharset(
+                !StringUtil.isEmpty(data.realEncoding) ? data.realEncoding : DEFAULT_ENCODING));
+      } else {
+        data.bodyParameters[i] = new BasicNameValuePair(name, value);
+      }
+
+      if (isDebug()) {
+        logDebug(BaseMessages.getString(PKG, "HTTPPOST.Log.BodyValue", name, value));
+      }
+    }
+
+    //
+    if (multipart == null) {
+      String bodyParams = getRequestBodyParamsAsStr(data.bodyParameters, data.realEncoding);
+      post.setEntity((new StringEntity(bodyParams, ContentType.TEXT_XML.withCharset("US-ASCII"))));
+    }
+  }
+
+  /**
+   * add file params
+   *
+   * @param rowData row data
+   */
+  private void addBodyFileParam(
+      org.apache.http.client.methods.HttpPost post,
+      Object[] rowData,
+      MultipartEntityBuilder multipart)
+      throws UnsupportedEncodingException, HopFileException, HopValueException {
+    if (data.indexOfRequestEntity < 0) {
+      return;
+    }
+
+    // Set request entity?
+    String tmp = data.inputRowMeta.getString(rowData, data.indexOfRequestEntity);
+    byte[] bytes;
+    // Request content will be retrieved directly
+    // from the input stream
+    // Per default, the request content needs to be buffered
+    // in order to determine its length.
+    // Request body buffering can be avoided when
+    // content length is explicitly specified
+
+    if (meta.isPostAFile()) {
+      if (!tmp.isEmpty()) {
+        multipart.addBinaryBody("file", HopVfs.getFileObject(resolve(tmp)).getPath().toFile());
+      }
+      return;
+    }
+
+    if ((data.realEncoding != null) && (!data.realEncoding.isEmpty())) {
+      bytes = tmp.getBytes(data.realEncoding);
+    } else {
+      bytes = tmp.getBytes();
+    }
+
+    if (meta.isMultipartupload()) {
+      multipart.addBinaryBody("file", bytes);
+      return;
+    }
+
+    attachRawRequestEntityIfNeeded(post, bytes);
+  }
+
+  @VisibleForTesting
+  void attachRawRequestEntityIfNeeded(org.apache.http.client.methods.HttpPost post, byte[] bytes) {
+    // In the non-multipart case the request entity field is the raw POST body when no other body
+    // has been configured.
+    if (post.getEntity() == null) {
+      post.setEntity(new ByteArrayEntity(bytes));
+    }
+  }
+
+  @VisibleForTesting
+  Long getTrackedDataVolumeOut() {
+    return dataVolumeOut;
+  }
+
+  /**
+   * Attach body parameters to the HTTP POST request after all parts have been prepared.
+   *
+   * @param post the HTTP POST request to which the multipart entity will be attached
+   * @param multipart if {@code null}, no entity will be set on the request
+   */
+  private void addBodyParamsAfter(
+      org.apache.http.client.methods.HttpPost post, MultipartEntityBuilder multipart) {
+    if (multipart != null) {
+      post.setEntity(multipart.build());
+    }
   }
 }

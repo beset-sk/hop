@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache.hop</groupId>
         <artifactId>hop-plugins-engines</artifactId>
-        <version>2.16.0-SNAPSHOT</version>
+        <version>2.18.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>hop-engines-beam</artifactId>
@@ -29,12 +29,32 @@
     <name>Hop Plugins Engines Beam</name>
 
     <properties>
-        <opentelemetry.version>1.47.0</opentelemetry.version>
         <spark.version>3.5.1</spark.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-sdk-bom</artifactId>
+                <version>${azure-sdk-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.apache.beam</groupId>
                 <artifactId>beam-sdks-java-google-cloud-platform-bom</artifactId>
@@ -56,6 +76,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-scala_2.12</artifactId>
         </dependency>
         <!-- Force a recent version of these libraries -->
         <dependency>
@@ -135,8 +159,8 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>net.bytebuddy</groupId>
@@ -209,8 +233,8 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -292,6 +316,18 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.11</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.13</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>joda-time</groupId>
                     <artifactId>joda-time</artifactId>
                 </exclusion>
@@ -301,7 +337,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-vendor-grpc-1_60_1</artifactId>
+                    <artifactId>beam-vendor-grpc-1_69_0</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
@@ -366,8 +402,8 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>joda-time</groupId>
@@ -395,7 +431,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-vendor-grpc-1_60_1</artifactId>
+                    <artifactId>beam-vendor-grpc-1_69_0</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
@@ -476,8 +512,8 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>joda-time</groupId>
@@ -501,7 +537,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-vendor-grpc-1_60_1</artifactId>
+                    <artifactId>beam-vendor-grpc-1_69_0</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
@@ -538,6 +574,18 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.11</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.13</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>joda-time</groupId>
                     <artifactId>joda-time</artifactId>
                 </exclusion>
@@ -563,7 +611,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-vendor-grpc-1_60_1</artifactId>
+                    <artifactId>beam-vendor-grpc-1_69_0</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
@@ -574,12 +622,20 @@
                     <artifactId>commons-lang3</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.checkerframework</groupId>
-                    <artifactId>checker-qual</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>*</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j2-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.checkerframework</groupId>
+                    <artifactId>checker-qual</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -589,6 +645,80 @@
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-amazon-web-services2</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.bytebuddy</groupId>
+                    <artifactId>byte-buddy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.beam</groupId>
+                    <artifactId>beam-sdks-java-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.beam</groupId>
+                    <artifactId>beam-vendor-grpc-1_69_0</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.beam</groupId>
+                    <artifactId>beam-vendor-guava-33.1.0-jre-jre</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.checkerframework</groupId>
+                    <artifactId>checker-qual</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.conscrypt</groupId>
+                    <artifactId>conscrypt-openjdk-uber</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
@@ -789,7 +919,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-vendor-grpc-1_60_1</artifactId>
+                    <artifactId>beam-vendor-grpc-1_69_0</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
@@ -892,8 +1022,8 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>joda-time</groupId>
@@ -933,7 +1063,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-vendor-grpc-1_60_1</artifactId>
+                    <artifactId>beam-vendor-grpc-1_69_0</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.beam</groupId>
@@ -950,68 +1080,6 @@
                 <exclusion>
                     <groupId>org.conscrypt</groupId>
                     <artifactId>conscrypt-openjdk-uber</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-sdks-java-io-kinesis</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>joda-time</groupId>
-                    <artifactId>joda-time</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-sdks-java-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.beam</groupId>
-                    <artifactId>beam-vendor-guava-33.1.0-jre-jre</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.checkerframework</groupId>
-                    <artifactId>checker-qual</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -1131,12 +1199,8 @@
                     <artifactId>jakarta.activation-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
+                    <groupId>jakarta.servlet</groupId>
+                    <artifactId>jakarta.servlet-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>net.minidev</groupId>
@@ -1185,6 +1249,10 @@
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
@@ -1282,12 +1350,12 @@
                     <artifactId>jakarta.activation-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.inject</groupId>
-                    <artifactId>javax.inject</artifactId>
+                    <groupId>jakarta.inject</groupId>
+                    <artifactId>jakarta.inject</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
+                    <groupId>jakarta.servlet</groupId>
+                    <artifactId>jakarta.servlet-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
@@ -1330,6 +1398,10 @@
                     <artifactId>hadoop-common</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-hdfs</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.apache.hive</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
@@ -1340,6 +1412,10 @@
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
@@ -1359,12 +1435,6 @@
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-sdks-java-core</artifactId>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.xerial.snappy</groupId>
-                    <artifactId>snappy-java</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hop</groupId>
@@ -1454,6 +1524,18 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.11</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.13</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.google.code.gson</groupId>
                     <artifactId>gson</artifactId>
                 </exclusion>
@@ -1488,6 +1570,10 @@
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-slf4j2-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.lz4</groupId>
+                    <artifactId>lz4-java</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.xerial.snappy</groupId>

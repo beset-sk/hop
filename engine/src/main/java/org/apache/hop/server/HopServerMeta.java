@@ -109,7 +109,8 @@ import org.w3c.dom.Node;
     description = "i18n::HopServer.description",
     image = "ui/images/server.svg",
     documentationUrl = "/metadata-types/hop-server.html",
-    hopMetadataPropertyType = HopMetadataPropertyType.SERVER_DEFINITION)
+    hopMetadataPropertyType = HopMetadataPropertyType.SERVER_DEFINITION,
+    supportsGlobalReplace = true)
 public class HopServerMeta extends HopMetadataBase implements Cloneable, IXml, IHopMetadata {
   private static final Class<?> PKG = HopServerMeta.class;
   public static final String STRING_HOP_SERVER = "Hop Server";
@@ -156,6 +157,9 @@ public class HopServerMeta extends HopMetadataBase implements Cloneable, IXml, I
 
   @HopMetadataProperty(password = true)
   private String password;
+
+  /** enable authentication */
+  @HopMetadataProperty private boolean enableAuth;
 
   @HopMetadataProperty private String proxyHostname;
 
@@ -225,6 +229,8 @@ public class HopServerMeta extends HopMetadataBase implements Cloneable, IXml, I
     this.shutdownPort = shutdownPort;
     this.username = username;
     this.password = password;
+    // default true
+    this.enableAuth = true;
 
     this.proxyHostname = proxyHostname;
     this.proxyPort = proxyPort;
@@ -243,6 +249,11 @@ public class HopServerMeta extends HopMetadataBase implements Cloneable, IXml, I
     this.username = XmlHandler.getTagValue(node, "username");
     this.password =
         Encr.decryptPasswordOptionallyEncrypted(XmlHandler.getTagValue(node, "password"));
+
+    // if the enable_auth tag is empty or enable_auth=true, then it's true; otherwise false.
+    String authValue = XmlHandler.getTagValue(node, "enable_auth");
+    this.enableAuth = Utils.isEmpty(authValue) || "true".equalsIgnoreCase(authValue);
+
     this.proxyHostname = XmlHandler.getTagValue(node, "proxy_hostname");
     this.proxyPort = XmlHandler.getTagValue(node, "proxy_port");
     this.nonProxyHosts = XmlHandler.getTagValue(node, "non_proxy_hosts");
@@ -275,6 +286,10 @@ public class HopServerMeta extends HopMetadataBase implements Cloneable, IXml, I
     xml.append(
         XmlHandler.addTagValue(
             "password", Encr.encryptPasswordIfNotUsingVariables(password), false));
+
+    // if the enable_auth tag is empty or enable_auth=Y, then it's true; otherwise false.
+    xml.append(CONST_SPACE).append(XmlHandler.addTagValue("enable_auth", enableAuth));
+
     xml.append(CONST_SPACE).append(XmlHandler.addTagValue("proxy_hostname", proxyHostname));
     xml.append(CONST_SPACE).append(XmlHandler.addTagValue("proxy_port", proxyPort));
     xml.append(CONST_SPACE).append(XmlHandler.addTagValue("non_proxy_hosts", nonProxyHosts));
@@ -309,6 +324,7 @@ public class HopServerMeta extends HopMetadataBase implements Cloneable, IXml, I
     this.proxyPort = hopServer.proxyPort;
     this.nonProxyHosts = hopServer.nonProxyHosts;
     this.sslMode = hopServer.sslMode;
+    this.enableAuth = hopServer.enableAuth;
   }
 
   public String toString() {
@@ -597,7 +613,7 @@ public class HopServerMeta extends HopMetadataBase implements Cloneable, IXml, I
     if (!Utils.isEmpty(nonProxyHosts) && hostName.matches(nonProxyHosts)) {
       return;
     }
-    HttpHost httpHost = new HttpHost(proxyHost, Integer.valueOf(proxyPort));
+    HttpHost httpHost = new HttpHost(proxyHost, Integer.parseInt(proxyPort));
 
     RequestConfig requestConfig = RequestConfig.custom().setProxy(httpHost).build();
 

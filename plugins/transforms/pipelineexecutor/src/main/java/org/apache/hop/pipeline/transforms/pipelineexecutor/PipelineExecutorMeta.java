@@ -39,6 +39,7 @@ import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.core.xml.XmlHandler;
 import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.metadata.api.HopMetadataProperty;
+import org.apache.hop.metadata.api.HopMetadataPropertyType;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
 import org.apache.hop.pipeline.ISubPipelineAwareMeta;
 import org.apache.hop.pipeline.PipelineMeta;
@@ -75,7 +76,9 @@ public class PipelineExecutorMeta
   private static final Class<?> PKG = PipelineExecutorMeta.class;
 
   /** The name of the pipeline run configuration with which we want to execute the pipeline. */
-  @HopMetadataProperty(key = "run_configuration")
+  @HopMetadataProperty(
+      key = "run_configuration",
+      hopMetadataPropertyType = HopMetadataPropertyType.PIPELINE_RUN_CONFIG)
   private String runConfigurationName;
 
   /** Flag that indicate that pipeline name is specified in a stream's field */
@@ -502,15 +505,19 @@ public class PipelineExecutorMeta
     switch (index) {
       case 0:
         setExecutionResultTargetTransformMeta(transform);
+        setExecutionResultTargetTransform(transform.getName());
         break;
       case 1:
         setOutputRowsSourceTransformMeta(transform);
+        setOutputRowsSourceTransform(transform.getName());
         break;
       case 2:
         setResultFilesTargetTransformMeta(transform);
+        setResultFilesTargetTransform(transform.getName());
         break;
       case 3:
         setExecutorsOutputTransformMeta(transform);
+        setExecutorsOutputTransform(transform.getName());
         break;
       default:
         break;
@@ -586,9 +593,13 @@ public class PipelineExecutorMeta
   public boolean cleanAfterHopFromRemove() {
 
     setExecutionResultTargetTransformMeta(null);
+    setExecutionResultTargetTransform(null);
     setOutputRowsSourceTransformMeta(null);
+    setOutputRowsSourceTransform(null);
     setResultFilesTargetTransformMeta(null);
+    setResultFilesTargetTransform(null);
     setExecutorsOutputTransformMeta(null);
+    setExecutorsOutputTransform(null);
     return true;
   }
 
@@ -604,20 +615,29 @@ public class PipelineExecutorMeta
     if (getExecutionResultTargetTransformMeta() != null
         && toTransformName.equals(getExecutionResultTargetTransformMeta().getName())) {
       setExecutionResultTargetTransformMeta(null);
+      setExecutionResultTargetTransform(null);
       hasChanged = true;
     } else if (getOutputRowsSourceTransformMeta() != null
         && toTransformName.equals(getOutputRowsSourceTransformMeta().getName())) {
       setOutputRowsSourceTransformMeta(null);
+      setOutputRowsSourceTransform(null);
       hasChanged = true;
     } else if (getResultFilesTargetTransformMeta() != null
         && toTransformName.equals(getResultFilesTargetTransformMeta().getName())) {
       setResultFilesTargetTransformMeta(null);
+      setResultFilesTargetTransform(null);
       hasChanged = true;
     } else if (getExecutorsOutputTransformMeta() != null
         && toTransformName.equals(getExecutorsOutputTransformMeta().getName())) {
       setExecutorsOutputTransformMeta(null);
+      setExecutorsOutputTransform(null);
       hasChanged = true;
     }
     return hasChanged;
+  }
+
+  @Override
+  public boolean supportsDrillDown() {
+    return true;
   }
 }

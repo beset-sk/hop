@@ -17,46 +17,53 @@
 
 package org.apache.hop.mongo.wrapper.field;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hop.core.exception.HopException;
-import org.apache.hop.core.injection.Injection;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.row.value.ValueMetaFactory;
 import org.apache.hop.core.variables.IVariables;
 import org.apache.hop.i18n.BaseMessages;
+import org.apache.hop.metadata.api.HopMetadataProperty;
 import org.apache.hop.pipeline.transforms.mongodbinput.MongoDbInputData;
 import org.bson.BsonUndefined;
+import org.bson.Document;
 import org.bson.types.Binary;
+import org.bson.types.Decimal128;
 
+@Getter
+@Setter
 public class MongoField implements Comparable<MongoField> {
   protected static final Class<?> PKG = MongoField.class;
 
-  /** The name the the field will take in the outputted Hop stream */
-  @Injection(name = "FIELD_NAME", group = "FIELDS")
+  /** The name the field will take in the outputted Hop stream */
+  @HopMetadataProperty(key = "field_name", injectionKey = "FIELD_NAME")
   public String fieldName = "";
 
   /** The path to the field in the Mongo object */
-  @Injection(name = "FIELD_PATH", group = "FIELDS")
+  @HopMetadataProperty(key = "field_path", injectionKey = "FIELD_PATH")
   public String fieldPath = "";
 
   /** The Hop type for this field */
-  @Injection(name = "FIELD_TYPE", group = "FIELDS")
+  @HopMetadataProperty(key = "field_type", injectionKey = "FIELD_TYPE")
   public String hopType = "";
 
   /** User-defined indexed values for String types */
+  @HopMetadataProperty(key = "indexed_vals", injectionKey = "FIELD_INDEXED")
   public List<String> indexedValues;
 
   /**
    * Temporary variable to hold the min:max array index info for fields determined when sampling
    * documents for paths/types
    */
-  @Injection(name = "FIELD_ARRAY_INDEX", group = "FIELDS")
+  // @Injection(name = "FIELD_ARRAY_INDEX", group = "FIELDS")
   @SuppressWarnings("java:S2065") // disable sonar warning on transient
   public transient String arrayIndexInfo;
 
@@ -64,7 +71,7 @@ public class MongoField implements Comparable<MongoField> {
    * Temporary variable to hold the number of times this path was seen when sampling documents to
    * determine paths/types.
    */
-  @Injection(name = "FIELD_PERCENTAGE", group = "FIELDS")
+  // @Injection(name = "FIELD_PERCENTAGE", group = "FIELDS")
   @SuppressWarnings("java:S2065") // disable sonar warning on transient
   public transient int percentageOfSample = -1;
 
@@ -84,7 +91,7 @@ public class MongoField implements Comparable<MongoField> {
    * documents and that the types differ. In this case we should default to Hop type String as a
    * catch-all
    */
-  @Injection(name = "FIELD_DISPARATE_TYPES", group = "FIELDS")
+  // @Injection(name = "FIELD_DISPARATE_TYPES", group = "FIELDS")
   @SuppressWarnings("java:S2065") // disable sonar warning on transient
   public transient boolean disparateTypes;
 
@@ -128,9 +135,7 @@ public class MongoField implements Comparable<MongoField> {
 
     String[] temp = fieldPath.split("\\.");
     pathParts = new ArrayList<>();
-    for (String part : temp) {
-      pathParts.add(part);
-    }
+    Collections.addAll(pathParts, temp);
 
     if (pathParts.get(0).equals("$")) {
       pathParts.remove(0); // root record indicator
@@ -171,8 +176,8 @@ public class MongoField implements Comparable<MongoField> {
    */
   public Object getHopValue(Object fieldValue) throws HopException {
 
-    switch (tempValueMeta.getType()) {
-      case IValueMeta.TYPE_BIGNUMBER:
+    return switch (tempValueMeta.getType()) {
+      case IValueMeta.TYPE_BIGNUMBER -> {
         if (fieldValue instanceof Number number) {
           fieldValue = BigDecimal.valueOf(number.doubleValue());
         } else if (fieldValue instanceof Date date) {
@@ -180,8 +185,9 @@ public class MongoField implements Comparable<MongoField> {
         } else {
           fieldValue = new BigDecimal(fieldValue.toString());
         }
-        return tempValueMeta.getBigNumber(fieldValue);
-      case IValueMeta.TYPE_BINARY:
+        yield tempValueMeta.getBigNumber(fieldValue);
+      }
+      case IValueMeta.TYPE_BINARY -> {
         if (fieldValue instanceof Binary binary) {
           fieldValue = binary.getData();
         } else if (fieldValue instanceof byte[]) {
@@ -189,21 +195,22 @@ public class MongoField implements Comparable<MongoField> {
         } else {
           fieldValue = fieldValue.toString().getBytes();
         }
-        return tempValueMeta.getBinary(fieldValue);
-      case IValueMeta.TYPE_BOOLEAN:
+        yield tempValueMeta.getBinary(fieldValue);
+      }
+      case IValueMeta.TYPE_BOOLEAN -> {
         if (fieldValue instanceof Number number) {
-          fieldValue = Boolean.valueOf(number.intValue() != 0);
+          fieldValue = number.intValue() != 0;
         } else if (fieldValue instanceof Date date) {
-          fieldValue = Boolean.valueOf(date.getTime() != 0);
+          fieldValue = date.getTime() != 0;
         } else if (!(fieldValue instanceof Boolean)) {
           fieldValue =
-              Boolean.valueOf(
-                  fieldValue.toString().equalsIgnoreCase("Y")
-                      || fieldValue.toString().equalsIgnoreCase("T")
-                      || fieldValue.toString().equalsIgnoreCase("1"));
+              fieldValue.toString().equalsIgnoreCase("Y")
+                  || fieldValue.toString().equalsIgnoreCase("T")
+                  || fieldValue.toString().equalsIgnoreCase("1");
         }
-        return tempValueMeta.getBoolean(fieldValue);
-      case IValueMeta.TYPE_DATE:
+        yield tempValueMeta.getBoolean(fieldValue);
+      }
+      case IValueMeta.TYPE_DATE -> {
         if (fieldValue instanceof Number number) {
           fieldValue = new Date(number.longValue());
         } else if (!(fieldValue instanceof Date)) {
@@ -211,10 +218,11 @@ public class MongoField implements Comparable<MongoField> {
               BaseMessages.getString(
                   PKG, "MongoDbInput.ErrorMessage.DateConversion", fieldValue.toString()));
         }
-        return tempValueMeta.getDate(fieldValue);
-      case IValueMeta.TYPE_INTEGER:
+        yield tempValueMeta.getDate(fieldValue);
+      }
+      case IValueMeta.TYPE_INTEGER -> {
         if (fieldValue instanceof Number number) {
-          fieldValue = Long.valueOf(number.intValue());
+          fieldValue = (long) number.intValue();
         } else if (fieldValue instanceof Binary binary) {
           byte[] b = binary.getData();
           String s = new String(b);
@@ -222,10 +230,11 @@ public class MongoField implements Comparable<MongoField> {
         } else {
           fieldValue = Long.valueOf(fieldValue.toString());
         }
-        return tempValueMeta.getInteger(fieldValue);
-      case IValueMeta.TYPE_NUMBER:
+        yield tempValueMeta.getInteger(fieldValue);
+      }
+      case IValueMeta.TYPE_NUMBER -> {
         if (fieldValue instanceof Number number) {
-          fieldValue = Double.valueOf(number.doubleValue());
+          fieldValue = number.doubleValue();
         } else if (fieldValue instanceof Binary binary) {
           byte[] b = binary.getData();
           String s = new String(b);
@@ -233,25 +242,31 @@ public class MongoField implements Comparable<MongoField> {
         } else {
           fieldValue = Double.valueOf(fieldValue.toString());
         }
-        return tempValueMeta.getNumber(fieldValue);
-      case IValueMeta.TYPE_STRING:
-        return tempValueMeta.getString(fieldValue);
-      default:
+        yield tempValueMeta.getNumber(fieldValue);
+      }
+      case IValueMeta.TYPE_STRING -> tempValueMeta.getString(fieldValue);
+      case IValueMeta.TYPE_JSON ->
+          // Jackson JsonNode handling:
+          // Supports JSON values (and binary type 0), BSON objects like Date/UUID
+          // are not supported since they're not JSON values
+          tempValueMeta.getJson(fieldValue);
+      default -> {
         // UUID support
         try {
           int uuidTypeId = ValueMetaFactory.getIdForValueMeta("UUID");
           if (tempValueMeta.getType() == uuidTypeId) {
             if (fieldValue instanceof java.util.UUID uuid) {
-              return uuid;
+              yield uuid;
             } else {
-              return java.util.UUID.fromString(fieldValue.toString());
+              yield java.util.UUID.fromString(fieldValue.toString());
             }
           }
         } catch (Exception ignore) {
           // UUID plugin not present, fall through
         }
-        return null;
-    }
+        yield null;
+      }
+    };
   }
 
   /**
@@ -261,7 +276,7 @@ public class MongoField implements Comparable<MongoField> {
    * @return the Hop field value
    * @throws HopException if a problem occurs
    */
-  public Object convertToHopValue(BasicDBObject mongoObject) throws HopException {
+  public Object convertToHopValue(Document mongoObject) throws HopException {
 
     if (mongoObject == null) {
       return null;
@@ -301,12 +316,12 @@ public class MongoField implements Comparable<MongoField> {
       return getHopValue(fieldValue);
     }
 
-    if (fieldValue instanceof BasicDBObject basicDBObject) {
-      return convertToHopValue(basicDBObject);
+    if (fieldValue instanceof Document doc) {
+      return convertToHopValue(doc);
     }
 
-    if (fieldValue instanceof BasicDBList basicDBList) {
-      return convertToHopValue(basicDBList);
+    if (fieldValue instanceof List list) {
+      return convertToHopValue(list);
     }
 
     // must mean we have a primitive here, but we're expecting to process more
@@ -321,7 +336,7 @@ public class MongoField implements Comparable<MongoField> {
    * @return the Hop field value
    * @throws HopException if a problem occurs
    */
-  public Object convertToHopValue(BasicDBList mongoList) throws HopException {
+  public Object convertToHopValue(List<?> mongoList) throws HopException {
 
     if (mongoList == null) {
       return null;
@@ -370,12 +385,12 @@ public class MongoField implements Comparable<MongoField> {
       return getHopValue(element);
     }
 
-    if (element instanceof BasicDBObject basicDBObject) {
-      return convertToHopValue(basicDBObject);
+    if (element instanceof Document doc) {
+      return convertToHopValue(doc);
     }
 
-    if (element instanceof BasicDBList basicDBList) {
-      return convertToHopValue(basicDBList);
+    if (element instanceof List list) {
+      return convertToHopValue(list);
     }
 
     // must mean we have a primitive here, but we're expecting to process more
@@ -397,22 +412,50 @@ public class MongoField implements Comparable<MongoField> {
     return pathName;
   }
 
-  /**
-   * Returns the name of the MongoDB field
-   *
-   * @return String MongoDB Field Name
-   */
-  public String getName() {
-    return fieldName;
-  }
-
   @Override
   public int compareTo(MongoField comp) {
     return fieldName.compareTo(comp.fieldName);
   }
 
-  @Injection(name = "FIELD_INDEXED", group = "FIELDS")
+  // @Injection(name = "FIELD_INDEXED", group = "FIELDS")
   public void setIndexedVals(String vals) {
     indexedValues = MongoDbInputData.indexedValsList(vals);
+  }
+
+  /** Converts a JsonNode in a Document object */
+  public static Object toBsonFromJsonNode(JsonNode n) {
+    if (n == null) return null;
+
+    switch (n.getNodeType()) {
+      case OBJECT:
+        Document d = new Document();
+        // for each entry in JsonNode, create an entry in Document
+        n.fields().forEachRemaining(e -> d.put(e.getKey(), toBsonFromJsonNode(e.getValue())));
+        return d;
+      case ARRAY:
+        var list = new java.util.ArrayList<>(n.size());
+        n.forEach(el -> list.add(toBsonFromJsonNode(el)));
+        return list;
+      case STRING:
+        return n.textValue();
+      case BOOLEAN:
+        return n.booleanValue();
+      case NUMBER:
+        if (n.isIntegralNumber()) {
+          long v = n.longValue();
+          return (v >= Integer.MIN_VALUE && v <= Integer.MAX_VALUE) ? (int) v : v;
+        }
+        if (n.isBigDecimal()) return Decimal128.parse(n.decimalValue().toPlainString());
+        return n.doubleValue();
+      case BINARY:
+        try {
+          return new Binary(n.binaryValue());
+        } catch (Exception ignore) {
+          // fall through
+        }
+        // fallback, string representation
+      default:
+        return n.asText();
+    }
   }
 }

@@ -106,9 +106,12 @@ public class AzureListener extends BaseTransform<AzureListenerMeta, AzureListene
     //
     if (StringUtils.isNotEmpty(batchTransformationFile)
         && StringUtils.isNotEmpty(batchInputTransform)) {
-      logBasic(
-          "Passing rows to a batching transformation running single threaded : "
-              + batchTransformationFile);
+      if (isBasic()) {
+        logBasic(
+            "Passing rows to a batching transformation running single threaded : "
+                + batchTransformationFile);
+      }
+
       data.stt = true;
       data.sttMaxWaitTime = Const.toLong(resolve(meta.getBatchMaxWaitTime()), -1L);
       data.sttPipelineMeta = AzureListenerMeta.loadBatchPipelineMeta(meta, metadataProvider, this);
@@ -156,7 +159,10 @@ public class AzureListener extends BaseTransform<AzureListenerMeta, AzureListene
       data.stt = false;
     }
 
-    logDetailed("Creating connection string builder");
+    if (isDetailed()) {
+      logDetailed("Creating connection string builder");
+    }
+
     data.connectionStringBuilder =
         new ConnectionStringBuilder()
             .setNamespaceName(namespace)
@@ -164,11 +170,15 @@ public class AzureListener extends BaseTransform<AzureListenerMeta, AzureListene
             .setSasKeyName(sasKeyName)
             .setSasKey(sasKey);
 
-    logDetailed("Opening new executor service");
+    if (isDetailed()) {
+      logDetailed("Opening new executor service");
+    }
 
     data.executorService = Executors.newSingleThreadScheduledExecutor();
 
-    logDetailed("Creating event hub client");
+    if (isDetailed()) {
+      logDetailed("Creating event hub client");
+    }
     try {
       data.eventHubClient =
           EventHubClient.createFromConnectionStringSync(
@@ -190,7 +200,9 @@ public class AzureListener extends BaseTransform<AzureListenerMeta, AzureListene
     } catch (Exception e) {
       throw new HopException("Unable to set up events host processor", e);
     }
-    logDetailed("Set up events host named " + host.getHostName());
+    if (isDetailed()) {
+      logDetailed("Set up events host named " + host.getHostName());
+    }
 
     EventProcessorOptions options = new EventProcessorOptions();
     options.setExceptionNotification(new AzureListenerErrorNotificationHandler(AzureListener.this));
@@ -229,9 +241,11 @@ public class AzureListener extends BaseTransform<AzureListenerMeta, AzureListene
       // Add a timer to check every max wait time to see whether or not we have to do an
       // iteration...
       //
-      logBasic(
-          "Checking for stalled rows every 100ms to see if we exceed the maximum wait time: "
-              + data.sttMaxWaitTime);
+      if (isBasic()) {
+        logBasic(
+            "Checking for stalled rows every 100ms to see if we exceed the maximum wait time: "
+                + data.sttMaxWaitTime);
+      }
       try {
         Timer timer = new Timer();
         TimerTask timerTask =
@@ -240,29 +254,33 @@ public class AzureListener extends BaseTransform<AzureListenerMeta, AzureListene
               public void run() {
                 // Do nothing if we haven't started yet.
                 //
-                if (eventProcessor.getLastIterationTime() > 0) {
-                  if (eventProcessor.getPassedRowsCount() > 0) {
-                    long now = System.currentTimeMillis();
+                if (eventProcessor.getLastIterationTime() > 0
+                    && eventProcessor.getPassedRowsCount() > 0) {
 
-                    long diff = now - eventProcessor.getLastIterationTime();
-                    if (diff > data.sttMaxWaitTime) {
+                  long now = System.currentTimeMillis();
+
+                  long diff = now - eventProcessor.getLastIterationTime();
+                  if (diff > data.sttMaxWaitTime) {
+                    if (isDetailed()) {
                       logDetailed(
                           "Stalled rows detected with wait time of " + ((double) diff / 1000));
-
-                      // Call one iteration but halt anything else first.
-                      //
-                      try {
-                        eventProcessor.startWait();
-                        eventProcessor.doOneIteration();
-                      } catch (Exception e) {
-                        throw new RuntimeException(
-                            "Error in batch iteration when max wait time was exceeded", e);
-                      } finally {
-                        eventProcessor.endWait();
-                      }
-                      logDetailed("Done processing after max wait time.");
-                      ExecutorUtil.cleanup(timer, 1);
                     }
+
+                    // Call one iteration but halt anything else first.
+                    //
+                    try {
+                      eventProcessor.startWait();
+                      eventProcessor.doOneIteration();
+                    } catch (Exception e) {
+                      throw new RuntimeException(
+                          "Error in batch iteration when max wait time was exceeded", e);
+                    } finally {
+                      eventProcessor.endWait();
+                    }
+                    if (isDetailed()) {
+                      logDetailed("Done processing after max wait time.");
+                    }
+                    ExecutorUtil.cleanup(timer, 1);
                   }
                 }
               }

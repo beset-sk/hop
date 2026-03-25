@@ -19,6 +19,8 @@ package org.apache.hop.workflow;
 
 import java.util.Comparator;
 import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.hop.core.Result;
 
 /**
@@ -28,9 +30,9 @@ import org.apache.hop.core.Result;
  * <p>--> result of the execution (Result)
  *
  * <p>--> ...
- *
- * <p>
  */
+@Getter
+@Setter
 public class ActionResult implements Cloneable, Comparator<ActionResult>, Comparable<ActionResult> {
   private Result result;
   private String actionName;
@@ -43,6 +45,12 @@ public class ActionResult implements Cloneable, Comparator<ActionResult>, Compar
   private String logChannelId;
 
   private boolean checkpoint;
+
+  /** Bytes read by this action (per-action, not cumulative). */
+  private long bytesRead;
+
+  /** Bytes written by this action (per-action, not cumulative). */
+  private long bytesWritten;
 
   /** Creates a new empty action result... */
   public ActionResult() {
@@ -57,6 +65,24 @@ public class ActionResult implements Cloneable, Comparator<ActionResult>, Compar
       String reason,
       String actionName,
       String actionFilename) {
+    this(result, logChannelId, comment, reason, actionName, actionFilename, 0L, 0L);
+  }
+
+  /**
+   * Creates a new action result with per-action bytes read/written.
+   *
+   * @param bytesRead bytes read by this action only
+   * @param bytesWritten bytes written by this action only
+   */
+  public ActionResult(
+      Result result,
+      String logChannelId,
+      String comment,
+      String reason,
+      String actionName,
+      String actionFilename,
+      long bytesRead,
+      long bytesWritten) {
     this();
     if (result != null) {
       // lightClone doesn't bother cloning all the rows.
@@ -70,6 +96,8 @@ public class ActionResult implements Cloneable, Comparator<ActionResult>, Compar
     this.reason = reason;
     this.actionName = actionName;
     this.actionFilename = actionFilename;
+    this.bytesRead = bytesRead;
+    this.bytesWritten = bytesWritten;
   }
 
   @Override
@@ -85,90 +113,6 @@ public class ActionResult implements Cloneable, Comparator<ActionResult>, Compar
     } catch (CloneNotSupportedException e) {
       return null;
     }
-  }
-
-  /**
-   * @param result The result to set.
-   */
-  public void setResult(Result result) {
-    this.result = result;
-  }
-
-  /**
-   * @return Returns the result.
-   */
-  public Result getResult() {
-    return result;
-  }
-
-  /**
-   * @return Returns the comment.
-   */
-  public String getComment() {
-    return comment;
-  }
-
-  /**
-   * @param comment The comment to set.
-   */
-  public void setComment(String comment) {
-    this.comment = comment;
-  }
-
-  /**
-   * @return Returns the reason.
-   */
-  public String getReason() {
-    return reason;
-  }
-
-  /**
-   * @param reason The reason to set.
-   */
-  public void setReason(String reason) {
-    this.reason = reason;
-  }
-
-  /**
-   * @return Returns the logDate.
-   */
-  public Date getLogDate() {
-    return logDate;
-  }
-
-  /**
-   * @param logDate The logDate to set.
-   */
-  public void setLogDate(Date logDate) {
-    this.logDate = logDate;
-  }
-
-  /**
-   * @return the actionName
-   */
-  public String getActionName() {
-    return actionName;
-  }
-
-  /**
-   * @param actionName the actionName to set
-   */
-  public void setActionName(String actionName) {
-    this.actionName = actionName;
-  }
-
-  /**
-   * @return the actionFilename
-   */
-  public String getActionFilename() {
-    return actionFilename;
-  }
-
-  /**
-   * @param actionFilename the actionFilename to set
-   */
-  public void setActionFilename(String actionFilename) {
-    this.actionFilename = actionFilename;
   }
 
   @Override
@@ -200,21 +144,39 @@ public class ActionResult implements Cloneable, Comparator<ActionResult>, Compar
     return compare(this, two);
   }
 
-  public String getLogChannelId() {
-    return logChannelId;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ActionResult that = (ActionResult) o;
+    return checkpoint == that.checkpoint
+        && bytesRead == that.bytesRead
+        && bytesWritten == that.bytesWritten
+        && java.util.Objects.equals(result, that.result)
+        && java.util.Objects.equals(actionName, that.actionName)
+        && java.util.Objects.equals(comment, that.comment)
+        && java.util.Objects.equals(reason, that.reason)
+        && java.util.Objects.equals(logDate, that.logDate)
+        && java.util.Objects.equals(actionFilename, that.actionFilename)
+        && java.util.Objects.equals(logChannelId, that.logChannelId);
   }
 
-  /**
-   * @return the checkpoint
-   */
-  public boolean isCheckpoint() {
-    return checkpoint;
-  }
-
-  /**
-   * @param checkpoint the checkpoint to set
-   */
-  public void setCheckpoint(boolean checkpoint) {
-    this.checkpoint = checkpoint;
+  @Override
+  public int hashCode() {
+    return java.util.Objects.hash(
+        result,
+        actionName,
+        comment,
+        reason,
+        logDate,
+        actionFilename,
+        logChannelId,
+        checkpoint,
+        bytesRead,
+        bytesWritten);
   }
 }

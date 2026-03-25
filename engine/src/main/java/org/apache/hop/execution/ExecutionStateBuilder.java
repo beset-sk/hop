@@ -118,6 +118,9 @@ public final class ExecutionStateBuilder {
         addMetric(componentMetrics, engineMetrics, component, Pipeline.METRIC_UPDATED);
         addMetric(componentMetrics, engineMetrics, component, Pipeline.METRIC_BUFFER_IN);
         addMetric(componentMetrics, engineMetrics, component, Pipeline.METRIC_BUFFER_OUT);
+        addMetric(componentMetrics, engineMetrics, component, Pipeline.METRIC_DATA_VOLUME);
+        addMetric(componentMetrics, engineMetrics, component, Pipeline.METRIC_DATA_VOLUME_IN);
+        addMetric(componentMetrics, engineMetrics, component, Pipeline.METRIC_DATA_VOLUME_OUT);
 
         builder.addMetrics(componentMetrics);
       }
@@ -167,7 +170,7 @@ public final class ExecutionStateBuilder {
         .withName(workflow.getWorkflowMeta().getName())
         .withLoggingText(getLoggingText(workflow.getLogChannelId(), lastLogLineNr))
         .withLastLogLineNr(lastNrInLogStore)
-        .withFailed(result != null && !result.getResult())
+        .withFailed(result != null && !result.isResult())
         .withStatusDescription(workflow.getStatusDescription())
         .withChildIds(
             LoggingRegistry.getInstance().getChildrenMap().get(workflow.getLogChannelId()))

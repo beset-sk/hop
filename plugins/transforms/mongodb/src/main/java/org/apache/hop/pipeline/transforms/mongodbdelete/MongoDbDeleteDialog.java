@@ -17,7 +17,6 @@
 
 package org.apache.hop.pipeline.transforms.mongodbdelete;
 
-import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +50,7 @@ import org.apache.hop.ui.core.widget.StyledTextComp;
 import org.apache.hop.ui.core.widget.TableView;
 import org.apache.hop.ui.core.widget.TextVar;
 import org.apache.hop.ui.pipeline.transform.BaseTransformDialog;
+import org.bson.Document;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
@@ -67,7 +67,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
 
 /** Dialog class for MongoDbDelete step */
 public class MongoDbDeleteDialog extends BaseTransformDialog {
@@ -107,52 +106,15 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
 
   @Override
   public String open() {
+    createShell(BaseMessages.getString(PKG, "MongoDbDeleteDialog.Shell.Title"));
 
-    Shell parent = getParent();
-
-    shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
-
-    PropsUi.setLook(shell);
-    setShellImage(shell, currentMeta);
+    buildButtonBar().ok(e -> ok()).cancel(e -> cancel()).build();
 
     // used to listen to a text field (wTransformName)
     ModifyListener lsMod = e -> currentMeta.setChanged();
-
     changed = currentMeta.hasChanged();
 
-    FormLayout formLayout = new FormLayout();
-    formLayout.marginWidth = PropsUi.getFormMargin();
-    formLayout.marginHeight = PropsUi.getFormMargin();
-
-    shell.setLayout(formLayout);
-    shell.setText(BaseMessages.getString(PKG, "MongoDbDeleteDialog.Shell.Title"));
-
-    int middle = props.getMiddlePct();
-    int margin = PropsUi.getMargin();
-
-    // TransformName line
-    /** various UI bits and pieces for the dialog */
-    Label wlTransformName = new Label(shell, SWT.RIGHT);
-    wlTransformName.setText(BaseMessages.getString(PKG, "MongoDbDeleteDialog.TransformName.Label"));
-    PropsUi.setLook(wlTransformName);
-
-    FormData fd = new FormData();
-    fd.left = new FormAttachment(0, 0);
-    fd.right = new FormAttachment(middle, -margin);
-    fd.top = new FormAttachment(0, margin);
-    wlTransformName.setLayoutData(fd);
-    wTransformName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-    wTransformName.setText(transformName);
-    PropsUi.setLook(wTransformName);
-    wTransformName.addModifyListener(lsMod);
-    Control lastControl = wTransformName;
-
-    // format the text field
-    fd = new FormData();
-    fd.left = new FormAttachment(middle, 0);
-    fd.top = new FormAttachment(0, margin);
-    fd.right = new FormAttachment(100, 0);
-    wTransformName.setLayoutData(fd);
+    Control lastControl = wSpacer;
 
     // The tabs of the dialog
     CTabFolder wTabFolder = new CTabFolder(shell, SWT.BORDER);
@@ -201,7 +163,7 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
     wlCollection.setToolTipText(
         BaseMessages.getString(PKG, "MongoDbDeleteDialog.Collection.TipText")); // $NON-NLS-1$
     PropsUi.setLook(wlCollection);
-    fd = new FormData();
+    FormData fd = new FormData();
     fd.left = new FormAttachment(0, 0);
     fd.top = new FormAttachment(lastControl, margin);
     fd.right = new FormAttachment(middle, -margin);
@@ -385,7 +347,7 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
     PropsUi.setLook(wbGetFields);
     wbGetFields.setText(BaseMessages.getString(PKG, "MongoDbDeleteDialog.GetFieldsBut"));
     fd = new FormData();
-    fd.bottom = new FormAttachment(100, -margin * 2);
+    fd.bottom = new FormAttachment(100, -margin);
     fd.left = new FormAttachment(0, margin);
     wbGetFields.setLayoutData(fd);
 
@@ -402,7 +364,7 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
     wbPreviewDocStruct.setText(
         BaseMessages.getString(PKG, "MongoDbDeleteDialog.PreviewDocStructBut"));
     fd = new FormData();
-    fd.bottom = new FormAttachment(100, -margin * 2);
+    fd.bottom = new FormAttachment(100, -margin);
     fd.left = new FormAttachment(wbGetFields, margin);
     wbPreviewDocStruct.setLayoutData(fd);
     wbPreviewDocStruct.addSelectionListener(
@@ -417,8 +379,8 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
         new TableView(
             variables, wFieldsComp, SWT.FULL_SELECTION | SWT.MULTI, colInf, 1, lsMod, props);
     fd = new FormData();
-    fd.top = new FormAttachment(wbUseJsonQuery, margin * 2);
-    fd.bottom = new FormAttachment(wbGetFields, -margin * 2);
+    fd.top = new FormAttachment(wbUseJsonQuery, margin);
+    fd.bottom = new FormAttachment(wbGetFields, -margin);
     fd.left = new FormAttachment(0, 0);
     fd.right = new FormAttachment(100, 0);
     wtvMongoFieldsView.setLayoutData(fd);
@@ -429,7 +391,7 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
         BaseMessages.getString(PKG, "MongoDbDeleteDialog.execEachRow.Label"));
     PropsUi.setLook(wlExecuteForEachRow);
     fd = new FormData();
-    fd.bottom = new FormAttachment(100, -margin * 2);
+    fd.bottom = new FormAttachment(100, -margin);
     fd.left = new FormAttachment(0, margin);
     wlExecuteForEachRow.setLayoutData(fd);
 
@@ -443,7 +405,7 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
           }
         });
     fd = new FormData();
-    fd.bottom = new FormAttachment(100, -margin * 2);
+    fd.bottom = new FormAttachment(100, -margin);
     fd.left = new FormAttachment(wlExecuteForEachRow, margin);
     wcbEcuteForEachRow.setLayoutData(fd);
 
@@ -458,8 +420,8 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
     fd = new FormData();
     fd.left = new FormAttachment(0, 0);
     fd.right = new FormAttachment(100, -margin * 3);
-    fd.top = new FormAttachment(wbUseJsonQuery, margin * 2);
-    fd.bottom = new FormAttachment(wlExecuteForEachRow, -margin * 2);
+    fd.top = new FormAttachment(wbUseJsonQuery, margin);
+    fd.bottom = new FormAttachment(wlExecuteForEachRow, -margin);
     wstJsonQueryView.setLayoutData(fd);
 
     fd = new FormData();
@@ -474,24 +436,12 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
 
     fd = new FormData();
     fd.left = new FormAttachment(0, 0);
-    fd.top = new FormAttachment(wTransformName, margin);
+    fd.top = new FormAttachment(wSpacer, margin);
     fd.right = new FormAttachment(100, 0);
     fd.bottom = new FormAttachment(100, -50);
     wTabFolder.setLayoutData(fd);
 
-    // Buttons inherited from BaseStepDialog
-    wOk = new Button(shell, SWT.PUSH);
-    wOk.setText(BaseMessages.getString(PKG, "System.Button.OK")); // $NON-NLS-1$
-
-    wCancel = new Button(shell, SWT.PUSH);
-    wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel")); // $NON-NLS-1$
-
-    setButtonPositions(new Button[] {wOk, wCancel}, margin, wTabFolder);
-
     // Add listeners
-    wCancel.addListener(SWT.Selection, e -> cancel());
-    wOk.addListener(SWT.Selection, e -> ok());
-
     wTransformName.addListener(SWT.Selection, e -> ok());
 
     wTabFolder.setSelection(0);
@@ -505,7 +455,6 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
     } else {
       setQueryJsonVisibility(false);
     }
-
     BaseDialog.defaultShellHandling(shell, c -> ok(), c -> cancel());
 
     return transformName;
@@ -818,7 +767,7 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
       String toDisplay = "";
       String windowTitle =
           BaseMessages.getString(PKG, "MongoDbDeleteDialog.PreviewDocStructure.Title");
-      DBObject query = MongoDbDeleteData.getQueryObject(mongoFields, r, dummyRow, vs);
+      Document query = MongoDbDeleteData.getQueryObject(mongoFields, r, dummyRow, vs);
       toDisplay =
           BaseMessages.getString(PKG, "MongoDbDeleteDialog.PreviewModifierUpdate.Heading1")
               + ": \n\n"
@@ -869,6 +818,9 @@ public class MongoDbDeleteDialog extends BaseTransformDialog {
           break;
         case IValueMeta.TYPE_BINARY:
           val = "<binary val>";
+          break;
+        case IValueMeta.TYPE_JSON:
+          val = "<JSON document>";
           break;
         default:
           try {
