@@ -17,31 +17,32 @@
 
 package org.apache.hop.ui.core.dialog;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Collections;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.variables.IVariables;
-import org.apache.hop.junit.rules.RestoreHopEngineEnvironment;
+import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.junit.Test;
 
-public class PreviewRowsDialogTest {
-  @ClassRule public static RestoreHopEngineEnvironment env = new RestoreHopEngineEnvironment();
+@ExtendWith(RestoreHopEngineEnvironmentExtension.class)
+class PreviewRowsDialogTest {
 
-  @Before
-  public void notOnWindows() {
-    org.junit.Assume.assumeFalse(SystemUtils.IS_OS_WINDOWS);
+  @BeforeEach
+  void notOnWindows() {
+    org.junit.jupiter.api.Assumptions.assumeFalse(SystemUtils.IS_OS_WINDOWS);
   }
 
-   @Test
-  public void getDataForRow() {
+  @Test
+  void getDataForRow() {
 
     IRowMeta iRowMeta = Mockito.mock(IRowMeta.class);
     Mockito.when(iRowMeta.size()).thenReturn(3);
@@ -59,6 +60,6 @@ public class PreviewRowsDialogTest {
 
     // run without NPE
     int actualResult = previewRowsDialog.getDataForRow(Mockito.mock(TableItem.class), null);
-    Assert.assertEquals(0, actualResult);
+    assertEquals(0, actualResult);
   }
 }

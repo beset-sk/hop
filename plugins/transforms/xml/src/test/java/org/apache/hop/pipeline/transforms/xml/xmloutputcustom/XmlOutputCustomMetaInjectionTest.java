@@ -16,18 +16,19 @@
  */
 package org.apache.hop.pipeline.transforms.xml.xmloutputcustom;
 
-import org.apache.hop.core.injection.BaseMetadataInjectionTest;
-import org.apache.hop.junit.rules.RestoreHopEngineEnvironment;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.apache.hop.core.injection.BaseMetadataInjectionTestJunit5;
+import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class XmlOutputCustomMetaInjectionTest
-    extends BaseMetadataInjectionTest<XmlOutputCustomMeta> {
-  @ClassRule public static RestoreHopEngineEnvironment env = new RestoreHopEngineEnvironment();
+class XmlOutputCustomMetaInjectionTest
+    extends BaseMetadataInjectionTestJunit5<XmlOutputCustomMeta> {
+  @RegisterExtension
+  static RestoreHopEngineEnvironmentExtension env = new RestoreHopEngineEnvironmentExtension();
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
 
     try {
       setup(new XmlOutputCustomMeta());
@@ -37,7 +38,7 @@ public class XmlOutputCustomMetaInjectionTest
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     check("FILENAME", () -> meta.getFileName());
     check("EXTENSION", () -> meta.getExtension());
     check("SPLIT_EVERY", () -> meta.getSplitEvery());
@@ -45,6 +46,7 @@ public class XmlOutputCustomMetaInjectionTest
     check("INC_DATE_IN_FILENAME", () -> meta.isDateInFilename());
     check("INC_TIME_IN_FILENAME", () -> meta.isTimeInFilename());
     check("ZIPPED", () -> meta.isZipped());
+    check("STANDALONE", () -> meta.isStandalone());
     check("ENCODING", () -> meta.getEncoding());
     check("NAMESPACE", () -> meta.getNameSpace());
     check("MAIN_ELEMENT", () -> meta.getMainElement());

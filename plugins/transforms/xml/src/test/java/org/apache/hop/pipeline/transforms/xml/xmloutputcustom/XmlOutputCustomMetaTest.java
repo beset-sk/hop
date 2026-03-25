@@ -17,12 +17,12 @@
 
 package org.apache.hop.pipeline.transforms.xml.xmloutputcustom;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -42,28 +42,29 @@ import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.util.StringUtil;
 import org.apache.hop.core.variables.Variables;
 import org.apache.hop.core.xml.XmlHandler;
-import org.apache.hop.junit.rules.RestoreHopEngineEnvironment;
+import org.apache.hop.junit.rules.RestoreHopEngineEnvironmentExtension;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
 import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.TransformMeta;
 import org.apache.hop.resource.IResourceNaming;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.w3c.dom.Node;
 
-public class XmlOutputCustomMetaTest {
-  @ClassRule public static RestoreHopEngineEnvironment env = new RestoreHopEngineEnvironment();
+class XmlOutputCustomMetaTest {
+  @RegisterExtension
+  static RestoreHopEngineEnvironmentExtension env = new RestoreHopEngineEnvironmentExtension();
 
-  @BeforeClass
-  public static void setUp() throws Exception {
+  @BeforeAll
+  static void setUp() throws Exception {
     if (!HopClientEnvironment.isInitialized()) {
       HopClientEnvironment.init();
     }
   }
 
   @Test
-  public void testLoadAndGetXml() throws Exception {
+  void testLoadAndGetXml() throws Exception {
     XmlOutputCustomMeta xmlOutputMeta = new XmlOutputCustomMeta();
     Node transformNode = getTestNode();
     DatabaseMeta dbMeta = mock(DatabaseMeta.class);
@@ -83,6 +84,7 @@ public class XmlOutputCustomMetaTest {
     assertTrue(StringUtil.isEmpty(xmlOutputMeta.getDateTimeFormat()));
     assertFalse(xmlOutputMeta.isAddToResultFiles());
     assertFalse(xmlOutputMeta.isZipped());
+    assertFalse(xmlOutputMeta.isStandalone());
     assertEquals("UTF-8", xmlOutputMeta.getEncoding());
     assertTrue(StringUtil.isEmpty(xmlOutputMeta.getNameSpace()));
     assertEquals("Rows", xmlOutputMeta.getMainElement());
@@ -99,6 +101,8 @@ public class XmlOutputCustomMetaTest {
     assertEquals(XmlFieldCustom.ContentType.Attribute, outputFields[1].getContentType());
     assertEquals(
         "    <encoding>UTF-8</encoding>"
+            + Const.CR
+            + "    <standalone>N</standalone>"
             + Const.CR
             + "    <name_space/>"
             + Const.CR

@@ -46,6 +46,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+        </dependency>
+        <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
             <version>${stanford-corenlp.version}</version>
@@ -57,10 +61,6 @@
             <version>${stanford-corenlp.version}</version>
             <classifier>models</classifier>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
         </dependency>
     </dependencies>
 </project>

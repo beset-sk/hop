@@ -870,52 +870,6 @@ public class ExcelInputDialog extends BaseTransformDialog {
     // Show the files that are selected at this time...
     wbShowFiles.addListener(SWT.Selection, e -> showFiles());
 
-    // Whenever something changes, set the tooltip to the expanded version of the
-    // filename:
-    wFilename.addModifyListener(
-        e -> wFilename.setToolTipText(variables.resolve(wFilename.getText())));
-
-    // Listen to the Browse... button
-    wbbFilename.addListener(
-        SWT.Selection,
-        e -> {
-          if (!Utils.isEmpty(wFileMask.getText())
-              || !Utils.isEmpty(wExcludeFileMask.getText())) { // A mask: a
-            // directory!
-            BaseDialog.presentDirectoryDialog(shell, wFilename, variables);
-          } else {
-            String[] extensions;
-            SpreadSheetType type =
-                SpreadSheetType.getSpreadSheetTypeByDescription(wSpreadSheetType.getText());
-            if (type == null) {
-              return;
-            }
-            switch (type) {
-              case SAX_POI:
-                extensions = new String[] {"*.xlsx;*.XLSX;*.xlsm;*.XLSM", "*"};
-                break;
-              case ODS:
-                extensions = new String[] {"*.ods;*.ODS;", "*"};
-                break;
-              case POI:
-              default:
-                extensions = new String[] {"*.xls;*.XLS;*.xlsx;*.XLSX;*.xlsm;*.XLSM", "*"};
-                break;
-            }
-
-            BaseDialog.presentFileDialog(
-                shell,
-                wFilename,
-                variables,
-                extensions,
-                new String[] {
-                  BaseMessages.getString(PKG, "ExcelInputDialog.FilterNames.ExcelFiles"),
-                  BaseMessages.getString(PKG, "System.FileType.AllFiles")
-                },
-                true);
-          }
-        });
-
     // Get a list of the sheet names.
     wbGetSheets.addListener(SWT.Selection, e -> getSheets());
     wbGetFields.addListener(SWT.Selection, e -> getFields());
