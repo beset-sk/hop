@@ -190,7 +190,7 @@ public class AddXmlCustomMeta extends BaseTransformMeta<AddXmlCustom, AddXmlCust
   public void setDefault() {
     omitXMLheader = true;
     omitNullValues = false;
-    encoding = Const.XML_ENCODING;
+    encoding = Const.UTF_8;
 
     valueName = "xmlvaluename";
     rootNode = "Row";

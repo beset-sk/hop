@@ -359,7 +359,7 @@ class XmlOutputCustomMetaTest {
     assertFalse(xmlOutputMeta.isAddToResultFiles());
     assertFalse(xmlOutputMeta.isZipped());
     assertEquals(0, xmlOutputMeta.getSplitEvery());
-    assertEquals(Const.XML_ENCODING, xmlOutputMeta.getEncoding());
+    assertEquals(Const.UTF_8, xmlOutputMeta.getEncoding());
     assertEquals("", xmlOutputMeta.getNameSpace());
     assertNull(xmlOutputMeta.getDateTimeFormat());
     assertFalse(xmlOutputMeta.isSpecifyFormat());

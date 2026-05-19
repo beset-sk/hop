@@ -425,7 +425,7 @@ public class XmlOutputCustomMeta extends BaseTransformMeta<XmlOutputCustom, XmlO
     zipped = false;
     splitEvery = 0;
     standalone = false;
-    encoding = Const.XML_ENCODING;
+    encoding = Const.UTF_8;
     nameSpace = "";
     dateTimeFormat = null;
     specifyFormat = false;

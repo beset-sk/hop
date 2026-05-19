@@ -20,7 +20,7 @@ package org.apache.hop.ui.core.dialog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Collections;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.variables.IVariables;

@@ -373,13 +373,13 @@ public class XmlOutputCustom extends BaseTransform<XmlOutputCustomMeta, XmlOutpu
         // meta.getEncoding());
         // data.writer.writeStartDocument(meta.getEncoding(), "1.0");
       } else {
-        logBasic("Opening output stream in default encoding : " + Const.XML_ENCODING);
+        logBasic("Opening output stream in default encoding : " + Const.UTF_8);
         XMLEvent event =
-            XML_EVENT_FACTORY.createStartDocument(Const.XML_ENCODING, "1.0", meta.isStandalone());
+            XML_EVENT_FACTORY.createStartDocument(Const.UTF_8, "1.0", meta.isStandalone());
         data.writer = XML_OUT_FACTORY.createXMLEventWriter(outputStream);
         data.writer.add(event);
         // data.writer = XML_OUT_FACTORY.createXMLStreamWriter(outputStream);
-        // data.writer.writeStartDocument(Const.XML_ENCODING, "1.0");
+        // data.writer.writeStartDocument(Const.UTF_8, "1.0");
       }
       data.writer.add(XML_EVENT_FACTORY.createCharacters(EOL));
       //			data.writer.writeCharacters(EOL);
