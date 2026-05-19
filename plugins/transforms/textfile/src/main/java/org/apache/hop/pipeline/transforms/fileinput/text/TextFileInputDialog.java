@@ -2470,7 +2470,7 @@ public class TextFileInputDialog extends BaseTransformDialog
       }
 
       // Now select the default!
-      String defEncoding = Const.getEnvironmentVariable("file.encoding", "UTF-8");
+      String defEncoding = Const.getEnvironmentVariable("file.encoding", Const.UTF_8);
       int idx = Const.indexOfString(defEncoding, wEncoding.getItems());
       if (idx >= 0) {
         wEncoding.select(idx);
@@ -2550,11 +2550,11 @@ public class TextFileInputDialog extends BaseTransformDialog
     meta.getFileInput().getInputFiles().clear();
     for (TableItem item : wFilenameList.getNonEmptyItems()) {
       InputFile inputFile = new InputFile();
-      inputFile.setFileName(item.getText(0));
-      inputFile.setFileMask(item.getText(1));
-      inputFile.setExcludeFileMask(item.getText(2));
-      inputFile.setFileRequired(YES_NO_COMBO[1].equalsIgnoreCase(item.getText(3)));
-      inputFile.setIncludeSubFolders(YES_NO_COMBO[1].equalsIgnoreCase(item.getText(4)));
+      inputFile.setFileName(item.getText(1));
+      inputFile.setFileMask(item.getText(2));
+      inputFile.setExcludeFileMask(item.getText(3));
+      inputFile.setFileRequired(YES_NO_COMBO[1].equalsIgnoreCase(item.getText(4)));
+      inputFile.setIncludeSubFolders(YES_NO_COMBO[1].equalsIgnoreCase(item.getText(5)));
       meta.getFileInput().getInputFiles().add(inputFile);
     }
 

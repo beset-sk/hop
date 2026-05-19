@@ -29,4 +29,6 @@
     <packaging>jar</packaging>
     <name>Hop Plugins Miscellaneous Projects</name>
 
+    <!-- Git plugin (hop-misc-git) is loaded at runtime; GitCloneHelper uses its classloader via reflection -->
+    <dependencies></dependencies>
 </project>

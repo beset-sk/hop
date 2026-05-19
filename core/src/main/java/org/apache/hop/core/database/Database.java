@@ -45,7 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.Counter;
@@ -60,6 +62,7 @@ import org.apache.hop.core.encryption.Encr;
 import org.apache.hop.core.exception.HopDatabaseBatchException;
 import org.apache.hop.core.exception.HopDatabaseException;
 import org.apache.hop.core.exception.HopException;
+import org.apache.hop.core.exception.HopRuntimeException;
 import org.apache.hop.core.exception.HopValueException;
 import org.apache.hop.core.extension.ExtensionPointHandler;
 import org.apache.hop.core.extension.HopExtensionPoint;
@@ -118,6 +121,14 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
   private static final String CONST_ERROR_UPDATING_BATCH = "Error updating batch";
 
   private int rowlimit;
+
+  /**
+   * When positive, applied to statements created in {@link #openQuery(String, IRowMeta, Object[],
+   * int, boolean)} via {@link Statement#setQueryTimeout(int)} (whole seconds). Zero leaves the JDBC
+   * driver default (typically unlimited). Intended for short-lived GUI preview connections.
+   */
+  private int statementQueryTimeoutSeconds;
+
   private int commitsize;
 
   private Connection connection;
@@ -149,8 +160,8 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
   /** The copy is equal to opened at the time of creation. */
   private volatile int copy;
 
-  private String connectionGroup;
-  private String partitionId;
+  @Getter @Setter private String connectionGroup;
+  @Getter @Setter private String partitionId;
 
   private IVariables variables = new Variables();
 
@@ -158,7 +169,7 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
 
   private String containerObjectId;
 
-  private int nrExecutedCommits;
+  @Getter @Setter private int nrExecutedCommits;
 
   private SshTunnelManager sshTunnelManager;
 
@@ -173,7 +184,8 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
               // Reverse the sort list
               (Integer.valueOf(o1.getType()).compareTo(o2.getType())) * -1);
     } catch (Exception e) {
-      throw new RuntimeException("Unable to get list of instantiated value meta plugin classes", e);
+      throw new HopRuntimeException(
+          "Unable to get list of instantiated value meta plugin classes", e);
     }
   }
 
@@ -201,6 +213,7 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
     dbmd = null;
 
     rowlimit = 0;
+    statementQueryTimeoutSeconds = 0;
 
     written = 0;
 
@@ -210,7 +223,7 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
       ExtensionPointHandler.callExtensionPoint(
           log, variables, HopExtensionPoint.DatabaseCreated.id, this);
     } catch (Exception e) {
-      throw new RuntimeException(
+      throw new HopRuntimeException(
           "Error calling extension point while creating database connection", e);
     }
 
@@ -259,6 +272,23 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
    */
   public void setQueryLimit(int rows) {
     rowlimit = rows;
+  }
+
+  /**
+   * Sets the JDBC {@link Statement#setQueryTimeout(int)} (seconds) for statements opened by {@link
+   * #openQuery(String, IRowMeta, Object[], int, boolean)} until {@link #disconnect()}. Use {@code
+   * 0} to use the driver default.
+   *
+   * @param seconds query timeout in whole seconds; values {@code < 0} are treated as {@code 0}
+   */
+  public void setStatementQueryTimeoutSeconds(int seconds) {
+    this.statementQueryTimeoutSeconds = Math.max(0, seconds);
+  }
+
+  private void applyStatementQueryTimeout(Statement statement) throws SQLException {
+    if (statement != null && statementQueryTimeoutSeconds > 0) {
+      statement.setQueryTimeout(statementQueryTimeoutSeconds);
+    }
   }
 
   /**
@@ -606,6 +636,7 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
                 + hde.getMessage());
         log.logError(Const.getStackTracker(hde));
       }
+      statementQueryTimeoutSeconds = 0;
     }
   }
 
@@ -1587,6 +1618,8 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
           pstmt.setMaxRows(rowlimit);
         }
 
+        applyStatementQueryTimeout(pstmt);
+
         log.snap(Metrics.METRIC_DATABASE_EXECUTE_SQL_START, databaseMeta.getName());
         res = pstmt.executeQuery();
         log.snap(Metrics.METRIC_DATABASE_EXECUTE_SQL_STOP, databaseMeta.getName());
@@ -1607,6 +1640,8 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
         if (rowlimit > 0 && databaseMeta.supportsSetMaxRows()) {
           selStmt.setMaxRows(rowlimit);
         }
+
+        applyStatementQueryTimeout(selStmt);
 
         log.snap(Metrics.METRIC_DATABASE_EXECUTE_SQL_START, databaseMeta.getName());
         res = selStmt.executeQuery(databaseMeta.stripCR(sql));
@@ -4059,34 +4094,6 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
   }
 
   /**
-   * @return the connectionGroup
-   */
-  public String getConnectionGroup() {
-    return connectionGroup;
-  }
-
-  /**
-   * @param connectionGroup the connectionGroup to set
-   */
-  public void setConnectionGroup(String connectionGroup) {
-    this.connectionGroup = connectionGroup;
-  }
-
-  /**
-   * @return the partitionId
-   */
-  public String getPartitionId() {
-    return partitionId;
-  }
-
-  /**
-   * @param partitionId the partitionId to set
-   */
-  public void setPartitionId(String partitionId) {
-    this.partitionId = partitionId;
-  }
-
-  /**
    * @return the copy
    */
   public int getCopy() {
@@ -4617,20 +4624,6 @@ public class Database implements IVariables, ILoggingObject, AutoCloseable {
   @Override
   public Date getRegistrationDate() {
     return null;
-  }
-
-  /**
-   * @return the nrExecutedCommits
-   */
-  public int getNrExecutedCommits() {
-    return nrExecutedCommits;
-  }
-
-  /**
-   * @param nrExecutedCommits the nrExecutedCommits to set
-   */
-  public void setNrExecutedCommits(int nrExecutedCommits) {
-    this.nrExecutedCommits = nrExecutedCommits;
   }
 
   /**

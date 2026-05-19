@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.Props;
 import org.apache.hop.core.database.BaseDatabaseMeta;
@@ -1043,7 +1043,9 @@ public class DatabaseMetaEditor extends MetadataEditor<DatabaseMeta> {
                 SWT.NONE,
                 manager.getVariables(),
                 meta,
-                manager.getSerializer().loadAll());
+                manager.getSerializer().loadAll(),
+                true,
+                true);
         dialog.open();
       } catch (Exception e) {
         new ErrorDialog(getShell(), "Error", "Error exploring database", e);

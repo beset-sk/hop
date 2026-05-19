@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hop.core.Const;
 import org.apache.hop.core.DbCache;
 import org.apache.hop.core.HopEnvironment;
@@ -199,6 +199,7 @@ public class HopGui
   public static final String ID_MAIN_MENU_EDIT_NAV_NEXT = "20410-menu-edit-nav-next";
 
   public static final String ID_MAIN_MENU_VIEW_PARENT_ID = "25000-menu-view";
+  public static final String ID_MAIN_MENU_VIEW_FULL_SCREEN = "25010-menu-view-full-screen";
   public static final String ID_MAIN_MENU_VIEW_TERMINAL = "25010-menu-view-terminal";
   public static final String ID_MAIN_MENU_VIEW_NEW_TERMINAL = "25020-menu-view-new-terminal";
 
@@ -208,7 +209,6 @@ public class HopGui
   public static final String ID_MAIN_MENU_RUN_RESUME = "30035-menu-run-resume";
   public static final String ID_MAIN_MENU_RUN_STOP = "30040-menu-run-stop";
   public static final String ID_MAIN_MENU_RUN_PREVIEW = "30050-menu-run-preview";
-  public static final String ID_MAIN_MENU_RUN_DEBUG = "30060-menu-run-debug";
 
   public static final String ID_MAIN_MENU_TOOLS_PARENT_ID = "40000-menu-tools";
   public static final String ID_MAIN_MENU_TOOLS_DATABASE_CLEAR_CACHE =
@@ -448,7 +448,11 @@ public class HopGui
 
   /** Build the shell */
   protected void open() {
-    shell.setImage(GuiResource.getInstance().getImageHopUiTaskbar());
+    // Hand Windows a multi-resolution icon set so it can pick the right size for each slot
+    // (title bar, taskbar, alt-tab, jump-list). Passing only one 16x16 image left Windows
+    // scaling up to 64x64 for the taskbar, which sometimes worked and sometimes fell back
+    // to a generic icon depending on DPI and the icon cache state.
+    shell.setImages(GuiResource.getInstance().getImagesHopUiTaskbar());
 
     /*
      * On macOs the image gets loaded too soon, add a listener to set the image when the shell is
@@ -1501,6 +1505,19 @@ public class HopGui
     // Nothing is done here.
   }
 
+  @GuiMenuElement(
+      root = ID_MAIN_MENU,
+      id = ID_MAIN_MENU_VIEW_FULL_SCREEN,
+      label = "i18n::HopGui.Menu.View.FullScreen",
+      parentId = ID_MAIN_MENU_VIEW_PARENT_ID)
+  @GuiKeyboardShortcut(alt = true, key = SWT.F11)
+  @GuiOsxKeyboardShortcut(command = true, control = true, key = 'F')
+  public void menuViewFullScreen() {
+    if (!shell.isDisposed()) {
+      shell.setFullScreen(!shell.getFullScreen());
+    }
+  }
+
   // ======================== Run Menu ========================
 
   @GuiMenuElement(
@@ -1564,16 +1581,6 @@ public class HopGui
       separator = true)
   public void menuRunPreview() {
     getActiveFileTypeHandler().preview();
-  }
-
-  @GuiMenuElement(
-      root = ID_MAIN_MENU,
-      id = ID_MAIN_MENU_RUN_DEBUG,
-      label = "i18n::HopGui.Menu.Run.Debug",
-      image = "ui/images/debug.svg",
-      parentId = ID_MAIN_MENU_RUN_PARENT_ID)
-  public void menuRunDebug() {
-    getActiveFileTypeHandler().debug();
   }
 
   @GuiMenuElement(
@@ -1903,8 +1910,6 @@ public class HopGui
         fileType, handler, ID_MAIN_MENU_RUN_RESUME, IHopFileType.CAPABILITY_PAUSE, paused);
     mainMenuWidgets.enableMenuItem(
         fileType, handler, ID_MAIN_MENU_RUN_PREVIEW, IHopFileType.CAPABILITY_PREVIEW);
-    mainMenuWidgets.enableMenuItem(
-        fileType, handler, ID_MAIN_MENU_RUN_DEBUG, IHopFileType.CAPABILITY_DEBUG);
 
     mainMenuWidgets.enableMenuItem(
         fileType,

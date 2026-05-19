@@ -31,7 +31,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.base.AbstractMeta;
@@ -174,6 +174,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
@@ -299,7 +300,7 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
   protected static final int SIZE = 30; // arrowhead length
 
   /** Minimum pointer movement (px) before an action icon mousedown is treated as drag. */
-  private static final int ACTION_DRAG_THRESHOLD_PX = 5;
+  private static final int ACTION_DRAG_THRESHOLD_PX = 3;
 
   protected int currentMouseX = 0;
 
@@ -347,6 +348,7 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
   private ActionMeta currentAction;
   private boolean ignoreNextClick;
   private boolean doubleClick;
+  private Runnable pendingShowContextDialogRunnable;
   private boolean dragSelection;
   private WorkflowHopMeta clickedWorkflowHop;
 
@@ -577,6 +579,10 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
       mouseHover(event);
     }
     doubleClick = false;
+    if (pendingShowContextDialogRunnable != null) {
+      hopGui.getDisplay().timerExec(-1, pendingShowContextDialogRunnable);
+      pendingShowContextDialogRunnable = null;
+    }
     resize = null;
 
     if (ignoreNextClick) {
@@ -907,6 +913,10 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
       if (selectionRegion.isEmpty()) {
         singleClick = true;
         singleClickType = SingleClickType.Workflow;
+        selectionRegion = null;
+        canvas.setData("mode", "null");
+        setCursor(null);
+        redraw();
       } else {
         workflowMeta.unselectAll();
         selectInRect(workflowMeta, selectionRegion);
@@ -943,9 +953,12 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
     }
 
     // If we mousedown on action icon but never committed to drag, treat as click (promote for click
-    // handling below)
+    // handling below). Do not promote when this mouseUp is already a background click: otherwise
+    // stale currentAction makes an empty-canvas release look like an action click and selection is
+    // never cleared.
     if (selectedAction == null
         && currentAction != null
+        && singleClickType != SingleClickType.Workflow
         && startHopAction == null
         && selectionRegion == null
         && selectedActions == null
@@ -1140,19 +1153,20 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
     final WorkflowHopMeta fSingleClickHop = singleClickHop;
 
     if (PropsUi.getInstance().useDoubleClick()) {
-      hopGui
-          .getDisplay()
-          .timerExec(
-              hopGui.getDisplay().getDoubleClickTime(),
-              () ->
-                  showContextDialog(
-                      event,
-                      real,
-                      fSingleClick,
-                      fSingleClickType,
-                      fSingleClickAction,
-                      fSingleClickNote,
-                      fSingleClickHop));
+      Display display = hopGui.getDisplay();
+      pendingShowContextDialogRunnable =
+          () -> {
+            pendingShowContextDialogRunnable = null;
+            showContextDialog(
+                event,
+                real,
+                fSingleClick,
+                fSingleClickType,
+                fSingleClickAction,
+                fSingleClickNote,
+                fSingleClickHop);
+          };
+      display.timerExec(display.getDoubleClickTime(), pendingShowContextDialogRunnable);
     } else {
       showContextDialog(
           event,
@@ -1343,15 +1357,16 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
     }
 
     //
-    // Commit to drag mode only after pointer moves past threshold (avoids drag when clicking name
-    // or making a small movement)
+    // Commit to drag mode only after pointer moves past threshold while primary button is still
+    // down (avoids drag on click jitter; threshold distinguishes click vs intentional drag).
     //
     if (currentAction != null
         && iconOffset != null
         && !actionDragCommitted
         && actionDragStartScreen != null
         && startHopAction == null
-        && selectionRegion == null) {
+        && selectionRegion == null
+        && (event.stateMask & SWT.BUTTON1) != 0) {
       int dx = event.x - actionDragStartScreen.x;
       int dy = event.y - actionDragStartScreen.y;
       int thresholdSq = ACTION_DRAG_THRESHOLD_PX * ACTION_DRAG_THRESHOLD_PX;
@@ -1384,7 +1399,9 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
       selectedNotes.add(selectedNote);
       previousNoteLocations = new Point[] {selectedNote.getLocation()};
       doRedraw = true;
-    } else if (selectionRegion != null && startHopAction == null) {
+    } else if (selectionRegion != null
+        && startHopAction == null
+        && (event.stateMask & SWT.BUTTON1) != 0) {
       // Did we select a region...?
       //
       selectionRegion.width = real.x - selectionRegion.x;
@@ -1417,11 +1434,11 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
             && workflowMeta.findWorkflowHop(hi.getFromAction(), selectedAction) == null) {
           splitHop = true;
           lastHopSplit = hi;
-          hi.split = true;
+          hi.setSplit(true);
         }
       } else {
         if (lastHopSplit != null) {
-          lastHopSplit.split = false;
+          lastHopSplit.setSplit(false);
           lastHopSplit = null;
           splitHop = false;
         }
@@ -1739,7 +1756,6 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
       image = "ui/images/run.svg")
   @Override
   public void start() {
-    workflowMeta.setShowDialog(workflowMeta.isAlwaysShowRunOptions());
     ServerPushSessionFacade.start();
 
     Thread thread =
@@ -2008,7 +2024,6 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
       category = "i18n::HopGuiWorkflowGraph.ContextualAction.Category.Basic.Text",
       categoryOrder = "1")
   public void startWorkflowHere(HopGuiWorkflowActionContext context) {
-    workflowMeta.setShowDialog(workflowMeta.isAlwaysShowRunOptions());
     ServerPushSessionFacade.start();
     Thread thread =
         new Thread(
@@ -3586,7 +3601,7 @@ public class HopGuiWorkflowGraph extends HopGuiAbstractGraph
       String xml = workflowMeta.getXml(variables);
       OutputStream out = HopVfs.getOutputStream(workflowMeta.getFilename(), false);
       try {
-        out.write(XmlHandler.getXmlHeader(Const.XML_ENCODING).getBytes(StandardCharsets.UTF_8));
+        out.write(XmlHandler.getXmlHeader(Const.UTF_8).getBytes(StandardCharsets.UTF_8));
         out.write(xml.getBytes(StandardCharsets.UTF_8));
         workflowMeta.clearChanged();
         updateGui();

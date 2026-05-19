@@ -38,6 +38,8 @@ import org.apache.hop.core.util.EnvUtil;
 import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.vfs.HopVfs;
 import org.apache.hop.i18n.BaseMessages;
+import org.apache.hop.lineage.LineageFileIoEmitter;
+import org.apache.hop.lineage.model.FileIoOperation;
 import org.apache.hop.pipeline.Pipeline;
 import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.BaseTransform;
@@ -426,7 +428,16 @@ public class ExcelWriterTransform
         try {
           out.flush();
           if (countingOut != null) {
-            dataVolumeOut = (dataVolumeOut != null ? dataVolumeOut : 0L) + countingOut.getCount();
+            long written = countingOut.getCount();
+            dataVolumeOut = (dataVolumeOut != null ? dataVolumeOut : 0L) + written;
+            if (!data.isBeamContext() && written > 0 && file.getFile() != null) {
+              try {
+                LineageFileIoEmitter.emitTransformFileIo(
+                    this, FileIoOperation.WRITE, null, file.getFile(), written, true, null);
+              } catch (Exception ignored) {
+                // optional lineage
+              }
+            }
           }
           out.close();
         } catch (Exception e) {

@@ -20,7 +20,7 @@ package org.apache.hop.mongo.wrapper.field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.RowDataUtil;
@@ -194,14 +194,13 @@ public class MongoArrayExpansion {
           sf.reset(variables);
 
           // what have we got?
-          if (element instanceof Document doc) {
-            result[i][sf.outputIndex] = sf.convertToHopValue(doc);
-          } else if (element instanceof List list) {
-            result[i][sf.outputIndex] = sf.convertToHopValue(list);
-          } else {
-            // assume a primitive
-            result[i][sf.outputIndex] = sf.getHopValue(element);
-          }
+          result[i][sf.outputIndex] =
+              switch (element) {
+                case Document doc -> sf.convertToHopValue(doc);
+                case List<?> list -> sf.convertToHopValue(list);
+                  // assume a primitive
+                default -> sf.getHopValue(element);
+              };
         }
       }
 
