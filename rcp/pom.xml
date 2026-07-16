@@ -140,6 +140,12 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-databases-mssqlnative</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
                     <artifactId>hop-databases-mysql</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
@@ -147,6 +153,12 @@
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-databases-mysql</artifactId>
+                    <version>${project.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hop</groupId>
+                    <artifactId>hop-databases-oracle</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
@@ -156,7 +168,6 @@
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
-
                 <dependency>
                     <groupId>org.apache.hop</groupId>
                     <artifactId>hop-engine-beam</artifactId>
