@@ -51,7 +51,7 @@ import org.w3c.dom.Node;
 
 @Transform(
     id = "TextFileOutputCustom",
-    image = "textfileoutput.svg",
+    image = "textfileoutputcustom.svg",
     name = "i18n::TextFileOutputCustom.Name",
     description = "i18n::TextFileOutputCustom.Description",
     categoryDescription = "i18n:org.apache.hop.pipeline.transform:BaseTransform.Category.Output",
