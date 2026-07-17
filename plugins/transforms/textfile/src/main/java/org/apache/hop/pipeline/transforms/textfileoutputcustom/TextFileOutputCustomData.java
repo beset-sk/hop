@@ -422,6 +422,7 @@ public class TextFileOutputCustomData extends BaseTransformData implements ITran
   public byte[] binarySeparator;
   public byte[] binaryEnclosure;
   public byte[] binaryNewline;
+  public byte[][] binaryEnclosureTriggerSequences;
 
   public boolean hasEncoding;
 

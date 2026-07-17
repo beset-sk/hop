@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -694,7 +695,11 @@ public class TextFileOutputCustom<
           if (meta.isEnclosureForced() && !meta.isPadded()) {
             writeEnclosures = true;
           } else if (!meta.isEnclosureFixDisabled()
-              && containsSeparatorOrEnclosure(str, data.binarySeparator, data.binaryEnclosure)) {
+              && containsSeparatorOrEnclosureOrConfiguredChars(
+                  str,
+                  data.binarySeparator,
+                  data.binaryEnclosure,
+                  data.binaryEnclosureTriggerSequences)) {
             writeEnclosures = true;
           }
         }
@@ -791,8 +796,11 @@ public class TextFileOutputCustom<
                       && v != null
                       && v.isString())
                   || ((!meta.isEnclosureFixDisabled()
-                      && containsSeparatorOrEnclosure(
-                          fieldName.getBytes(), data.binarySeparator, data.binaryEnclosure)));
+                      && containsSeparatorOrEnclosureOrConfiguredChars(
+                          getBinaryString(fieldName),
+                          data.binarySeparator,
+                          data.binaryEnclosure,
+                          data.binaryEnclosureTriggerSequences)));
 
           if (writeEnclosure) {
             data.writer.write(data.binaryEnclosure);
@@ -817,8 +825,11 @@ public class TextFileOutputCustom<
                       && v != null
                       && v.isString())
                   || ((!meta.isEnclosureFixDisabled()
-                      && containsSeparatorOrEnclosure(
-                          v.getName().getBytes(), data.binarySeparator, data.binaryEnclosure)));
+                      && containsSeparatorOrEnclosureOrConfiguredChars(
+                          getBinaryString(v.getName()),
+                          data.binarySeparator,
+                          data.binaryEnclosure,
+                          data.binaryEnclosureTriggerSequences)));
 
           if (writeEnclosure) {
             data.writer.write(data.binaryEnclosure);
@@ -941,6 +952,7 @@ public class TextFileOutputCustom<
       data.binarySeparator = new byte[] {};
       data.binaryEnclosure = new byte[] {};
       data.binaryNewline = new byte[] {};
+      data.binaryEnclosureTriggerSequences = parseEnclosureTriggerCodes();
 
       if (data.hasEncoding) {
         if (!Utils.isEmpty(meta.getSeparator())) {
@@ -1005,17 +1017,26 @@ public class TextFileOutputCustom<
   }
 
   public boolean containsSeparatorOrEnclosure(byte[] source, byte[] separator, byte[] enclosure) {
+    return containsSeparatorOrEnclosureOrConfiguredChars(source, separator, enclosure, null);
+  }
+
+  public boolean containsSeparatorOrEnclosureOrConfiguredChars(
+      byte[] source, byte[] separator, byte[] enclosure, byte[][] configuredSequences) {
     boolean result = false;
 
     boolean enclosureExists = enclosure != null && enclosure.length > 0;
     boolean separatorExists = separator != null && separator.length > 0;
+    boolean configuredSequencesExist =
+        configuredSequences != null && configuredSequences.length > 0;
 
-    // Skip entire test if neither separator nor enclosure exist
-    if (separatorExists || enclosureExists) {
+    // Skip entire test if no trigger exists
+    if (separatorExists || enclosureExists || configuredSequencesExist) {
 
-      // Search for the first occurrence of the separator or enclosure
+      // Search for the first occurrence of the separator, enclosure or configured sequence
       for (int index = 0; !result && index < source.length; index++) {
-        if (enclosureExists && source[index] == enclosure[0]) {
+        if (configuredSequencesExist && containsSequenceAt(source, configuredSequences, index)) {
+          result = true;
+        } else if (enclosureExists && source[index] == enclosure[0]) {
 
           // Potential match found, make sure there are enough bytes to support a full match
           if (index + enclosure.length <= source.length) {
@@ -1048,6 +1069,80 @@ public class TextFileOutputCustom<
     }
 
     return result;
+  }
+
+  private boolean containsSequenceAt(byte[] source, byte[][] sequences, int index) {
+    for (byte[] sequence : sequences) {
+      if (sequence.length == 0 || index + sequence.length > source.length) {
+        continue;
+      }
+
+      boolean found = true;
+      for (int i = 0; found && i < sequence.length; i++) {
+        if (source[index + i] != sequence[i]) {
+          found = false;
+        }
+      }
+      if (found) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private byte[][] parseEnclosureTriggerCodes() throws HopException {
+    String codes = resolve(meta.getEnclosingTriggerHexCodes());
+    if (Utils.isEmpty(codes)) {
+      return new byte[][] {};
+    }
+
+    List<byte[]> sequences = new ArrayList<>();
+    String[] tokens = codes.split("[,;\\s]+");
+    for (String token : tokens) {
+      if (Utils.isEmpty(token)) {
+        continue;
+      }
+
+      String normalized = token.trim();
+      if (normalized.startsWith("U+") || normalized.startsWith("u+")) {
+        sequences.add(parseUnicodeTriggerCode(normalized));
+        continue;
+      }
+
+      if (normalized.startsWith("0x") || normalized.startsWith("0X")) {
+        normalized = normalized.substring(2);
+      }
+
+      try {
+        int value = Integer.parseInt(normalized, 16);
+        if (value < 0 || value > 0xFF) {
+          throw new NumberFormatException("Value out of byte range");
+        }
+        sequences.add(new byte[] {(byte) value});
+      } catch (NumberFormatException e) {
+        throw new HopException(
+            "Invalid enclosure trigger code '"
+                + token
+                + "'. Use byte values from 00 to FF or Unicode values like U+060C.",
+            e);
+      }
+    }
+
+    return sequences.toArray(new byte[sequences.size()][]);
+  }
+
+  private byte[] parseUnicodeTriggerCode(String code) throws HopException {
+    try {
+      int codePoint = Integer.parseInt(code.substring(2), 16);
+      String value = new String(Character.toChars(codePoint));
+      if (data.hasEncoding) {
+        return value.getBytes(Charset.forName(meta.getEncoding()));
+      }
+      return value.getBytes();
+    } catch (Exception e) {
+      throw new HopException(
+          "Invalid enclosure trigger Unicode code '" + code + "'. Use values like U+060C.", e);
+    }
   }
 
   private void createParentFolder(String filename) throws Exception {

@@ -114,6 +114,8 @@ public class TextFileOutputCustomDialog extends BaseTransformDialog {
 
   private TextVar wEnclosure;
 
+  private TextVar wEnclosingTriggerHexCodes;
+
   private TextVar wEndedLine;
 
   private Button wEnclForced;
@@ -765,13 +767,36 @@ public class TextFileOutputCustomDialog extends BaseTransformDialog {
     fdEnclosure.right = new FormAttachment(100, 0);
     wEnclosure.setLayoutData(fdEnclosure);
 
+    Label wlEnclosingTriggerHexCodes = new Label(wContentComp, SWT.RIGHT);
+    wlEnclosingTriggerHexCodes.setText(
+        BaseMessages.getString(PKG, "TextFileOutputCustomDialog.EnclosingTriggerHexCodes.Label"));
+    wlEnclosingTriggerHexCodes.setToolTipText(
+        BaseMessages.getString(PKG, "TextFileOutputCustomDialog.EnclosingTriggerHexCodes.Tooltip"));
+    PropsUi.setLook(wlEnclosingTriggerHexCodes);
+    FormData fdlEnclosingTriggerHexCodes = new FormData();
+    fdlEnclosingTriggerHexCodes.left = new FormAttachment(0, 0);
+    fdlEnclosingTriggerHexCodes.top = new FormAttachment(wEnclosure, margin);
+    fdlEnclosingTriggerHexCodes.right = new FormAttachment(middle, -margin);
+    wlEnclosingTriggerHexCodes.setLayoutData(fdlEnclosingTriggerHexCodes);
+    wEnclosingTriggerHexCodes =
+        new TextVar(variables, wContentComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    wEnclosingTriggerHexCodes.setToolTipText(
+        BaseMessages.getString(PKG, "TextFileOutputCustomDialog.EnclosingTriggerHexCodes.Tooltip"));
+    PropsUi.setLook(wEnclosingTriggerHexCodes);
+    wEnclosingTriggerHexCodes.addModifyListener(lsMod);
+    FormData fdEnclosingTriggerHexCodes = new FormData();
+    fdEnclosingTriggerHexCodes.left = new FormAttachment(middle, 0);
+    fdEnclosingTriggerHexCodes.top = new FormAttachment(wEnclosure, margin);
+    fdEnclosingTriggerHexCodes.right = new FormAttachment(100, 0);
+    wEnclosingTriggerHexCodes.setLayoutData(fdEnclosingTriggerHexCodes);
+
     Label wlEnclForced = new Label(wContentComp, SWT.RIGHT);
     wlEnclForced.setText(
         BaseMessages.getString(PKG, "TextFileOutputCustomDialog.EnclForced.Label"));
     PropsUi.setLook(wlEnclForced);
     FormData fdlEnclForced = new FormData();
     fdlEnclForced.left = new FormAttachment(0, 0);
-    fdlEnclForced.top = new FormAttachment(wEnclosure, margin);
+    fdlEnclForced.top = new FormAttachment(wEnclosingTriggerHexCodes, margin);
     fdlEnclForced.right = new FormAttachment(middle, -margin);
     wlEnclForced.setLayoutData(fdlEnclForced);
     wEnclForced = new Button(wContentComp, SWT.CHECK);
@@ -1517,6 +1542,7 @@ public class TextFileOutputCustomDialog extends BaseTransformDialog {
     wExtension.setText(Const.NVL(input.getExtension(), ""));
     wSeparator.setText(Const.NVL(input.getSeparator(), ""));
     wEnclosure.setText(Const.NVL(input.getEnclosure(), ""));
+    wEnclosingTriggerHexCodes.setText(Const.NVL(input.getEnclosingTriggerHexCodes(), ""));
 
     if (input.getFileFormat() != null) {
       wFormat.select(0); // default if not found: CR+LF
@@ -1630,6 +1656,7 @@ public class TextFileOutputCustomDialog extends BaseTransformDialog {
     tfoi.setAddUtf8Bom(wAddUtf8Bom.getSelection());
     tfoi.setSeparator(wSeparator.getText());
     tfoi.setEnclosure(wEnclosure.getText());
+    tfoi.setEnclosingTriggerHexCodes(wEnclosingTriggerHexCodes.getText());
     tfoi.setExtension(wExtension.getText());
     tfoi.setSplitEveryRows(wSplitEvery.getText());
     tfoi.setEndedLine(wEndedLine.getText());

@@ -137,6 +137,10 @@ public class TextFileOutputCustomMeta
   @Injection(name = "ENCLOSURE")
   private String enclosure;
 
+  /** Additional byte or Unicode values that trigger enclosure. */
+  @Injection(name = "ENCLOSING_TRIGGER_HEX_CODES")
+  private String enclosingTriggerHexCodes;
+
   /**
    * Setting to allow the enclosure to be always surrounding a String value, even when there is no
    * separator inside
@@ -278,6 +282,14 @@ public class TextFileOutputCustomMeta
    */
   public void setEnclosure(String enclosure) {
     this.enclosure = enclosure;
+  }
+
+  public String getEnclosingTriggerHexCodes() {
+    return enclosingTriggerHexCodes;
+  }
+
+  public void setEnclosingTriggerHexCodes(String enclosingTriggerHexCodes) {
+    this.enclosingTriggerHexCodes = enclosingTriggerHexCodes;
   }
 
   /**
@@ -636,6 +648,12 @@ public class TextFileOutputCustomMeta
         enclosure = "";
       }
 
+      enclosingTriggerHexCodes =
+          XmlHandler.getTagValue(transformNode, "enclosing_trigger_hex_codes");
+      if (enclosingTriggerHexCodes == null) {
+        enclosingTriggerHexCodes = "";
+      }
+
       enclosureForced =
           "Y".equalsIgnoreCase(XmlHandler.getTagValue(transformNode, "enclosure_forced"));
 
@@ -772,6 +790,7 @@ public class TextFileOutputCustomMeta
     createparentfolder = true; // Default createparentfolder to true
     separator = ";";
     enclosure = "\"";
+    enclosingTriggerHexCodes = "";
     setSpecifyingFormat(false);
     setDateTimeFormat(null);
     enclosureForced = false;
@@ -893,6 +912,9 @@ public class TextFileOutputCustomMeta
     retval.append("    ").append(XmlHandler.addTagValue("schema_definition", schemaDefinition));
     retval.append("    ").append(XmlHandler.addTagValue("separator", separator));
     retval.append("    ").append(XmlHandler.addTagValue("enclosure", enclosure));
+    retval
+        .append("    ")
+        .append(XmlHandler.addTagValue("enclosing_trigger_hex_codes", enclosingTriggerHexCodes));
     retval.append("    ").append(XmlHandler.addTagValue("enclosure_forced", enclosureForced));
     retval
         .append("    ")
